@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import PageWrapper from '@/components/PageWrapper';
@@ -10,21 +11,21 @@ import { formatPrice } from '@/lib/formatPrice';
 import api from '@/lib/api';
 
 const FIELDS = [
-  { name: 'street',  label: 'Street Address', placeholder: 'House 12, Street 4, Sector G-9' },
-  { name: 'city',    label: 'City',            placeholder: 'Islamabad' },
-  { name: 'country', label: 'Country',         placeholder: 'Pakistan' },
+  { name: 'street',  label: 'Street Address',   placeholder: 'House 12, Street 4, Sector G-9' },
+  { name: 'city',    label: 'City',              placeholder: 'Islamabad' },
+  { name: 'country', label: 'Country',           placeholder: 'Pakistan' },
   { name: 'zip',     label: 'ZIP / Postal Code', placeholder: '44000' },
 ];
 
 export default function CheckoutPage() {
-  const router           = useRouter();
-  const { user }         = useAuth();
-  const { items, cartTotal, clearCart } = useCart();
+  const router = useRouter();
+  const { user } = useAuth();
+  const { items, storeSlug, cartTotal, clearCart } = useCart();
 
-  const [form, setForm]         = useState({ street: '', city: '', country: 'Pakistan', zip: '' });
-  const [guestEmail, setGuest]  = useState('');
-  const [errors, setErrors]     = useState({});
-  const [loading, setLoading]   = useState(false);
+  const [form, setForm]       = useState({ street: '', city: '', country: 'Pakistan', zip: '' });
+  const [guestEmail, setGuest] = useState('');
+  const [errors, setErrors]   = useState({});
+  const [loading, setLoading] = useState(false);
 
   const set = (field) => (e) => {
     setForm((p) => ({ ...p, [field]: e.target.value }));
@@ -38,6 +39,7 @@ export default function CheckoutPage() {
     });
     if (!user && !/\S+@\S+\.\S+/.test(guestEmail)) e.guestEmail = 'Valid email required for guest checkout';
     if (!items.length) e.items = 'Your cart is empty';
+    if (!storeSlug) e.items = 'Cart has no store associated. Please add items from a store.';
     return e;
   };
 
@@ -50,9 +52,10 @@ export default function CheckoutPage() {
     setLoading(true);
     try {
       const payload = {
-        items: items.map((i) => ({ product: i._id, quantity: i.quantity })),
+        storeSlug,
+        items:           items.map((i) => ({ product: i._id, quantity: i.quantity })),
         shippingAddress: form,
-        guestEmail: user ? undefined : guestEmail,
+        guestEmail:      user ? undefined : guestEmail,
       };
       const { data } = await api.post('/orders', payload);
       clearCart();
@@ -66,15 +69,41 @@ export default function CheckoutPage() {
     }
   };
 
+  if (user && user.role !== 'customer') {
+    return (
+      <PageWrapper>
+        <div className="max-w-xl mx-auto px-4 py-24 text-center">
+          <div className="text-5xl mb-4">🔒</div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-3">Shopping not available</h1>
+          <p className="text-gray-500 mb-6">
+            Admin and shopowner accounts cannot make purchases.<br />
+            Please log in with a customer account to shop.
+          </p>
+          <Link
+            href="/auth/login"
+            className="inline-block px-6 py-2.5 text-white rounded-lg font-medium hover:opacity-90"
+            style={{ backgroundColor: 'var(--color-brand)' }}
+          >
+            Log in as Customer
+          </Link>
+        </div>
+      </PageWrapper>
+    );
+  }
+
   if (!items.length) {
     return (
       <PageWrapper>
         <div className="max-w-xl mx-auto px-4 py-24 text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-3">Nothing to checkout</h1>
           <p className="text-gray-500 mb-6">Add items to your cart first.</p>
-          <a href="/products" className="inline-block px-6 py-2.5 text-white rounded-lg font-medium" style={{ backgroundColor: 'var(--color-brand)' }}>
-            Browse Products
-          </a>
+          <Link
+            href="/stores"
+            className="inline-block px-6 py-2.5 text-white rounded-lg font-medium hover:opacity-90"
+            style={{ backgroundColor: 'var(--color-brand)' }}
+          >
+            Browse Stores
+          </Link>
         </div>
       </PageWrapper>
     );
@@ -83,9 +112,20 @@ export default function CheckoutPage() {
   return (
     <PageWrapper>
       <div className="max-w-5xl mx-auto px-4 py-10">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
+          {storeSlug && (
+            <Link
+              href={`/store/${storeSlug}`}
+              className="text-xs font-medium hover:underline"
+              style={{ color: 'var(--color-brand)' }}
+            >
+              ← Back to /{storeSlug}
+            </Link>
+          )}
+        </div>
 
-        <form onSubmit={handleSubmit} noValidate>
+        <form onSubmit={handleSubmit} noValidate className="mt-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Shipping form */}
             <div className="lg:col-span-2 space-y-6">
@@ -149,6 +189,8 @@ export default function CheckoutPage() {
                   </div>
                   <p className="text-xs text-green-600 mt-1">Free shipping included</p>
                 </div>
+
+                {errors.items && <p className="text-red-500 text-xs mb-3">{errors.items}</p>}
 
                 <motion.button
                   whileTap={{ scale: 0.98 }}

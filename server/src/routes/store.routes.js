@@ -4,11 +4,17 @@ const { requireRole } = require('../middleware/role.middleware');
 const storeController = require('../controllers/store.controller');
 
 // Public
-router.get('/default',   storeController.getDefault);
-router.get('/:slug',     storeController.getBySlug);
+router.get('/default',    storeController.getDefault);
 
-// Admin only
-router.get('/mine/data', verifyToken, requireRole('admin'), storeController.getMine);
-router.patch('/:id',     verifyToken, requireRole('admin'), storeController.updateStore);
+// Shopowner — static paths must come before /:slug
+router.get('/analytics',  verifyToken, requireRole('shopowner', 'admin'), storeController.getAnalytics);
+router.get('/products',   verifyToken, requireRole('shopowner', 'admin'), storeController.getOwnProducts);
+
+// Public slug lookup
+router.get('/:slug',      storeController.getBySlug);
+
+// Shopowner management (multi-segment paths — no conflict with /:slug)
+router.get('/mine/data',  verifyToken, requireRole('shopowner', 'admin'), storeController.getMine);
+router.patch('/:id',      verifyToken, requireRole('shopowner', 'admin'), storeController.updateStore);
 
 module.exports = router;

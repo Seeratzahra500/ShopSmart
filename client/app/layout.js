@@ -3,7 +3,6 @@ import { CartProvider } from '@/context/CartContext';
 import { StoreProvider } from '@/context/StoreContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import AnnouncementBar from '@/components/AnnouncementBar';
 import { Toaster } from 'react-hot-toast';
 import './globals.css';
 
@@ -19,7 +18,6 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <CartProvider>
             <StoreProvider>
-              <AnnouncementBar />
               <Navbar />
               <main className="flex-1">{children}</main>
               <Footer />

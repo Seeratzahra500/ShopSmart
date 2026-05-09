@@ -3,14 +3,17 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 import { formatPrice } from '@/lib/formatPrice';
 
-export default function ProductCard({ product, currency = 'PKR', locale = 'ur-PK' }) {
+export default function ProductCard({ product, currency = 'PKR', locale = 'ur-PK', slug }) {
   const { addToCart } = useCart();
+  const { user }      = useAuth();
+  const canShop       = !user || user.role === 'customer';
 
   const handleAdd = () => {
-    addToCart(product);
+    addToCart({ ...product, storeSlug: slug }, 1);
     toast.success(`${product.title} added to cart!`);
   };
 
@@ -25,7 +28,7 @@ export default function ProductCard({ product, currency = 'PKR', locale = 'ur-PK
         boxShadow: 'var(--card-shadow, none)',
       }}
     >
-      <Link href={`/products/${product._id}`}>
+      <Link href={slug ? `/store/${slug}/products/${product._id}` : `/products/${product._id}`}>
         <div className="relative h-48 bg-gray-100">
           {product.images?.[0] ? (
             <Image
@@ -58,18 +61,24 @@ export default function ProductCard({ product, currency = 'PKR', locale = 'ur-PK
         </div>
       </Link>
       <div className="px-4 pb-4">
-        <motion.button
-          whileTap={{ scale: 0.96 }}
-          onClick={handleAdd}
-          disabled={product.stock === 0}
-          className="w-full text-white py-2 text-sm font-medium transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-          style={{
-            backgroundColor: 'var(--color-brand, #4f46e5)',
-            borderRadius: 'var(--border-radius-btn, 8px)',
-          }}
-        >
-          {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
-        </motion.button>
+        {canShop ? (
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={handleAdd}
+            disabled={product.stock === 0}
+            className="w-full text-white py-2 text-sm font-medium transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              backgroundColor: 'var(--color-brand, #4f46e5)',
+              borderRadius: 'var(--border-radius-btn, 8px)',
+            }}
+          >
+            {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+          </motion.button>
+        ) : (
+          <p className="w-full py-2 text-center text-xs text-gray-400 border border-gray-200 rounded-lg">
+            Log in as customer to shop
+          </p>
+        )}
       </div>
     </motion.div>
   );

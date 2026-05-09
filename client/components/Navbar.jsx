@@ -36,13 +36,18 @@ export default function Navbar() {
 
   const storeName = store?.name || 'ShopSmart';
   const logoUrl   = store?.logoUrl;
+  const isCustomer  = user?.role === 'customer';
+  const isShopowner = user?.role === 'shopowner';
+  const isAdmin     = user?.role === 'admin';
+
+  const brandHref = isAdmin ? '/admin/dashboard' : isShopowner ? '/dashboard' : isCustomer ? '/stores' : '/auth/login';
 
   return (
     <>
       <nav className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
           {/* Brand */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
+          <Link href={brandHref} className="flex items-center gap-2 shrink-0">
             {logoUrl ? (
               <img src={logoUrl} alt={storeName} className="h-8 w-auto object-contain" />
             ) : (
@@ -52,22 +57,30 @@ export default function Navbar() {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6">
-            <NavLink href="/products">Products</NavLink>
-            {user?.role === 'admin' && (
+            {isAdmin && (
               <Link href="/admin/dashboard" className="text-sm font-semibold" style={{ color: 'var(--color-brand)' }}>
-                Admin ↗
+                Admin Panel ↗
               </Link>
             )}
-            {user ? (
+            {isShopowner && (
+              <Link href="/dashboard" className="text-sm font-semibold" style={{ color: 'var(--color-brand)' }}>
+                Dashboard ↗
+              </Link>
+            )}
+            {isCustomer && (
               <>
+                <NavLink href="/stores">Stores</NavLink>
                 <NavLink href="/orders">My Orders</NavLink>
-                <button
-                  onClick={logout}
-                  className="text-sm font-medium text-gray-400 hover:text-red-500 transition-colors"
-                >
-                  Logout
-                </button>
               </>
+            )}
+
+            {user ? (
+              <button
+                onClick={logout}
+                className="text-sm font-medium text-gray-400 hover:text-red-500 transition-colors"
+              >
+                Logout
+              </button>
             ) : (
               <>
                 <NavLink href="/auth/login">Login</NavLink>
@@ -81,41 +94,45 @@ export default function Navbar() {
               </>
             )}
 
-            {/* Cart */}
-            <Link href="/cart" className="relative text-gray-500 hover:text-gray-900 transition-colors">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              <AnimatePresence>
-                {cartCount > 0 && (
-                  <motion.span
-                    key="badge"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    className="absolute -top-2 -right-2 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold"
-                    style={{ backgroundColor: 'var(--color-brand)' }}
-                  >
-                    {cartCount > 9 ? '9+' : cartCount}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </Link>
+            {/* Cart — customers only */}
+            {isCustomer && (
+              <Link href="/cart" className="relative text-gray-500 hover:text-gray-900 transition-colors">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <AnimatePresence>
+                  {cartCount > 0 && (
+                    <motion.span
+                      key="badge"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0 }}
+                      className="absolute -top-2 -right-2 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold"
+                      style={{ backgroundColor: 'var(--color-brand)' }}
+                    >
+                      {cartCount > 9 ? '9+' : cartCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </Link>
+            )}
           </div>
 
-          {/* Mobile: cart + hamburger */}
+          {/* Mobile: cart (customers only) + hamburger */}
           <div className="md:hidden flex items-center gap-3">
-            <Link href="/cart" className="relative text-gray-600">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold"
-                  style={{ backgroundColor: 'var(--color-brand)' }}>
-                  {cartCount > 9 ? '9+' : cartCount}
-                </span>
-              )}
-            </Link>
+            {isCustomer && (
+              <Link href="/cart" className="relative text-gray-600">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold"
+                    style={{ backgroundColor: 'var(--color-brand)' }}>
+                    {cartCount > 9 ? '9+' : cartCount}
+                  </span>
+                )}
+              </Link>
+            )}
             <button
               onClick={() => setOpen(o => !o)}
               className="p-1 text-gray-600 hover:text-gray-900 transition-colors"
@@ -163,27 +180,32 @@ export default function Navbar() {
 
               {/* Links */}
               <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-                <NavLink href="/products" mobile onClick={close}>Products</NavLink>
-                {user?.role === 'admin' && (
+                {isAdmin && (
                   <NavLink href="/admin/dashboard" mobile onClick={close}>Admin Panel</NavLink>
                 )}
-                {user ? (
+                {isShopowner && (
+                  <NavLink href="/dashboard" mobile onClick={close}>Dashboard</NavLink>
+                )}
+                {isCustomer && (
                   <>
+                    <NavLink href="/stores" mobile onClick={close}>Stores</NavLink>
                     <NavLink href="/orders" mobile onClick={close}>My Orders</NavLink>
                     <NavLink href="/cart" mobile onClick={close}>Cart {cartCount > 0 ? `(${cartCount})` : ''}</NavLink>
-                    <button
-                      onClick={() => { logout(); close(); }}
-                      className="block w-full text-left py-2.5 px-3 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white rounded-lg transition-colors"
-                    >
-                      Logout
-                    </button>
                   </>
-                ) : (
+                )}
+                {!user && (
                   <>
                     <NavLink href="/auth/login" mobile onClick={close}>Login</NavLink>
                     <NavLink href="/auth/register" mobile onClick={close}>Register</NavLink>
-                    <NavLink href="/cart" mobile onClick={close}>Cart {cartCount > 0 ? `(${cartCount})` : ''}</NavLink>
                   </>
+                )}
+                {user && (
+                  <button
+                    onClick={() => { logout(); close(); }}
+                    className="block w-full text-left py-2.5 px-3 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white rounded-lg transition-colors"
+                  >
+                    Logout
+                  </button>
                 )}
               </nav>
 
@@ -192,6 +214,7 @@ export default function Navbar() {
                 <div className="px-5 py-4 border-t border-white/20">
                   <p className="text-xs text-white/60">Signed in as</p>
                   <p className="text-sm font-medium text-white truncate">{user.name}</p>
+                  <p className="text-xs text-white/50 capitalize mt-0.5">{user.role}</p>
                 </div>
               )}
             </motion.div>

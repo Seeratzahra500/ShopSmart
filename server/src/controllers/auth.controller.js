@@ -2,17 +2,35 @@ const bcrypt = require('bcryptjs');
 const jwt    = require('jsonwebtoken');
 const crypto = require('crypto');
 const User   = require('../models/User');
+const Store  = require('../models/Store');
 const { sendResetEmail } = require('../utils/email');
+
+async function generateUniqueSlug(name) {
+  const base = name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  let slug = base;
+  let i = 1;
+  while (await Store.findOne({ slug })) {
+    slug = `${base}-${i++}`;
+  }
+  return slug;
+}
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
+
+    const userRole = role === 'shopowner' ? 'shopowner' : 'customer';
 
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: 'Email already registered.' });
 
     const passwordHash = await bcrypt.hash(password, 12);
-    await User.create({ name, email, passwordHash });
+    const user = await User.create({ name, email, passwordHash, role: userRole });
+
+    if (userRole === 'shopowner') {
+      const slug = await generateUniqueSlug(name);
+      await Store.create({ owner: user._id, name, slug });
+    }
 
     res.status(201).json({ message: 'Registration successful.' });
   } catch (err) {
@@ -47,13 +65,10 @@ exports.login = async (req, res) => {
 
     const isProd = process.env.NODE_ENV === 'production';
     res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: isProd,
-      maxAge: 15 * 60 * 1000,
+      httpOnly: true, secure: isProd, maxAge: 15 * 60 * 1000,
     });
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: isProd,
+      httpOnly: true, secure: isProd,
       maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
     });
 

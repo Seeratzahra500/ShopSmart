@@ -9,6 +9,7 @@ const productRoutes = require('./routes/product.routes');
 const orderRoutes   = require('./routes/order.routes');
 const adminRoutes   = require('./routes/admin.routes');
 const storeRoutes   = require('./routes/store.routes');
+const storesRoutes  = require('./routes/stores.routes');
 
 const app = express();
 connectDB();
@@ -33,6 +34,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders',   orderRoutes);
 app.use('/api/admin',    adminRoutes);
 app.use('/api/store',    storeRoutes);
+app.use('/api/stores',   storesRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 

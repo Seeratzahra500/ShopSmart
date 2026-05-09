@@ -17,6 +17,7 @@ router.post('/register',
       .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
       .matches(/[A-Z]/).withMessage('Must contain an uppercase letter')
       .matches(/[0-9]/).withMessage('Must contain a number'),
+    body('role').optional().isIn(['customer', 'shopowner']).withMessage('Role must be customer or shopowner'),
     validate,
   ],
   authController.register

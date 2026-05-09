@@ -44,10 +44,18 @@ exports.createProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    let product;
+    if (req.user.role === 'admin') {
+      product = await Product.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after', runValidators: true });
+    } else {
+      const store = await Store.findOne({ owner: req.user.id });
+      if (!store) return res.status(403).json({ message: 'No store found for your account.' });
+      product = await Product.findOneAndUpdate(
+        { _id: req.params.id, store: store._id },
+        req.body,
+        { returnDocument: 'after', runValidators: true }
+      );
+    }
     if (!product) return res.status(404).json({ message: 'Product not found.' });
     res.json(product);
   } catch (err) {
@@ -57,7 +65,15 @@ exports.updateProduct = async (req, res) => {
 
 exports.deleteProduct = async (req, res) => {
   try {
-    await Product.findByIdAndUpdate(req.params.id, { isActive: false });
+    let result;
+    if (req.user.role === 'admin') {
+      result = await Product.findByIdAndUpdate(req.params.id, { isActive: false });
+    } else {
+      const store = await Store.findOne({ owner: req.user.id });
+      if (!store) return res.status(403).json({ message: 'No store found for your account.' });
+      result = await Product.findOneAndUpdate({ _id: req.params.id, store: store._id }, { isActive: false });
+    }
+    if (!result) return res.status(404).json({ message: 'Product not found.' });
     res.json({ message: 'Product removed.' });
   } catch (err) {
     res.status(500).json({ message: 'Server error.' });

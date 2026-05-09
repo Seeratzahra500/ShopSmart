@@ -14,7 +14,7 @@ const storeSchema = new mongoose.Schema({
   accentColor:  { type: String, default: '#818cf8' },
   fontFamily: {
     type: String,
-    enum: ['Inter', 'Playfair Display', 'Poppins', 'Lato', 'Montserrat', 'Merriweather', 'Raleway', 'Space Grotesk'],
+    enum: ['Inter', 'Playfair Display', 'Poppins', 'Lato', 'Montserrat', 'Merriweather', 'Raleway', 'Space Grotesk', 'Nunito', 'Oswald'],
     default: 'Inter',
   },
   theme: {

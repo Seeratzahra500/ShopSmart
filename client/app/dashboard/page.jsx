@@ -27,12 +27,12 @@ function StatCard({ label, value, sub, color, icon, delay }) {
   );
 }
 
-export default function AdminDashboard() {
+export default function DashboardOverview() {
   const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/admin/analytics')
+    api.get('/store/analytics')
       .then(({ data }) => setData(data))
       .catch(() => setData(null))
       .finally(() => setLoading(false));
@@ -42,7 +42,7 @@ export default function AdminDashboard() {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-8 bg-gray-200 rounded w-40" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => <div key={i} className="h-28 bg-gray-100 rounded-xl" />)}
         </div>
       </div>
@@ -52,22 +52,25 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Platform overview</p>
+        <h1 className="text-2xl font-bold text-gray-900">Overview</h1>
+        <p className="text-sm text-gray-500 mt-0.5">Your store at a glance.</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Active Stores"  value={data?.totalStores ?? 0}                        icon="🏪" color="#4f46e5" delay={0} />
-        <StatCard label="Total Users"    value={data?.totalUsers  ?? 0}                        icon="👥" color="#3b82f6" delay={0.05} />
-        <StatCard label="Total Orders"   value={data?.totalOrders ?? 0}                        icon="📦" color="#8b5cf6" delay={0.1} />
-        <StatCard label="Platform Revenue" value={formatPrice(data?.totalRevenue ?? 0)}        icon="💰" color="#22c55e" delay={0.15} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Total Orders"    value={data?.totalOrders ?? 0}                        icon="📦" color="#4f46e5" delay={0} />
+        <StatCard label="Total Revenue"   value={formatPrice(data?.totalRevenue ?? 0)}           icon="💰" color="#22c55e" delay={0.05} />
+        <StatCard label="Low Stock Items" value={data?.lowStock?.length ?? 0} sub="< 10 units"  icon="⚠️" color="#f59e0b" delay={0.1} />
+        <StatCard label="Top Product"     value={data?.topProducts?.[0]?._id ?? '—'}             icon="🏆" color="#ec4899" delay={0.15} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top products */}
         <div className="bg-white rounded-xl border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-gray-800">Top Products (Platform)</h2>
+            <h2 className="font-semibold text-gray-800">Top Products</h2>
+            <Link href="/dashboard/products" className="text-xs hover:underline" style={{ color: 'var(--color-brand)' }}>
+              View all
+            </Link>
           </div>
           {data?.topProducts?.length ? (
             <div className="space-y-3">
@@ -87,7 +90,7 @@ export default function AdminDashboard() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-400 text-center py-6">No sales data yet.</p>
+            <p className="text-sm text-gray-400 text-center py-6">No sales yet.</p>
           )}
         </div>
 
@@ -95,6 +98,9 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-xl border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-gray-800">Low Stock Alerts</h2>
+            <Link href="/dashboard/products" className="text-xs hover:underline" style={{ color: 'var(--color-brand)' }}>
+              Manage
+            </Link>
           </div>
           {data?.lowStock?.length ? (
             <div className="space-y-3">
@@ -116,9 +122,9 @@ export default function AdminDashboard() {
       {/* Quick links */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { href: '/admin/stores', label: 'Manage Stores', icon: '🏪' },
-          { href: '/admin/orders', label: 'View Orders',   icon: '📋' },
-          { href: '/admin/users',  label: 'Manage Users',  icon: '👥' },
+          { href: '/dashboard/products', label: 'Add Product',    icon: '➕' },
+          { href: '/dashboard/orders',   label: 'View Orders',    icon: '📋' },
+          { href: '/dashboard/settings', label: 'Store Settings', icon: '⚙️' },
         ].map(({ href, label, icon }) => (
           <Link
             key={href}

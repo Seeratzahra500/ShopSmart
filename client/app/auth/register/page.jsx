@@ -12,13 +12,37 @@ const rules = [
   { test: (p) => /[0-9]/.test(p),      label: 'One number' },
 ];
 
+const ROLES = [
+  {
+    value: 'customer',
+    title: 'Shop as Customer',
+    description: 'Browse stores, buy products, track orders',
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+      </svg>
+    ),
+  },
+  {
+    value: 'shopowner',
+    title: 'Open a Store',
+    description: 'Sell products, manage your storefront, track sales',
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9l1-5h16l1 5M3 9h18M3 9v11a1 1 0 001 1h4a1 1 0 001-1v-4h4v4a1 1 0 001 1h4a1 1 0 001-1V9" />
+      </svg>
+    ),
+  },
+];
+
 export default function RegisterPage() {
   const router = useRouter();
 
-  const [form, setForm]       = useState({ name: '', email: '', password: '', confirm: '' });
-  const [errors, setErrors]   = useState({});
-  const [loading, setLoading] = useState(false);
-  const [showPass, setShowPass] = useState(false);
+  const [role, setRole]           = useState('customer');
+  const [form, setForm]           = useState({ name: '', email: '', password: '', confirm: '' });
+  const [errors, setErrors]       = useState({});
+  const [loading, setLoading]     = useState(false);
+  const [showPass, setShowPass]   = useState(false);
 
   const set = (field) => (e) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -27,10 +51,10 @@ export default function RegisterPage() {
 
   const validate = () => {
     const e = {};
-    if (!form.name.trim())                      e.name     = 'Name is required';
-    if (!/\S+@\S+\.\S+/.test(form.email))       e.email    = 'Enter a valid email address';
-    if (!rules.every((r) => r.test(form.password))) e.password = 'Password does not meet requirements';
-    if (form.password !== form.confirm)          e.confirm  = 'Passwords do not match';
+    if (!form.name.trim())                            e.name     = 'Name is required';
+    if (!/\S+@\S+\.\S+/.test(form.email))             e.email    = 'Enter a valid email address';
+    if (!rules.every((r) => r.test(form.password)))   e.password = 'Password does not meet requirements';
+    if (form.password !== form.confirm)               e.confirm  = 'Passwords do not match';
     return e;
   };
 
@@ -46,8 +70,13 @@ export default function RegisterPage() {
         name:     form.name,
         email:    form.email,
         password: form.password,
+        role,
       });
-      toast.success('Account created! Please sign in.');
+      toast.success(
+        role === 'shopowner'
+          ? 'Store created! Please sign in to set it up.'
+          : 'Account created! Please sign in.'
+      );
       router.push('/auth/login');
     } catch (err) {
       const msg = err.response?.data?.message || 'Registration failed.';
@@ -68,27 +97,52 @@ export default function RegisterPage() {
         transition={{ duration: 0.3 }}
         className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8"
       >
-        <div className="mb-8 text-center">
+        <div className="mb-6 text-center">
           <Link href="/" className="text-2xl font-bold" style={{ color: 'var(--color-brand)' }}>
             ShopSmart
           </Link>
           <h1 className="text-xl font-semibold text-gray-900 mt-3">Create an account</h1>
-          <p className="text-sm text-gray-500 mt-1">Start selling in minutes</p>
+          <p className="text-sm text-gray-500 mt-1">Choose how you want to get started</p>
+        </div>
+
+        {/* Role selector */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          {ROLES.map((r) => (
+            <button
+              key={r.value}
+              type="button"
+              onClick={() => setRole(r.value)}
+              className={`flex flex-col items-center text-center gap-2 p-4 rounded-xl border-2 transition-all text-sm
+                ${role === r.value
+                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                  : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+            >
+              <span className={role === r.value ? 'text-indigo-600' : 'text-gray-400'}>{r.icon}</span>
+              <span className="font-semibold leading-tight">{r.title}</span>
+              <span className="text-xs text-gray-500 leading-tight">{r.description}</span>
+            </button>
+          ))}
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-5">
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {role === 'shopowner' ? 'Store / Display Name' : 'Full Name'}
+            </label>
             <input
               type="text"
               value={form.name}
               onChange={set('name')}
-              placeholder="Seerat Zahra"
+              placeholder={role === 'shopowner' ? 'My Awesome Shop' : 'Seerat Zahra'}
               autoComplete="name"
               className={`w-full px-4 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 transition-colors
                 ${errors.name ? 'border-red-400 focus:ring-red-200' : 'border-gray-300 focus:ring-indigo-200 focus:border-indigo-400'}`}
             />
+            {role === 'shopowner' && !errors.name && (
+              <p className="text-xs text-gray-400 mt-1">This becomes your store's URL slug</p>
+            )}
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
           </div>
 
@@ -134,7 +188,6 @@ export default function RegisterPage() {
               </button>
             </div>
 
-            {/* Strength bar */}
             {form.password && (
               <div className="mt-2 space-y-1">
                 <div className="flex gap-1">
@@ -185,7 +238,10 @@ export default function RegisterPage() {
             className="w-full py-2.5 rounded-lg text-sm font-semibold text-white transition-opacity disabled:opacity-60"
             style={{ backgroundColor: 'var(--color-brand)' }}
           >
-            {loading ? 'Creating account…' : 'Create account'}
+            {loading
+              ? 'Creating…'
+              : role === 'shopowner' ? 'Create Store & Account' : 'Create Account'
+            }
           </motion.button>
         </form>
 

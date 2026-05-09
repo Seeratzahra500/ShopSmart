@@ -1,14 +1,15 @@
 'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 
-export default function LoginPage() {
-  const router = useRouter();
-  const { login } = useAuth();
+function LoginForm() {
+  const router       = useRouter();
+  const searchParams = useSearchParams();
+  const { login }    = useAuth();
 
   const [form, setForm]       = useState({ email: '', password: '', rememberMe: false });
   const [errors, setErrors]   = useState({});
@@ -32,7 +33,13 @@ export default function LoginPage() {
     try {
       const user = await login(form.email, form.password, form.rememberMe);
       toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
-      router.push(user.role === 'admin' ? '/admin/dashboard' : '/');
+
+      if (user.role === 'admin')          { router.push('/admin/dashboard'); return; }
+      if (user.role === 'shopowner')      { router.push('/dashboard'); return; }
+
+      // Customer: honour the ?next= param, fall back to /stores
+      const next = searchParams.get('next');
+      router.push(next && next.startsWith('/') ? next : '/stores');
     } catch (err) {
       const msg = err.response?.data?.message || 'Login failed. Please try again.';
       toast.error(msg);
@@ -47,7 +54,6 @@ export default function LoginPage() {
 
   return (
     <div className="w-full max-w-md">
-      {/* Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -63,7 +69,6 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-5">
-          {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
@@ -78,7 +83,6 @@ export default function LoginPage() {
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </div>
 
-          {/* Password */}
           <div>
             <div className="flex justify-between items-center mb-1">
               <label className="text-sm font-medium text-gray-700">Password</label>
@@ -112,7 +116,6 @@ export default function LoginPage() {
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
           </div>
 
-          {/* Remember me */}
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
               type="checkbox"
@@ -123,7 +126,8 @@ export default function LoginPage() {
             <span className="text-sm text-gray-600">Remember me for 7 days</span>
           </label>
 
-          {/* Submit */}
+          {errors.form && <p className="text-red-500 text-xs text-center">{errors.form}</p>}
+
           <motion.button
             whileTap={{ scale: 0.98 }}
             type="submit"
@@ -143,5 +147,13 @@ export default function LoginPage() {
         </p>
       </motion.div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

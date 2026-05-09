@@ -21,8 +21,8 @@ const productValidation = [
 
 router.get('/',     productController.getProducts);
 router.get('/:id',  productController.getProduct);
-router.post('/',    verifyToken, requireRole('admin'), productValidation, productController.createProduct);
-router.put('/:id',  verifyToken, requireRole('admin'), productController.updateProduct);
-router.delete('/:id', verifyToken, requireRole('admin'), productController.deleteProduct);
+router.post('/',    verifyToken, requireRole('shopowner', 'admin'), productValidation, productController.createProduct);
+router.put('/:id',  verifyToken, requireRole('shopowner', 'admin'), productController.updateProduct);
+router.delete('/:id', verifyToken, requireRole('shopowner', 'admin'), productController.deleteProduct);
 
 module.exports = router;

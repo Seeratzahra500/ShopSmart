@@ -4,8 +4,9 @@ import toast from 'react-hot-toast';
 import api from '@/lib/api';
 
 const ROLE_COLORS = {
-  admin: 'bg-purple-100 text-purple-700',
-  user:  'bg-gray-100 text-gray-600',
+  admin:     'bg-purple-100 text-purple-700',
+  shopowner: 'bg-blue-100 text-blue-700',
+  customer:  'bg-gray-100 text-gray-600',
 };
 
 export default function AdminUsersPage() {
@@ -23,22 +24,12 @@ export default function AdminUsersPage() {
 
   useEffect(() => { load(); }, []);
 
-  const toggleStatus = async (id, currentStatus) => {
+  const toggleStatus = async (id) => {
     setBusy(id + 'status');
     try {
       const { data } = await api.patch(`/admin/users/${id}/status`);
-      setUsers(prev => prev.map(u => u._id === id ? { ...u, isActive: data.isActive } : u));
+      setUsers((prev) => prev.map((u) => u._id === id ? { ...u, isActive: data.isActive } : u));
       toast.success(data.message);
-    } catch { toast.error('Update failed.'); }
-    finally { setBusy(null); }
-  };
-
-  const changeRole = async (id, role) => {
-    setBusy(id + 'role');
-    try {
-      await api.patch(`/admin/users/${id}/role`, { role });
-      setUsers(prev => prev.map(u => u._id === id ? { ...u, role } : u));
-      toast.success('Role updated.');
     } catch { toast.error('Update failed.'); }
     finally { setBusy(null); }
   };
@@ -51,33 +42,33 @@ export default function AdminUsersPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-2 animate-pulse">{[1,2,3,4].map(i => <div key={i} className="h-16 bg-gray-100 rounded-xl" />)}</div>
+        <div className="space-y-2 animate-pulse">
+          {[1, 2, 3, 4].map((i) => <div key={i} className="h-16 bg-gray-100 rounded-xl" />)}
+        </div>
+      ) : users.length === 0 ? (
+        <div className="text-center py-20 text-gray-400">
+          <p className="text-4xl mb-3">👥</p>
+          <p>No users yet.</p>
+        </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-100 overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                {['Name', 'Email', 'Role', 'Status', 'Joined', 'Actions'].map(h => (
+                {['Name', 'Email', 'Role', 'Status', 'Joined', 'Actions'].map((h) => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {users.map(user => (
+              {users.map((user) => (
                 <tr key={user._id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3 font-medium text-gray-800">{user.name}</td>
                   <td className="px-4 py-3 text-gray-500 text-xs">{user.email}</td>
                   <td className="px-4 py-3">
-                    <select
-                      value={user.role}
-                      onChange={(e) => changeRole(user._id, e.target.value)}
-                      disabled={busy === user._id + 'role'}
-                      className={`text-xs font-semibold px-2 py-1 rounded-full border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-50
-                        ${ROLE_COLORS[user.role]}`}
-                    >
-                      <option value="user">User</option>
-                      <option value="admin">Admin</option>
-                    </select>
+                    <span className={`text-xs font-semibold px-2 py-1 rounded-full capitalize ${ROLE_COLORS[user.role] || 'bg-gray-100 text-gray-600'}`}>
+                      {user.role === 'shopowner' ? 'Shop Owner' : user.role}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <span className={`text-xs font-semibold px-2 py-1 rounded-full ${user.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-500'}`}>
@@ -88,14 +79,16 @@ export default function AdminUsersPage() {
                     {new Date(user.createdAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => toggleStatus(user._id, user.isActive)}
-                      disabled={busy === user._id + 'status'}
-                      className={`text-xs font-medium hover:underline disabled:opacity-50 transition-colors
-                        ${user.isActive ? 'text-red-400 hover:text-red-600' : 'text-green-500 hover:text-green-700'}`}
-                    >
-                      {user.isActive ? 'Deactivate' : 'Activate'}
-                    </button>
+                    {user.role !== 'admin' && (
+                      <button
+                        onClick={() => toggleStatus(user._id)}
+                        disabled={busy === user._id + 'status'}
+                        className={`text-xs font-medium hover:underline disabled:opacity-50 transition-colors
+                          ${user.isActive ? 'text-red-400 hover:text-red-600' : 'text-green-500 hover:text-green-700'}`}
+                      >
+                        {user.isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

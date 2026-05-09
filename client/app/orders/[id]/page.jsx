@@ -1,8 +1,9 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import PageWrapper from '@/components/PageWrapper';
+import { useAuth } from '@/context/AuthContext';
 import { formatPrice } from '@/lib/formatPrice';
 import api from '@/lib/api';
 
@@ -17,16 +18,25 @@ const STATUS_COLORS = {
 };
 
 export default function OrderDetailPage() {
-  const { id } = useParams();
+  const { id }   = useParams();
+  const router   = useRouter();
+  const { user, loading: authLoading } = useAuth();
+
   const [order, setOrder]     = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user)                    { router.replace(`/auth/login?next=/orders/${id}`); return; }
+    if (user.role !== 'customer') { router.replace(user.role === 'admin' ? '/admin/dashboard' : '/dashboard'); return; }
+
     api.get(`/orders/${id}`)
       .then(({ data }) => setOrder(data))
       .catch(() => setOrder(null))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, user, authLoading, router]);
+
+  if (authLoading || !user || user.role !== 'customer') return null;
 
   if (loading) {
     return (
@@ -47,13 +57,12 @@ export default function OrderDetailPage() {
     );
   }
 
-  const stepIndex    = STEPS.indexOf(order.status);
-  const isCancelled  = order.status === 'cancelled';
+  const stepIndex   = STEPS.indexOf(order.status);
+  const isCancelled = order.status === 'cancelled';
 
   return (
     <PageWrapper>
       <div className="max-w-3xl mx-auto px-4 py-10">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <Link href="/orders" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
@@ -71,7 +80,6 @@ export default function OrderDetailPage() {
           </span>
         </div>
 
-        {/* Status stepper */}
         {!isCancelled && (
           <div className="bg-white rounded-xl border border-gray-100 p-6 mb-6">
             <h2 className="text-sm font-semibold text-gray-700 mb-5">Order Progress</h2>
@@ -114,7 +122,6 @@ export default function OrderDetailPage() {
           </div>
         )}
 
-        {/* Items */}
         <div className="bg-white rounded-xl border border-gray-100 p-6 mb-6">
           <h2 className="text-sm font-semibold text-gray-700 mb-4">Items Ordered</h2>
           <div className="divide-y divide-gray-50">
@@ -134,7 +141,6 @@ export default function OrderDetailPage() {
           </div>
         </div>
 
-        {/* Shipping address */}
         <div className="bg-white rounded-xl border border-gray-100 p-6">
           <h2 className="text-sm font-semibold text-gray-700 mb-3">Shipping Address</h2>
           <p className="text-sm text-gray-600 leading-relaxed">
