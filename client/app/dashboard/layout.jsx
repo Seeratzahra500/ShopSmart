@@ -1,8 +1,9 @@
 'use client';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import api from '@/lib/api';
 
 const NAV = [
   {
@@ -91,11 +92,22 @@ export default function DashboardLayout({ children }) {
 
 function ViewStoreLink() {
   const { user } = useAuth();
+  const [slug, setSlug] = useState(null);
+
+  useEffect(() => {
+    if (!user) return;
+    api.get('/store/mine/data')
+      .then(({ data }) => setSlug(data.slug))
+      .catch(() => {});
+  }, [user]);
+
   if (!user) return null;
-  // We don't have the slug here easily, so link to stores page
+
   return (
     <Link
-      href="/stores"
+      href={slug ? `/store/${slug}` : '#'}
+      target={slug ? '_blank' : undefined}
+      rel="noopener noreferrer"
       className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-gray-800 rounded-lg hover:bg-gray-50 transition-colors"
     >
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
