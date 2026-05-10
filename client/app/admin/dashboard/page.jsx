@@ -32,6 +32,9 @@ const STAT_CONFIGS = [
     label: 'Total Users',
     iconBg: 'bg-indigo-100',
     iconColor: 'text-indigo-600',
+    cardGradient: 'bg-gradient-to-br from-indigo-50 to-white',
+    borderColor: 'border-indigo-100',
+    barColor: 'bg-indigo-400',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -44,6 +47,9 @@ const STAT_CONFIGS = [
     label: 'Total Stores',
     iconBg: 'bg-green-100',
     iconColor: 'text-green-600',
+    cardGradient: 'bg-gradient-to-br from-green-50 to-white',
+    borderColor: 'border-green-100',
+    barColor: 'bg-green-400',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -56,6 +62,9 @@ const STAT_CONFIGS = [
     label: 'Total Orders',
     iconBg: 'bg-blue-100',
     iconColor: 'text-blue-600',
+    cardGradient: 'bg-gradient-to-br from-blue-50 to-white',
+    borderColor: 'border-blue-100',
+    barColor: 'bg-blue-400',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -68,6 +77,9 @@ const STAT_CONFIGS = [
     label: 'Revenue',
     iconBg: 'bg-orange-100',
     iconColor: 'text-orange-600',
+    cardGradient: 'bg-gradient-to-br from-orange-50 to-white',
+    borderColor: 'border-orange-100',
+    barColor: 'bg-orange-400',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -77,19 +89,23 @@ const STAT_CONFIGS = [
   },
 ];
 
-function StatCard({ label, value, iconBg, iconColor, icon, index }) {
+function StatCard({ label, value, iconBg, iconColor, icon, cardGradient, borderColor, barColor }) {
   return (
     <motion.div
       variants={fadeUp}
       whileHover={{ y: -2, boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}
       transition={{ duration: 0.4 }}
-      className="rounded-2xl bg-white border border-gray-100 shadow-sm p-6 relative overflow-hidden"
+      className={`rounded-2xl ${cardGradient} border ${borderColor} shadow-sm p-6 relative overflow-hidden`}
     >
       <div className={`absolute top-4 right-4 w-10 h-10 rounded-xl flex items-center justify-center ${iconBg} ${iconColor}`}>
         {icon}
       </div>
       <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">{label}</p>
       <p className="text-3xl font-bold tracking-tight text-gray-900">{value}</p>
+      {/* Accent bottom bar */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 rounded-full">
+        <div className={`h-full rounded-full ${barColor}`} />
+      </div>
     </motion.div>
   );
 }
@@ -114,13 +130,61 @@ export default function AdminDashboard() {
       ]
     : [0, 0, 0, formatPrice(0)];
 
+  // Banner inline stat pills — show dash while loading
+  const bannerStats = [
+    { label: 'users',   value: loading ? '—' : (data?.totalUsers  ?? 0) },
+    { label: 'stores',  value: loading ? '—' : (data?.totalStores ?? 0) },
+    { label: 'orders',  value: loading ? '—' : (data?.totalOrders ?? 0) },
+    { label: 'revenue', value: loading ? '—' : formatPrice(data?.totalRevenue ?? 0) },
+  ];
+
+  // Progress bar helpers for top products
+  const maxSold =
+    data?.topProducts?.length
+      ? Math.max(...data.topProducts.map((p) => p.totalSold ?? 0))
+      : 1;
+
   return (
     <div className="space-y-8">
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-600 leading-relaxed mt-0.5">Platform overview</p>
+
+      {/* Welcome banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45 }}
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-gray-900 to-indigo-950 py-8 px-8 text-white"
+      >
+        {/* Decorative blur circle */}
+        <div className="pointer-events-none absolute -top-10 -right-10 w-56 h-56 rounded-full bg-indigo-800/30 blur-2xl" />
+
+        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          {/* Left copy */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-indigo-300 mb-1">
+              Admin Dashboard
+            </p>
+            <h1 className="text-3xl font-bold tracking-tight">Platform Overview</h1>
+            <p className="text-sm text-gray-400 mt-1">
+              Monitor users, stores, orders and revenue in real-time.
+            </p>
+          </div>
+
+          {/* Right: inline stat pills (hidden on mobile) */}
+          <div className="hidden sm:flex flex-wrap gap-2">
+            {bannerStats.map(({ label, value }) => (
+              <span
+                key={label}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/10 text-xs font-semibold text-white backdrop-blur-sm border border-white/10"
+              >
+                <span className="text-indigo-300 font-bold">{value}</span>
+                <span className="text-gray-400">{label}</span>
+              </span>
+            ))}
+          </div>
+        </div>
       </motion.div>
 
+      {/* Stat cards */}
       {loading ? (
         <SkeletonStatCards />
       ) : (
@@ -138,6 +202,9 @@ export default function AdminDashboard() {
               iconBg={cfg.iconBg}
               iconColor={cfg.iconColor}
               icon={cfg.icon}
+              cardGradient={cfg.cardGradient}
+              borderColor={cfg.borderColor}
+              barColor={cfg.barColor}
               index={i}
             />
           ))}
@@ -155,19 +222,28 @@ export default function AdminDashboard() {
           >
             <h2 className="font-bold tracking-tight text-gray-800 mb-4">Top Products (Platform)</h2>
             {data?.topProducts?.length ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {data.topProducts.map((p, i) => (
-                  <div key={p._id} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                        style={{ backgroundColor: 'var(--color-brand)' }}
-                      >
-                        {i + 1}
-                      </span>
-                      <span className="text-gray-700 truncate max-w-[180px]">{p._id}</span>
+                  <div key={p._id}>
+                    <div className="flex items-center justify-between text-sm mb-1.5">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                          style={{ backgroundColor: 'var(--color-brand)' }}
+                        >
+                          {i + 1}
+                        </span>
+                        <span className="text-gray-700 truncate max-w-[180px]">{p._id}</span>
+                      </div>
+                      <span className="text-gray-500 flex-shrink-0 text-xs font-semibold">{p.totalSold} sold</span>
                     </div>
-                    <span className="text-gray-500 flex-shrink-0 text-xs font-semibold">{p.totalSold} sold</span>
+                    {/* Progress bar */}
+                    <div className="h-1.5 rounded-full bg-indigo-100 relative overflow-hidden">
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-full bg-indigo-400 transition-all duration-500"
+                        style={{ width: `${Math.round(((p.totalSold ?? 0) / maxSold) * 100)}%` }}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -185,15 +261,30 @@ export default function AdminDashboard() {
           >
             <h2 className="font-bold tracking-tight text-gray-800 mb-4">Low Stock Alerts</h2>
             {data?.lowStock?.length ? (
-              <div className="space-y-3">
-                {data.lowStock.map((p) => (
-                  <div key={p._id} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-700 truncate max-w-[200px]">{p.title}</span>
-                    <span className={`font-semibold flex-shrink-0 text-xs ${p.stock === 0 ? 'text-red-500' : 'text-amber-500'}`}>
-                      {p.stock === 0 ? 'Out of stock' : `${p.stock} left`}
-                    </span>
-                  </div>
-                ))}
+              <div className="space-y-2">
+                {data.lowStock.map((p) =>
+                  p.stock === 0 ? (
+                    <div
+                      key={p._id}
+                      className="flex items-center justify-between bg-red-50 border border-red-100 rounded-xl px-3 py-2 text-sm"
+                    >
+                      <span className="text-gray-700 truncate max-w-[200px]">{p.title}</span>
+                      <span className="ml-3 flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-600 border border-red-200">
+                        Out of stock
+                      </span>
+                    </div>
+                  ) : (
+                    <div
+                      key={p._id}
+                      className="flex items-center justify-between bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 text-sm"
+                    >
+                      <span className="text-gray-700 truncate max-w-[200px]">{p.title}</span>
+                      <span className="ml-3 flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-600 border border-amber-200">
+                        {p.stock} left
+                      </span>
+                    </div>
+                  )
+                )}
               </div>
             ) : (
               <p className="text-sm text-gray-400 text-center py-6">All products are well stocked.</p>
@@ -214,8 +305,9 @@ export default function AdminDashboard() {
             {
               href: '/admin/stores',
               label: 'Manage Stores',
+              accentBorder: 'border-l-4 border-l-indigo-500',
               icon: (
-                <svg className="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-indigo-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.35 2.7A1 1 0 007 17h11m-5 0a2 2 0 100 4 2 2 0 000-4zm-6 0a2 2 0 100 4 2 2 0 000-4z" />
                 </svg>
@@ -224,8 +316,9 @@ export default function AdminDashboard() {
             {
               href: '/admin/orders',
               label: 'View Orders',
+              accentBorder: 'border-l-4 border-l-blue-500',
               icon: (
-                <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
@@ -234,21 +327,26 @@ export default function AdminDashboard() {
             {
               href: '/admin/users',
               label: 'Manage Users',
+              accentBorder: 'border-l-4 border-l-green-500',
               icon: (
-                <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6 5.87a4 4 0 100-8 4 4 0 000 8zm6-10a4 4 0 10-8 0 4 4 0 008 0z" />
                 </svg>
               ),
             },
-          ].map(({ href, label, icon }) => (
-            <motion.div key={href} variants={fadeUp}>
+          ].map(({ href, label, icon, accentBorder }) => (
+            <motion.div key={href} variants={fadeUp} whileHover={{ x: 4 }} transition={{ duration: 0.2 }}>
               <Link
                 href={href}
-                className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow text-sm font-semibold text-gray-700"
+                className={`flex items-center gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow text-sm font-semibold text-gray-700 ${accentBorder}`}
               >
-                <span className="flex-shrink-0">{icon}</span>
-                {label}
+                {icon}
+                <span className="flex-1">{label}</span>
+                {/* Chevron arrow */}
+                <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </Link>
             </motion.div>
           ))}

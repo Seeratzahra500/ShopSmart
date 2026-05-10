@@ -43,11 +43,30 @@ export default function AdminLayout({ children }) {
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className="w-56 bg-white border-r border-gray-100 flex flex-col fixed top-16 bottom-0 z-40">
-        <div className="p-4 border-b border-gray-100">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Admin Panel</p>
-          <p className="text-sm font-medium text-gray-700 mt-0.5 truncate">{user.name}</p>
+      <aside className="w-56 bg-gray-900 text-white flex flex-col fixed top-16 bottom-0 z-40">
+
+        {/* Top section: brand + user */}
+        <div className="p-4 border-b border-white/10">
+          <p
+            className="text-sm font-bold tracking-tight"
+            style={{ color: 'var(--color-brand)' }}
+          >
+            ShopSmart
+          </p>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mt-0.5">
+            Admin Panel
+          </p>
+          <div className="flex items-center gap-2 mt-3">
+            <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-xs font-bold uppercase">
+                {user.name ? user.name.charAt(0) : '?'}
+              </span>
+            </div>
+            <p className="text-sm font-medium text-gray-200 truncate">{user.name}</p>
+          </div>
         </div>
+
+        {/* Nav links */}
         <nav className="flex-1 p-3 space-y-1">
           {NAV.map(({ href, label, icon }) => {
             const active = pathname.startsWith(href);
@@ -55,11 +74,12 @@ export default function AdminLayout({ children }) {
               <Link
                 key={href}
                 href={href}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-                style={active
-                  ? { backgroundColor: 'color-mix(in srgb, var(--color-brand) 10%, white)', color: 'var(--color-brand)' }
-                  : { color: '#6b7280' }
-                }
+                className={[
+                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                  active
+                    ? 'text-white bg-white/10 border-l-2 border-[var(--color-brand)]'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5',
+                ].join(' ')}
               >
                 <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
@@ -69,10 +89,12 @@ export default function AdminLayout({ children }) {
             );
           })}
         </nav>
-        <div className="p-3 border-t border-gray-100">
+
+        {/* Bottom: back to home */}
+        <div className="p-3 border-t border-white/10">
           <Link
             href="/"
-            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-gray-800 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
