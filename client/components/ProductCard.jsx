@@ -1,5 +1,6 @@
 'use client';
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
@@ -11,71 +12,115 @@ export default function ProductCard({ product, currency = 'PKR', locale = 'ur-PK
   const { addToCart } = useCart();
   const { user }      = useAuth();
   const canShop       = !user || user.role === 'customer';
+  const [hovered, setHovered] = useState(false);
 
-  const handleAdd = () => {
+  const handleAdd = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     addToCart({ ...product, storeSlug: slug }, 1);
     toast.success(`${product.title} added to cart!`);
   };
 
   return (
     <motion.div
-      whileHover={{ y: -4, boxShadow: '0 12px 32px rgba(0,0,0,0.1)' }}
-      transition={{ duration: 0.2 }}
-      className="bg-white overflow-hidden flex flex-col"
-      style={{
-        borderRadius: 'var(--border-radius-card, 8px)',
-        border: 'var(--card-border, 1px solid #e5e7eb)',
-        boxShadow: 'var(--card-shadow, none)',
-      }}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
+      whileHover={{ y: -4, boxShadow: '0 20px 40px rgba(0,0,0,0.12)' }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+      className="rounded-2xl overflow-hidden border border-gray-100 bg-white shadow-sm flex flex-col"
     >
-      <Link href={slug ? `/store/${slug}/products/${product._id}` : `/products/${product._id}`}>
-        <div className="relative h-48 bg-gray-100">
-          {product.images?.[0] ? (
-            <Image
-              src={product.images[0]}
-              alt={product.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 33vw"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">No image</div>
+      {/* Image block */}
+      <Link
+        href={slug ? `/store/${slug}/products/${product._id}` : `/products/${product._id}`}
+        className="relative block aspect-square bg-gray-100 overflow-hidden"
+      >
+        {product.images?.[0] ? (
+          <Image
+            src={product.images[0]}
+            alt={product.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+            No image
+          </div>
+        )}
+
+        {/* Out of Stock badge */}
+        {product.stock === 0 && (
+          <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-full z-10">
+            Out of Stock
+          </span>
+        )}
+
+        {/* Low stock badge (only when NOT out of stock) */}
+        {product.stock > 0 && product.stock < 5 && (
+          <span className="absolute top-3 left-3 bg-amber-500 text-white text-xs font-semibold px-3 py-1 rounded-full z-10">
+            Only {product.stock} left
+          </span>
+        )}
+
+        {/* Category badge */}
+        {product.category && (
+          <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium px-3 py-1 rounded-full z-10">
+            {product.category}
+          </span>
+        )}
+
+        {/* Quick Add overlay — only for customers on hover */}
+        <AnimatePresence>
+          {hovered && canShop && product.stock > 0 && (
+            <motion.div
+              key="quick-add-overlay"
+              initial={{ opacity: 0, y: '100%' }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: '100%' }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+              className="absolute inset-x-0 bottom-0 flex items-end justify-center pb-4 z-20"
+              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%)' }}
+            >
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={handleAdd}
+                className="text-white text-sm font-semibold px-5 py-2 rounded-full border border-white/60 hover:bg-white/20 backdrop-blur-sm transition-colors"
+              >
+                Quick Add
+              </motion.button>
+            </motion.div>
           )}
-          {product.stock > 0 && product.stock < 5 && (
-            <span className="absolute top-2 right-2 bg-amber-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-              Only {product.stock} left
-            </span>
-          )}
-          {product.stock === 0 && (
-            <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-              Out of Stock
-            </span>
-          )}
-        </div>
-        <div className="p-4 flex-1">
-          <h3 className="font-semibold text-gray-800 truncate">{product.title}</h3>
-          <p className="text-sm text-gray-500 mt-1 truncate">{product.category}</p>
-          <p className="font-bold mt-2" style={{ color: 'var(--color-brand, #4f46e5)' }}>
-            {formatPrice(product.price, currency, locale)}
-          </p>
-        </div>
+        </AnimatePresence>
       </Link>
-      <div className="px-4 pb-4">
+
+      {/* Details block */}
+      <div className="p-6 flex flex-col flex-1 gap-1">
+        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 truncate">
+          {product.category || ' '}
+        </p>
+        <h3 className="font-semibold text-gray-800 truncate leading-snug">
+          {product.title}
+        </h3>
+        <p className="text-xl font-bold text-gray-900 mt-1" style={{ color: 'var(--color-brand, #4f46e5)' }}>
+          {formatPrice(product.price, currency, locale)}
+        </p>
+      </div>
+
+      {/* CTA */}
+      <div className="px-6 pb-6">
         {canShop ? (
           <motion.button
-            whileTap={{ scale: 0.96 }}
+            whileTap={{ scale: 0.97 }}
             onClick={handleAdd}
             disabled={product.stock === 0}
-            className="w-full text-white py-2 text-sm font-medium transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{
-              backgroundColor: 'var(--color-brand, #4f46e5)',
-              borderRadius: 'var(--border-radius-btn, 8px)',
-            }}
+            className="w-full text-white px-6 py-3 rounded-full font-semibold text-sm hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+            style={{ backgroundColor: 'var(--color-brand, #4f46e5)' }}
           >
             {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
           </motion.button>
         ) : (
-          <p className="w-full py-2 text-center text-xs text-gray-400 border border-gray-200 rounded-lg">
+          <p className="w-full py-3 text-center text-xs text-gray-400 border border-gray-200 rounded-full">
             Log in as customer to shop
           </p>
         )}

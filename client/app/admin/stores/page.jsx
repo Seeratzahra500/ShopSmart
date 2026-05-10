@@ -1,8 +1,38 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
+
+const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
+const staggerContainer = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
+
+function SkeletonCards() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="rounded-2xl border border-gray-100 bg-white shadow-sm p-6 space-y-4">
+          <div className="flex items-start justify-between">
+            <div className="space-y-2">
+              <div className="h-4 w-32 bg-gray-200 rounded" />
+              <div className="h-2 w-20 bg-gray-100 rounded" />
+            </div>
+            <div className="h-6 w-16 bg-gray-100 rounded-full" />
+          </div>
+          <div className="space-y-2">
+            <div className="h-3 w-28 bg-gray-100 rounded" />
+            <div className="h-2 w-36 bg-gray-100 rounded" />
+          </div>
+          <div className="flex gap-2">
+            <div className="h-8 w-24 bg-gray-100 rounded-full" />
+            <div className="h-8 w-24 bg-gray-100 rounded-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function AdminStoresPage() {
   const [stores, setStores]   = useState([]);
@@ -31,84 +61,107 @@ export default function AdminStoresPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Stores</h1>
-        <p className="text-sm text-gray-500 mt-0.5">{stores.length} store{stores.length !== 1 ? 's' : ''} on the platform</p>
-      </div>
+      {/* Top bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex items-center gap-3"
+      >
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Stores</h1>
+        {!loading && (
+          <span className="px-3 py-0.5 rounded-full text-sm font-semibold bg-gray-100 text-gray-600">
+            {stores.length}
+          </span>
+        )}
+      </motion.div>
 
+      {/* Grid */}
       {loading ? (
-        <div className="space-y-2 animate-pulse">
-          {[1, 2, 3].map((i) => <div key={i} className="h-20 bg-gray-100 rounded-xl" />)}
-        </div>
+        <SkeletonCards />
       ) : stores.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
-          <p className="text-4xl mb-3">🏪</p>
-          <p>No stores yet. Sellers will appear here once they register.</p>
+          <svg className="w-12 h-12 mx-auto mb-3 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.35 2.7A1 1 0 007 17h11m-5 0a2 2 0 100 4 2 2 0 000-4zm-6 0a2 2 0 100 4 2 2 0 000-4z" />
+          </svg>
+          <p className="text-sm">No stores yet. Sellers will appear here once they register.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-100 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                {['Store', 'Owner', 'Slug', 'Status', 'Created', 'Actions'].map((h) => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {stores.map((store) => (
-                <tr key={store._id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-white font-bold text-xs"
-                        style={{ backgroundColor: store.primaryColor || '#4f46e5' }}
-                      >
-                        {store.name[0].toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-800">{store.name}</p>
-                        {store.tagline && <p className="text-xs text-gray-400 truncate max-w-[160px]">{store.tagline}</p>}
-                      </div>
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+        >
+          {stores.map((store) => (
+            <motion.div
+              key={store._id}
+              variants={fadeUp}
+              transition={{ duration: 0.4 }}
+              whileHover={{ y: -4, boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}
+              className="rounded-2xl border border-gray-100 bg-white shadow-sm p-6 flex flex-col gap-4"
+            >
+              {/* Header: name + status */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <div
+                      className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white font-bold text-xs"
+                      style={{ backgroundColor: store.primaryColor || 'var(--color-brand)' }}
+                    >
+                      {store.name[0].toUpperCase()}
                     </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <p className="text-gray-700">{store.owner?.name || '—'}</p>
-                    <p className="text-xs text-gray-400">{store.owner?.email || ''}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/store/${store.slug}`}
-                      target="_blank"
-                      className="font-mono text-xs hover:underline"
-                      style={{ color: 'var(--color-brand)' }}
-                    >
-                      /{store.slug}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${store.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-500'}`}>
-                      {store.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-gray-400">
-                    {new Date(store.createdAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  </td>
-                  <td className="px-4 py-3">
-                    <button
-                      onClick={() => toggleStatus(store._id, store.name)}
-                      disabled={busy === store._id}
-                      className={`text-xs font-medium hover:underline disabled:opacity-50 transition-colors
-                        ${store.isActive ? 'text-red-400 hover:text-red-600' : 'text-green-500 hover:text-green-700'}`}
-                    >
-                      {store.isActive ? 'Deactivate' : 'Activate'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    <p className="font-bold text-lg tracking-tight text-gray-900 truncate">{store.name}</p>
+                  </div>
+                  <p className="font-mono text-xs text-gray-400 pl-9">/{store.slug}</p>
+                </div>
+                <span
+                  className={`flex-shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+                    ${store.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-500'}`}
+                >
+                  {store.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+
+              {/* Owner info */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">Owner</p>
+                <p className="text-sm font-medium text-gray-700">{store.owner?.name || '—'}</p>
+                {store.owner?.email && (
+                  <p className="text-xs text-gray-500">{store.owner.email}</p>
+                )}
+              </div>
+
+              {/* Tagline if present */}
+              {store.tagline && (
+                <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">{store.tagline}</p>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-2 mt-auto pt-2">
+                <Link
+                  href={`/store/${store.slug}`}
+                  target="_blank"
+                  className="px-4 py-2 rounded-full text-xs font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Visit Store
+                </Link>
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => toggleStatus(store._id, store.name)}
+                  disabled={busy === store._id}
+                  className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors disabled:opacity-50
+                    ${store.isActive
+                      ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                      : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
+                >
+                  {store.isActive ? 'Deactivate' : 'Activate'}
+                </motion.button>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
       )}
     </div>
   );
