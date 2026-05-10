@@ -77,6 +77,31 @@ exports.login = async (req, res) => {
   }
 };
 
+exports.refresh = async (req, res) => {
+  try {
+    const token = req.cookies.refreshToken;
+    if (!token) return res.status(401).json({ message: 'No refresh token.' });
+
+    const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+    const user = await User.findById(decoded.id);
+    if (!user || !user.isActive) return res.status(401).json({ message: 'Invalid refresh token.' });
+
+    const accessToken = jwt.sign(
+      { id: user._id, role: user.role, name: user.name },
+      process.env.JWT_SECRET,
+      { expiresIn: '15m' }
+    );
+
+    const secure = process.env.NODE_ENV === 'production' || process.env.SECURE_COOKIES === 'true';
+    const cookieBase = { httpOnly: true, secure, sameSite: secure ? 'none' : 'lax' };
+    res.cookie('accessToken', accessToken, { ...cookieBase, maxAge: 15 * 60 * 1000 });
+
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(401).json({ message: 'Refresh token invalid or expired.' });
+  }
+};
+
 exports.logout = (req, res) => {
   const secure = process.env.NODE_ENV === 'production' || process.env.SECURE_COOKIES === 'true';
   const cookieBase = { httpOnly: true, secure, sameSite: secure ? 'none' : 'lax' };
