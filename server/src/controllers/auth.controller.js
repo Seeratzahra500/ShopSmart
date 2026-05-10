@@ -64,11 +64,10 @@ exports.login = async (req, res) => {
     );
 
     const isProd = process.env.NODE_ENV === 'production';
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true, secure: isProd, maxAge: 15 * 60 * 1000,
-    });
+    const cookieBase = { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' : 'lax' };
+    res.cookie('accessToken', accessToken, { ...cookieBase, maxAge: 15 * 60 * 1000 });
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true, secure: isProd,
+      ...cookieBase,
       maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
     });
 
@@ -79,8 +78,10 @@ exports.login = async (req, res) => {
 };
 
 exports.logout = (req, res) => {
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken');
+  const isProd = process.env.NODE_ENV === 'production';
+  const cookieBase = { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' : 'lax' };
+  res.clearCookie('accessToken', cookieBase);
+  res.clearCookie('refreshToken', cookieBase);
   res.json({ message: 'Logged out successfully.' });
 };
 
