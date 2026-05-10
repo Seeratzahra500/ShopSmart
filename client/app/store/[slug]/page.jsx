@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -75,18 +75,20 @@ function StoreContent() {
   /* Not found */
   if (!storeLoading && !store) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
-        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">404</p>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">Store not found</h1>
-        <p className="text-gray-600 leading-relaxed mb-6">
-          The store you&apos;re looking for doesn&apos;t exist or has been removed.
-        </p>
-        <button
-          onClick={() => router.push('/stores')}
-          className="bg-[var(--color-brand)] text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition-opacity text-sm"
-        >
-          Browse Stores
-        </button>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4 relative">
+        <p className="text-8xl font-black text-gray-100 select-none leading-none">404</p>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Store not found</h1>
+          <p className="text-gray-600 leading-relaxed mb-6 max-w-sm">
+            The store you&apos;re looking for doesn&apos;t exist or has been removed.
+          </p>
+          <button
+            onClick={() => router.push('/stores')}
+            className="bg-[var(--color-brand)] text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition-opacity text-sm"
+          >
+            Browse Stores
+          </button>
+        </div>
       </div>
     );
   }
@@ -147,6 +149,67 @@ function StoreContent() {
         </section>
       )}
 
+      {/* Trust / Features strip */}
+      <div className="bg-white border-b border-gray-100 py-4">
+        <div className="hidden sm:flex items-center justify-center gap-10 flex-wrap px-6">
+          {/* Free Delivery */}
+          <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
+            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Free Delivery on orders over PKR 1,000</span>
+          </div>
+          {/* Secure Checkout */}
+          <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
+            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <span>Secure Checkout</span>
+          </div>
+          {/* Easy Returns */}
+          <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
+            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Easy Returns</span>
+          </div>
+          {/* 24/7 Support */}
+          <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
+            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <span>24/7 Support</span>
+          </div>
+        </div>
+        {/* Mobile: wrap nicely */}
+        <div className="flex sm:hidden items-center justify-center gap-6 flex-wrap px-6">
+          <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
+            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Free Delivery</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
+            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <span>Secure</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
+            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Easy Returns</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
+            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <span>24/7 Support</span>
+          </div>
+        </div>
+      </div>
+
       {/* Products section */}
       <section id="products" className="max-w-7xl mx-auto px-6 py-20">
         {/* Section heading */}
@@ -160,38 +223,47 @@ function StoreContent() {
           <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
             Catalogue
           </p>
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Our Collection</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+            {store?.name ? `${store.name}'s Collection` : 'Shop All Products'}
+          </h2>
+          {!loading && (
+            <p className="text-sm text-gray-400 mt-1">
+              Showing {total} product{total !== 1 ? 's' : ''}
+            </p>
+          )}
         </motion.div>
 
         {/* Search bar */}
-        <div className="flex gap-2 mb-6 max-w-lg">
+        <div className="relative max-w-lg mb-6">
+          {/* Search icon */}
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z" />
+            </svg>
+          </span>
           <input
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && pushParam('search', searchInput.trim())}
             placeholder="Search products…"
-            className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent outline-none transition"
+            className="w-full pl-12 pr-10 py-3 rounded-2xl border border-gray-200 bg-gray-50 focus:bg-white text-sm focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent outline-none transition"
           />
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => pushParam('search', searchInput.trim())}
-            className="px-5 py-3 text-white text-sm font-semibold rounded-full hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: 'var(--color-brand)' }}
-          >
-            Search
-          </motion.button>
-          {search && (
+          {/* Clear × button */}
+          {searchInput && (
             <button
               onClick={() => { setSearchInput(''); pushParam('search', ''); }}
-              className="px-4 py-3 text-gray-500 text-sm border border-gray-200 rounded-full hover:bg-gray-50 transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Clear search"
             >
-              Clear
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           )}
         </div>
 
-        {/* Category pills */}
-        <div className="flex gap-2 flex-wrap mb-8">
+        {/* Category pills — horizontally scrollable on mobile */}
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-8 scrollbar-hide">
           {CATEGORIES.map((cat) => {
             const active = cat === 'All' ? !category : category === cat;
             return (
@@ -199,12 +271,12 @@ function StoreContent() {
                 key={cat}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => pushParam('category', cat === 'All' ? '' : cat)}
-                className="px-4 py-2 rounded-full text-sm font-medium border transition-colors"
-                style={
+                className={`flex-shrink-0 px-5 py-2.5 rounded-full text-sm transition-colors whitespace-nowrap ${
                   active
-                    ? { backgroundColor: 'var(--color-brand)', color: '#fff', borderColor: 'var(--color-brand)' }
-                    : { backgroundColor: '#fff', color: '#374151', borderColor: '#e5e7eb' }
-                }
+                    ? 'text-white font-semibold'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 font-medium'
+                }`}
+                style={active ? { backgroundColor: 'var(--color-brand)' } : undefined}
               >
                 {cat}
               </motion.button>
@@ -212,12 +284,16 @@ function StoreContent() {
           })}
         </div>
 
+        {/* Product count with hr */}
         {total > 0 && !loading && (
-          <p className="text-sm text-gray-500 mb-6">
-            {total} product{total !== 1 ? 's' : ''}
-            {search && ` for "${search}"`}
-            {category && ` in ${category}`}
-          </p>
+          <>
+            <p className="text-sm text-gray-400 font-medium mb-4">
+              Showing {total} product{total !== 1 ? 's' : ''}
+              {search && ` for "${search}"`}
+              {category && ` in ${category}`}
+            </p>
+            <hr className="border-gray-100 mb-6" />
+          </>
         )}
 
         <ProductGrid
@@ -231,7 +307,22 @@ function StoreContent() {
 
         {/* Pagination */}
         {pages > 1 && (
-          <div className="flex justify-center gap-2 mt-12">
+          <div className="flex items-center justify-center gap-2 mt-12">
+            {/* Previous */}
+            <button
+              onClick={() => {
+                if (page <= 1) return;
+                const params = new URLSearchParams(searchParams.toString());
+                params.set('page', page - 1);
+                router.push(`/store/${slug}?${params.toString()}`);
+              }}
+              disabled={page <= 1}
+              className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors disabled:opacity-30 px-2"
+            >
+              Previous
+            </button>
+
+            {/* Page numbers */}
             {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
               <button
                 key={p}
@@ -240,19 +331,73 @@ function StoreContent() {
                   params.set('page', p);
                   router.push(`/store/${slug}?${params.toString()}`);
                 }}
-                className="w-10 h-10 rounded-xl text-sm font-semibold border transition-colors"
-                style={
+                className={`w-10 h-10 rounded-xl text-sm font-semibold transition-colors ${
                   p === page
-                    ? { backgroundColor: 'var(--color-brand)', color: '#fff', borderColor: 'var(--color-brand)' }
-                    : { backgroundColor: '#fff', color: '#374151', borderColor: '#e5e7eb' }
-                }
+                    ? 'text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+                style={p === page ? { backgroundColor: 'var(--color-brand)' } : undefined}
               >
                 {p}
               </button>
             ))}
+
+            {/* Next */}
+            <button
+              onClick={() => {
+                if (page >= pages) return;
+                const params = new URLSearchParams(searchParams.toString());
+                params.set('page', page + 1);
+                router.push(`/store/${slug}?${params.toString()}`);
+              }}
+              disabled={page >= pages}
+              className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors disabled:opacity-30 px-2"
+            >
+              Next
+            </button>
           </div>
         )}
       </section>
+
+      {/* About this store */}
+      {store && (store.tagline || store.name) && (
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="py-20 bg-gray-50 border-t border-gray-100"
+        >
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+              {/* Left: text */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">
+                  About
+                </p>
+                <h2 className="text-3xl font-bold tracking-tight text-gray-900 mb-4">
+                  {store.name}
+                </h2>
+                {store.tagline && (
+                  <p className="text-gray-600 leading-relaxed text-lg">
+                    {store.tagline}
+                  </p>
+                )}
+              </div>
+
+              {/* Right: decorative card */}
+              <div
+                className="rounded-2xl flex items-center justify-center h-48 md:h-64 overflow-hidden"
+                style={{ backgroundColor: store.primaryColor || 'var(--color-brand)' }}
+              >
+                <span className="text-9xl font-black select-none" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                  {store.name ? store.name.charAt(0).toUpperCase() : '?'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+      )}
     </PageWrapper>
   );
 }
