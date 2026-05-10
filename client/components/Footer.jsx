@@ -79,7 +79,7 @@ export default function Footer() {
         >
           {/* ── Col 1: Logo + Tagline + Social ── */}
           <motion.div variants={itemVariants} className="flex flex-col gap-4">
-            <span className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-brand, #6366f1)' }}>
+            <span className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-brand, #5C4E4E)' }}>
               {name}
             </span>
             <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
@@ -171,7 +171,7 @@ export default function Footer() {
           </p>
           <p className="text-xs text-gray-600">
             Powered by{' '}
-            <span className="font-semibold" style={{ color: 'var(--color-brand, #6366f1)' }}>
+            <span className="font-semibold" style={{ color: 'var(--color-brand, #5C4E4E)' }}>
               ShopSmart
             </span>
           </p>

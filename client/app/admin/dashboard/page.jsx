@@ -30,11 +30,11 @@ const STAT_CONFIGS = [
   {
     key: 'users',
     label: 'Total Users',
-    iconBg: 'bg-indigo-100',
-    iconColor: 'text-indigo-600',
-    cardGradient: 'bg-gradient-to-br from-indigo-50 to-white',
-    borderColor: 'border-indigo-100',
-    barColor: 'bg-indigo-400',
+    iconBg: 'bg-stone-100',
+    iconColorStyle: { color: 'var(--color-brand)' },
+    cardGradient: 'bg-gradient-to-br from-stone-50 to-white',
+    borderColor: 'border-stone-200',
+    barColorStyle: { backgroundColor: 'var(--color-brand)' },
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -46,10 +46,10 @@ const STAT_CONFIGS = [
     key: 'stores',
     label: 'Total Stores',
     iconBg: 'bg-green-100',
-    iconColor: 'text-green-600',
+    iconColorStyle: { color: '#16a34a' },
     cardGradient: 'bg-gradient-to-br from-green-50 to-white',
     borderColor: 'border-green-100',
-    barColor: 'bg-green-400',
+    barColorStyle: { backgroundColor: '#4ade80' },
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -60,11 +60,11 @@ const STAT_CONFIGS = [
   {
     key: 'orders',
     label: 'Total Orders',
-    iconBg: 'bg-blue-100',
-    iconColor: 'text-blue-600',
-    cardGradient: 'bg-gradient-to-br from-blue-50 to-white',
-    borderColor: 'border-blue-100',
-    barColor: 'bg-blue-400',
+    iconBg: 'bg-stone-100',
+    iconColorStyle: { color: '#78716c' },
+    cardGradient: 'bg-gradient-to-br from-stone-50 to-white',
+    borderColor: 'border-stone-200',
+    barColorStyle: { backgroundColor: '#a8a29e' },
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -76,10 +76,10 @@ const STAT_CONFIGS = [
     key: 'revenue',
     label: 'Revenue',
     iconBg: 'bg-orange-100',
-    iconColor: 'text-orange-600',
+    iconColorStyle: { color: '#ea580c' },
     cardGradient: 'bg-gradient-to-br from-orange-50 to-white',
     borderColor: 'border-orange-100',
-    barColor: 'bg-orange-400',
+    barColorStyle: { backgroundColor: '#fb923c' },
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -89,7 +89,7 @@ const STAT_CONFIGS = [
   },
 ];
 
-function StatCard({ label, value, iconBg, iconColor, icon, cardGradient, borderColor, barColor }) {
+function StatCard({ label, value, iconBg, iconColorStyle, icon, cardGradient, borderColor, barColorStyle }) {
   return (
     <motion.div
       variants={fadeUp}
@@ -97,14 +97,17 @@ function StatCard({ label, value, iconBg, iconColor, icon, cardGradient, borderC
       transition={{ duration: 0.4 }}
       className={`rounded-2xl ${cardGradient} border ${borderColor} shadow-sm p-6 relative overflow-hidden`}
     >
-      <div className={`absolute top-4 right-4 w-10 h-10 rounded-xl flex items-center justify-center ${iconBg} ${iconColor}`}>
+      <div
+        className={`absolute top-4 right-4 w-10 h-10 rounded-xl flex items-center justify-center ${iconBg}`}
+        style={iconColorStyle}
+      >
         {icon}
       </div>
       <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">{label}</p>
       <p className="text-3xl font-bold tracking-tight text-gray-900">{value}</p>
       {/* Accent bottom bar */}
       <div className="absolute bottom-0 left-0 right-0 h-1 rounded-full">
-        <div className={`h-full rounded-full ${barColor}`} />
+        <div className="h-full rounded-full" style={barColorStyle} />
       </div>
     </motion.div>
   );
@@ -152,15 +155,15 @@ export default function AdminDashboard() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
-        className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-gray-900 to-indigo-950 py-8 px-8 text-white"
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-black to-stone-900 py-8 px-8 text-white"
       >
         {/* Decorative blur circle */}
-        <div className="pointer-events-none absolute -top-10 -right-10 w-56 h-56 rounded-full bg-indigo-800/30 blur-2xl" />
+        <div className="pointer-events-none absolute -top-10 -right-10 w-56 h-56 rounded-full bg-stone-800/30 blur-2xl" />
 
         <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           {/* Left copy */}
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-indigo-300 mb-1">
+            <p className="text-xs font-semibold uppercase tracking-widest text-stone-300 mb-1">
               Admin Dashboard
             </p>
             <h1 className="text-3xl font-bold tracking-tight">Platform Overview</h1>
@@ -176,7 +179,7 @@ export default function AdminDashboard() {
                 key={label}
                 className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/10 text-xs font-semibold text-white backdrop-blur-sm border border-white/10"
               >
-                <span className="text-indigo-300 font-bold">{value}</span>
+                <span className="text-stone-300 font-bold">{value}</span>
                 <span className="text-gray-400">{label}</span>
               </span>
             ))}
@@ -200,11 +203,11 @@ export default function AdminDashboard() {
               label={cfg.label}
               value={statValues[i]}
               iconBg={cfg.iconBg}
-              iconColor={cfg.iconColor}
+              iconColorStyle={cfg.iconColorStyle}
               icon={cfg.icon}
               cardGradient={cfg.cardGradient}
               borderColor={cfg.borderColor}
-              barColor={cfg.barColor}
+              barColorStyle={cfg.barColorStyle}
               index={i}
             />
           ))}
@@ -238,10 +241,13 @@ export default function AdminDashboard() {
                       <span className="text-gray-500 flex-shrink-0 text-xs font-semibold">{p.totalSold} sold</span>
                     </div>
                     {/* Progress bar */}
-                    <div className="h-1.5 rounded-full bg-indigo-100 relative overflow-hidden">
+                    <div className="h-1.5 rounded-full bg-stone-200 relative overflow-hidden">
                       <div
-                        className="absolute inset-y-0 left-0 rounded-full bg-indigo-400 transition-all duration-500"
-                        style={{ width: `${Math.round(((p.totalSold ?? 0) / maxSold) * 100)}%` }}
+                        className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${Math.round(((p.totalSold ?? 0) / maxSold) * 100)}%`,
+                          backgroundColor: 'var(--color-brand)',
+                        }}
                       />
                     </div>
                   </div>
@@ -305,9 +311,11 @@ export default function AdminDashboard() {
             {
               href: '/admin/stores',
               label: 'Manage Stores',
-              accentBorder: 'border-l-4 border-l-indigo-500',
+              accentBorderClass: 'border-l-4',
+              accentBorderStyle: { borderLeftColor: 'var(--color-brand)' },
               icon: (
-                <svg className="w-5 h-5 text-indigo-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                  style={{ color: 'var(--color-brand)' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.35 2.7A1 1 0 007 17h11m-5 0a2 2 0 100 4 2 2 0 000-4zm-6 0a2 2 0 100 4 2 2 0 000-4z" />
                 </svg>
@@ -316,9 +324,10 @@ export default function AdminDashboard() {
             {
               href: '/admin/orders',
               label: 'View Orders',
-              accentBorder: 'border-l-4 border-l-blue-500',
+              accentBorderClass: 'border-l-4 border-l-stone-400',
+              accentBorderStyle: {},
               icon: (
-                <svg className="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-stone-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
@@ -327,7 +336,8 @@ export default function AdminDashboard() {
             {
               href: '/admin/users',
               label: 'Manage Users',
-              accentBorder: 'border-l-4 border-l-green-500',
+              accentBorderClass: 'border-l-4 border-l-green-500',
+              accentBorderStyle: {},
               icon: (
                 <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -335,11 +345,12 @@ export default function AdminDashboard() {
                 </svg>
               ),
             },
-          ].map(({ href, label, icon, accentBorder }) => (
+          ].map(({ href, label, icon, accentBorderClass, accentBorderStyle }) => (
             <motion.div key={href} variants={fadeUp} whileHover={{ x: 4 }} transition={{ duration: 0.2 }}>
               <Link
                 href={href}
-                className={`flex items-center gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow text-sm font-semibold text-gray-700 ${accentBorder}`}
+                className={`flex items-center gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow text-sm font-semibold text-gray-700 ${accentBorderClass}`}
+                style={accentBorderStyle}
               >
                 {icon}
                 <span className="flex-1">{label}</span>

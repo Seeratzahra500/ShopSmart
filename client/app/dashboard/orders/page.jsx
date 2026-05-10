@@ -8,11 +8,11 @@ import api from '@/lib/api';
 const STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
 const STATUS_STYLES = {
-  pending:    { pill: 'bg-yellow-100 text-yellow-700',  dot: 'bg-yellow-400' },
-  processing: { pill: 'bg-blue-100 text-blue-700',      dot: 'bg-blue-400' },
-  shipped:    { pill: 'bg-purple-100 text-purple-700',  dot: 'bg-purple-400' },
-  delivered:  { pill: 'bg-green-100 text-green-700',   dot: 'bg-green-400' },
-  cancelled:  { pill: 'bg-red-100 text-red-600',        dot: 'bg-red-400' },
+  pending:    { pill: 'bg-yellow-100 text-yellow-700',    dot: 'bg-yellow-400' },
+  processing: { pill: 'bg-stone-100 text-stone-700',      dot: 'bg-stone-400' },
+  shipped:    { pill: 'bg-[#988686]/20 text-[#5C4E4E]',   dot: 'bg-[#988686]' },
+  delivered:  { pill: 'bg-green-100 text-green-700',      dot: 'bg-green-400' },
+  cancelled:  { pill: 'bg-red-100 text-red-600',          dot: 'bg-red-400' },
 };
 
 const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };

@@ -12,8 +12,8 @@ const STEPS = ['pending', 'processing', 'shipped', 'delivered'];
 
 const STATUS_COLORS = {
   pending:    'bg-yellow-100 text-yellow-700',
-  processing: 'bg-blue-100 text-blue-700',
-  shipped:    'bg-purple-100 text-purple-700',
+  processing: 'bg-stone-100 text-stone-700',
+  shipped:    'bg-[#988686]/20 text-[#5C4E4E]',
   delivered:  'bg-green-100 text-green-700',
   cancelled:  'bg-red-100 text-red-600',
 };

@@ -9,8 +9,8 @@ const STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
 const STATUS_COLORS = {
   pending:    'bg-yellow-100 text-yellow-700',
-  processing: 'bg-blue-100 text-blue-700',
-  shipped:    'bg-purple-100 text-purple-700',
+  processing: 'bg-stone-100 text-stone-700',
+  shipped:    'bg-[#988686]/20 text-[#5C4E4E]',
   delivered:  'bg-green-100 text-green-700',
   cancelled:  'bg-red-100 text-red-700',
 };
@@ -112,7 +112,7 @@ export default function AdminOrdersPage() {
           </p>
         </div>
       ) : (
-        <div className="rounded-2xl overflow-hidden border border-gray-100 bg-white shadow-sm">
+        <div className="rounded-2xl overflow-x-auto border border-gray-100 bg-white shadow-sm">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
@@ -178,7 +178,7 @@ export default function AdminOrdersPage() {
                       value={order.status}
                       onChange={(e) => handleStatus(order._id, e.target.value)}
                       disabled={updating === order._id}
-                      className="text-xs font-semibold px-2 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-50 transition-colors"
+                      className="text-xs font-semibold px-2 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-stone-300 disabled:opacity-50 transition-colors"
                     >
                       {STATUSES.map((s) => (
                         <option key={s} value={s}>

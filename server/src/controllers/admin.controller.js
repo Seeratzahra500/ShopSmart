@@ -24,6 +24,23 @@ exports.toggleUserStatus = async (req, res) => {
   }
 };
 
+exports.changeUserRole = async (req, res) => {
+  try {
+    const { role } = req.body;
+    if (!['customer', 'shopowner', 'admin'].includes(role))
+      return res.status(400).json({ message: 'Invalid role.' });
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+    if (user._id.toString() === req.user.id)
+      return res.status(400).json({ message: 'Cannot change your own role.' });
+    user.role = role;
+    await user.save();
+    res.json({ message: `Role changed to ${role}.`, role: user.role });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error.' });
+  }
+};
+
 
 exports.getAnalytics = async (req, res) => {
   try {

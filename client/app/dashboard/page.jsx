@@ -73,8 +73,8 @@ const STAT_CONFIGS = [
   {
     key: 'orders',
     topBarClass: 'bg-[var(--color-brand)]',
-    iconBg: 'bg-indigo-50',
-    iconColor: 'text-indigo-600',
+    iconBg: 'bg-stone-50',
+    iconColor: 'text-stone-600',
     Icon: IconOrders,
   },
   {
@@ -93,9 +93,9 @@ const STAT_CONFIGS = [
   },
   {
     key: 'topProduct',
-    topBarClass: 'bg-purple-400',
-    iconBg: 'bg-purple-50',
-    iconColor: 'text-purple-600',
+    topBarClass: 'bg-stone-500',
+    iconBg: 'bg-stone-50',
+    iconColor: 'text-stone-600',
     Icon: IconTrophy,
   },
 ];
@@ -133,29 +133,29 @@ const QUICK_ACTIONS = [
     desc: 'Add, edit, or remove items',
     Icon: IconProducts,
     topBarClass: 'bg-[var(--color-brand)]',
-    iconBg: 'bg-indigo-50',
-    iconColor: 'text-indigo-600',
-    hoverShadow: 'hover:shadow-indigo-100',
+    iconBg: 'bg-stone-50',
+    iconColor: 'text-stone-600',
+    hoverShadow: 'hover:shadow-stone-100',
   },
   {
     href: '/dashboard/orders',
     label: 'View Orders',
     desc: 'Track and update orders',
     Icon: IconOrdersAction,
-    topBarClass: 'bg-blue-400',
-    iconBg: 'bg-blue-50',
-    iconColor: 'text-blue-600',
-    hoverShadow: 'hover:shadow-blue-100',
+    topBarClass: 'bg-stone-500',
+    iconBg: 'bg-stone-50',
+    iconColor: 'text-stone-600',
+    hoverShadow: 'hover:shadow-stone-100',
   },
   {
     href: '/dashboard/settings',
     label: 'Store Settings',
     desc: 'Customize your storefront',
     Icon: IconSettings,
-    topBarClass: 'bg-purple-400',
-    iconBg: 'bg-purple-50',
-    iconColor: 'text-purple-600',
-    hoverShadow: 'hover:shadow-purple-100',
+    topBarClass: 'bg-stone-500',
+    iconBg: 'bg-stone-50',
+    iconColor: 'text-stone-600',
+    hoverShadow: 'hover:shadow-stone-100',
   },
 ];
 
@@ -303,7 +303,7 @@ export default function DashboardOverview() {
                       />
                       <span className="text-gray-700 truncate max-w-[160px]">{p._id}</span>
                     </div>
-                    <span className="bg-indigo-100 text-indigo-700 rounded-full px-2.5 py-0.5 text-xs font-semibold flex-shrink-0">
+                    <span className="bg-stone-100 text-stone-700 rounded-full px-2.5 py-0.5 text-xs font-semibold flex-shrink-0">
                       {p.totalSold} sold
                     </span>
                   </div>

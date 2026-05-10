@@ -103,7 +103,7 @@ export default function HomePage() {
       {/* ── SECTION 1: NAVBAR ────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 h-16 bg-white border-b border-gray-100 flex items-center">
         <div className="max-w-6xl mx-auto px-6 w-full flex items-center justify-between">
-          <span className="font-bold text-xl" style={{ color: 'var(--color-brand, #4f46e5)' }}>
+          <span className="font-bold text-xl" style={{ color: 'var(--color-brand, #5C4E4E)' }}>
             ShopSmart
           </span>
           <nav className="flex items-center gap-3">
@@ -118,7 +118,7 @@ export default function HomePage() {
                 whileHover={{ opacity: 0.88 }}
                 whileTap={{ scale: 0.97 }}
                 className="inline-block px-5 py-2 rounded-full text-white text-sm font-semibold cursor-pointer"
-                style={{ background: 'var(--color-brand, #4f46e5)' }}
+                style={{ background: 'var(--color-brand, #5C4E4E)' }}
               >
                 Get Started
               </motion.span>
@@ -137,7 +137,7 @@ export default function HomePage() {
           <div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full"
             style={{
-              background: 'radial-gradient(circle, rgba(99,102,241,0.06) 0%, rgba(168,85,247,0.04) 50%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(92,78,78,0.06) 0%, rgba(152,134,134,0.04) 50%, transparent 70%)',
             }}
           />
         </div>
@@ -150,7 +150,7 @@ export default function HomePage() {
         >
           {/* Eyebrow */}
           <motion.div variants={fadeUp} transition={{ duration: 0.5 }}>
-            <span className="text-xs font-semibold uppercase tracking-widest text-indigo-500 bg-indigo-50 px-4 py-1.5 rounded-full inline-block">
+            <span className="text-xs font-semibold uppercase tracking-widest text-stone-600 bg-stone-100 px-4 py-1.5 rounded-full inline-block">
               The platform for independent businesses
             </span>
           </motion.div>
@@ -169,7 +169,7 @@ export default function HomePage() {
             variants={fadeUp}
             transition={{ duration: 0.55 }}
             className="text-5xl md:text-7xl font-bold tracking-tight mt-2 leading-tight"
-            style={{ color: 'var(--color-brand, #4f46e5)' }}
+            style={{ color: 'var(--color-brand, #5C4E4E)' }}
           >
             Reach more customers.
           </motion.h1>
@@ -194,7 +194,7 @@ export default function HomePage() {
                 whileHover={{ y: -2, opacity: 0.92 }}
                 whileTap={{ scale: 0.97 }}
                 className="inline-block px-8 py-4 rounded-full text-white font-semibold text-base cursor-pointer shadow-lg"
-                style={{ background: 'var(--color-brand, #4f46e5)' }}
+                style={{ background: 'var(--color-brand, #5C4E4E)' }}
               >
                 Start Selling Free
               </motion.span>
@@ -273,7 +273,8 @@ export default function HomePage() {
             <motion.p
               variants={fadeUp}
               transition={{ duration: 0.5 }}
-              className="text-xs font-semibold uppercase tracking-widest text-indigo-500"
+              className="text-xs font-semibold uppercase tracking-widest"
+              style={{ color: 'var(--color-accent)' }}
             >
               Simple setup
             </motion.p>
@@ -289,8 +290,8 @@ export default function HomePage() {
               {[
                 {
                   number: '01',
-                  icon: <IconUserPlus className="w-6 h-6 text-indigo-600" />,
-                  iconBg: 'bg-indigo-100',
+                  icon: <IconUserPlus className="w-6 h-6 text-stone-700" />,
+                  iconBg: 'bg-stone-100',
                   title: 'Create your account',
                   desc: 'Sign up with email, choose your store name and branding.',
                 },
@@ -303,8 +304,8 @@ export default function HomePage() {
                 },
                 {
                   number: '03',
-                  icon: <IconTrendingUp className="w-6 h-6 text-purple-600" />,
-                  iconBg: 'bg-purple-100',
+                  icon: <IconTrendingUp className="w-6 h-6 text-stone-600" />,
+                  iconBg: 'bg-stone-100',
                   title: 'Start selling',
                   desc: 'Share your store link and watch orders come in.',
                 },
@@ -340,7 +341,7 @@ export default function HomePage() {
             <motion.p
               variants={fadeUp}
               transition={{ duration: 0.5 }}
-              className="text-indigo-400 uppercase tracking-widest text-xs font-semibold"
+              className="text-stone-400 uppercase tracking-widest text-xs font-semibold"
             >
               Everything you need
             </motion.p>
@@ -358,7 +359,7 @@ export default function HomePage() {
                   icon: <IconStorefront className="w-6 h-6 text-white" />,
                   title: 'Beautiful Storefronts',
                   desc: 'Custom branding, themes, hero banners — your store, your identity.',
-                  cardClass: 'bg-gradient-to-br from-indigo-900 to-indigo-950 border border-indigo-800/50',
+                  cardClass: 'bg-gradient-to-br from-stone-900 to-black border border-stone-800/50',
                 },
                 {
                   icon: <IconCube className="w-6 h-6 text-white" />,
@@ -370,7 +371,7 @@ export default function HomePage() {
                   icon: <IconChartBar className="w-6 h-6 text-white" />,
                   title: 'Analytics Dashboard',
                   desc: 'Orders, revenue, and top products at a glance — always know how you\'re doing.',
-                  cardClass: 'bg-gradient-to-br from-purple-900 to-purple-950 border border-purple-800/50',
+                  cardClass: 'bg-gradient-to-br from-stone-700 to-stone-800 border border-stone-700/50',
                 },
               ].map((feature) => (
                 <motion.div
@@ -424,7 +425,7 @@ export default function HomePage() {
                 whileHover={{ y: -2, opacity: 0.92 }}
                 whileTap={{ scale: 0.97 }}
                 className="inline-block px-8 py-4 rounded-full text-white font-semibold text-base cursor-pointer shadow-lg"
-                style={{ background: 'var(--color-brand, #4f46e5)' }}
+                style={{ background: 'var(--color-brand, #5C4E4E)' }}
               >
                 Get Started Free
               </motion.span>

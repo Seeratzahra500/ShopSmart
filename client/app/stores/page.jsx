@@ -70,7 +70,7 @@ export default function StoresPage() {
           animate="show"
           variants={fadeUp}
           transition={{ duration: 0.45 }}
-          className="w-full bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl py-12 px-8 mb-8 text-center"
+          className="w-full bg-gradient-to-br from-stone-50 to-stone-100 rounded-2xl py-12 px-8 mb-8 text-center"
         >
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
             Discover Amazing Stores
@@ -158,7 +158,7 @@ export default function StoresPage() {
                   {/* Color banner with gradient overlay */}
                   <div
                     className="relative h-40 flex items-center justify-center"
-                    style={{ backgroundColor: store.primaryColor || '#4f46e5' }}
+                    style={{ backgroundColor: store.primaryColor || '#5C4E4E' }}
                   >
                     {/* Gradient overlay for depth */}
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 pointer-events-none" />

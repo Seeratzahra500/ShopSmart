@@ -1,7 +1,7 @@
 export const themes = {
   minimal: {
-    '--color-brand':  '#4f46e5',
-    '--color-accent': '#818cf8',
+    '--color-brand':  '#5C4E4E',
+    '--color-accent': '#988686',
     '--color-bg':     '#ffffff',
     '--color-text':   '#111827',
     '--radius-card':  '1rem',

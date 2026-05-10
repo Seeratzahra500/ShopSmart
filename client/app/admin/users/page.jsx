@@ -5,14 +5,14 @@ import toast from 'react-hot-toast';
 import api from '@/lib/api';
 
 const ROLE_COLORS = {
-  admin:     'bg-purple-100 text-purple-700',
-  shopowner: 'bg-blue-100 text-blue-700',
-  customer:  'bg-gray-100 text-gray-600',
+  admin:     'bg-stone-900 text-white',
+  shopowner: 'bg-stone-200 text-stone-800',
+  customer:  'bg-stone-100 text-stone-600',
 };
 
 const AVATAR_COLORS = [
-  'bg-indigo-500', 'bg-blue-500', 'bg-green-500',
-  'bg-orange-500', 'bg-pink-500', 'bg-teal-500',
+  'bg-stone-500', 'bg-green-500', 'bg-teal-500',
+  'bg-orange-500', 'bg-pink-500', 'bg-cyan-600',
 ];
 
 function avatarColor(name = '') {
@@ -65,6 +65,16 @@ export default function AdminUsersPage() {
       setUsers((prev) => prev.map((u) => u._id === id ? { ...u, isActive: data.isActive } : u));
       toast.success(data.message);
     } catch { toast.error('Update failed.'); }
+    finally { setBusy(null); }
+  };
+
+  const changeRole = async (id, role) => {
+    setBusy(id + 'role');
+    try {
+      await api.patch(`/admin/users/${id}/role`, { role });
+      setUsers((prev) => prev.map((u) => u._id === id ? { ...u, role } : u));
+      toast.success(`Role updated to ${role}.`);
+    } catch { toast.error('Role update failed.'); }
     finally { setBusy(null); }
   };
 
@@ -136,11 +146,11 @@ export default function AdminUsersPage() {
                   </td>
                   {/* Email */}
                   <td className="px-5 py-4 text-xs text-gray-500">{user.email}</td>
-                  {/* Role — READ-ONLY badge */}
+                  {/* Role badge */}
                   <td className="px-5 py-4">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize
-                        ${ROLE_COLORS[user.role] || 'bg-gray-100 text-gray-600'}`}
+                        ${ROLE_COLORS[user.role] || 'bg-stone-100 text-stone-600'}`}
                     >
                       {user.role === 'shopowner' ? 'Shop Owner' : user.role}
                     </span>
@@ -162,18 +172,39 @@ export default function AdminUsersPage() {
                   </td>
                   {/* Actions */}
                   <td className="px-5 py-4">
-                    {user.role !== 'admin' && (
-                      <motion.button
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => toggleStatus(user._id)}
-                        disabled={busy === user._id + 'status'}
-                        className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors disabled:opacity-50
-                          ${user.isActive
-                            ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                            : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
-                      >
-                        {user.isActive ? 'Deactivate' : 'Activate'}
-                      </motion.button>
+                    {user.role !== 'admin' ? (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {/* Activate / Deactivate */}
+                        <motion.button
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => toggleStatus(user._id)}
+                          disabled={busy === user._id + 'status' || busy === user._id + 'role'}
+                          className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors disabled:opacity-50
+                            ${user.isActive
+                              ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                              : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
+                        >
+                          {busy === user._id + 'status' ? '…' : (user.isActive ? 'Deactivate' : 'Activate')}
+                        </motion.button>
+
+                        {/* Role selector */}
+                        <select
+                          value={user.role}
+                          disabled={busy === user._id + 'role' || busy === user._id + 'status'}
+                          onChange={(e) => changeRole(user._id, e.target.value)}
+                          className="text-xs font-semibold rounded-full border border-stone-300 bg-white px-3 py-2
+                            text-stone-700 focus:outline-none focus:ring-2 focus:ring-stone-300 focus:border-stone-400
+                            disabled:opacity-50 cursor-pointer hover:border-stone-400 transition-colors"
+                          style={{ minWidth: '7.5rem' }}
+                          aria-label={`Change role for ${user.name}`}
+                        >
+                          <option value="customer">Customer</option>
+                          <option value="shopowner">Shop Owner</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-400 italic">—</span>
                     )}
                   </td>
                 </motion.tr>

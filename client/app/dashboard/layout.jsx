@@ -33,6 +33,7 @@ export default function DashboardLayout({ children }) {
   const { user, loading } = useAuth();
   const router   = useRouter();
   const pathname = usePathname();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'shopowner')) {
@@ -40,57 +41,118 @@ export default function DashboardLayout({ children }) {
     }
   }, [user, loading, router]);
 
+  // Close drawer on route change
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [pathname]);
+
   if (loading || !user || user.role !== 'shopowner') return null;
+
+  const SidebarContent = ({ onLinkClick }) => (
+    <>
+      <div className="p-4 border-b border-gray-100">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Seller Dashboard</p>
+        <p className="text-sm font-medium text-gray-700 mt-0.5 truncate">{user.name}</p>
+      </div>
+      <nav className="flex-1 p-3 space-y-1">
+        {NAV.map(({ href, label, icon, exact }) => {
+          const active = exact ? pathname === href : pathname.startsWith(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              onClick={onLinkClick}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+              style={active
+                ? { backgroundColor: 'color-mix(in srgb, var(--color-brand) 10%, white)', color: 'var(--color-brand)' }
+                : { color: '#6b7280' }
+              }
+            >
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
+              </svg>
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="p-3 border-t border-gray-100 space-y-1">
+        <ViewStoreLink onLinkClick={onLinkClick} />
+        <Link
+          href="/"
+          onClick={onLinkClick}
+          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-gray-800 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Home
+        </Link>
+      </div>
+    </>
+  );
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-56 bg-white border-r border-gray-100 flex flex-col fixed top-16 bottom-0 z-40">
-        <div className="p-4 border-b border-gray-100">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Seller Dashboard</p>
-          <p className="text-sm font-medium text-gray-700 mt-0.5 truncate">{user.name}</p>
-        </div>
-        <nav className="flex-1 p-3 space-y-1">
-          {NAV.map(({ href, label, icon, exact }) => {
-            const active = exact ? pathname === href : pathname.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-                style={active
-                  ? { backgroundColor: 'color-mix(in srgb, var(--color-brand) 10%, white)', color: 'var(--color-brand)' }
-                  : { color: '#6b7280' }
-                }
-              >
-                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
-                </svg>
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="p-3 border-t border-gray-100 space-y-1">
-          <ViewStoreLink />
-          <Link
-            href="/"
-            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-gray-800 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Home
-          </Link>
-        </div>
+
+      {/* ── Desktop Sidebar (md+) ── */}
+      <aside className="hidden md:flex w-56 bg-white border-r border-gray-100 flex-col fixed top-16 bottom-0 z-40">
+        <SidebarContent onLinkClick={undefined} />
       </aside>
 
-      <main className="flex-1 ml-56 p-8">{children}</main>
+      {/* ── Mobile: top bar with hamburger ── */}
+      <div className="md:hidden fixed top-16 left-0 right-0 z-40 bg-white border-b border-gray-100 h-12 flex items-center px-4 gap-3">
+        <button
+          onClick={() => setDrawerOpen(true)}
+          aria-label="Open menu"
+          className="p-2 rounded-lg text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <p className="text-sm font-semibold text-gray-700 truncate">Seller Dashboard</p>
+      </div>
+
+      {/* ── Mobile: slide drawer overlay ── */}
+      {drawerOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-50 flex"
+          onClick={() => setDrawerOpen(false)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40" aria-hidden="true" />
+
+          {/* Drawer panel */}
+          <aside
+            className="relative w-64 bg-white flex flex-col h-full shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+              <p className="text-sm font-bold" style={{ color: 'var(--color-brand)' }}>ShopSmart</p>
+              <button
+                onClick={() => setDrawerOpen(false)}
+                aria-label="Close menu"
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <SidebarContent onLinkClick={() => setDrawerOpen(false)} />
+          </aside>
+        </div>
+      )}
+
+      {/* ── Main content ── */}
+      <main className="flex-1 md:ml-56 pt-12 md:pt-0 p-6 md:p-8">{children}</main>
     </div>
   );
 }
 
-function ViewStoreLink() {
+function ViewStoreLink({ onLinkClick }) {
   const { user } = useAuth();
   const [slug, setSlug] = useState(null);
 
@@ -108,6 +170,7 @@ function ViewStoreLink() {
       href={slug ? `/store/${slug}` : '#'}
       target={slug ? '_blank' : undefined}
       rel="noopener noreferrer"
+      onClick={onLinkClick}
       className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-gray-800 rounded-lg hover:bg-gray-50 transition-colors"
     >
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

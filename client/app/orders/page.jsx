@@ -10,8 +10,8 @@ import api from '@/lib/api';
 
 const STATUS_COLORS = {
   pending:    'bg-yellow-100 text-yellow-700',
-  processing: 'bg-blue-100 text-blue-700',
-  shipped:    'bg-purple-100 text-purple-700',
+  processing: 'bg-stone-100 text-stone-700',
+  shipped:    'bg-[#988686]/20 text-[#5C4E4E]',
   delivered:  'bg-green-100 text-green-700',
   cancelled:  'bg-red-100 text-red-600',
 };
@@ -114,53 +114,55 @@ export default function OrdersPage() {
             animate="show"
             className="space-y-4"
           >
-            {orders.map((order) => (
-              <motion.div
-                key={order._id}
-                variants={fadeUp}
-                transition={{ duration: 0.4 }}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-shadow"
-              >
-                <div className="p-5">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    {/* Left info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-3 mb-1">
-                        <p className="font-mono text-xs text-gray-400">
-                          #{order._id.slice(-8).toUpperCase()}
+            <div className="overflow-x-auto">
+              {orders.map((order) => (
+                <motion.div
+                  key={order._id}
+                  variants={fadeUp}
+                  transition={{ duration: 0.4 }}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-shadow mb-4"
+                >
+                  <div className="p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      {/* Left info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-3 mb-1">
+                          <p className="font-mono text-xs text-gray-400">
+                            #{order._id.slice(-8).toUpperCase()}
+                          </p>
+                          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize ${STATUS_COLORS[order.status] || 'bg-gray-100 text-gray-600'}`}>
+                            {order.status}
+                          </span>
+                        </div>
+                        <p className="font-semibold text-gray-800 text-sm">
+                          {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                          <span className="text-gray-400 mx-1.5">·</span>
+                          {formatPrice(order.totalAmount)}
                         </p>
-                        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize ${STATUS_COLORS[order.status] || 'bg-gray-100 text-gray-600'}`}>
-                          {order.status}
-                        </span>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {new Date(order.createdAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1.5 line-clamp-1">
+                          {order.items.map((i) => i.title).join(', ')}
+                        </p>
                       </div>
-                      <p className="font-semibold text-gray-800 text-sm">
-                        {order.items.length} item{order.items.length !== 1 ? 's' : ''}
-                        <span className="text-gray-400 mx-1.5">·</span>
-                        {formatPrice(order.totalAmount)}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {new Date(order.createdAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1.5 line-clamp-1">
-                        {order.items.map((i) => i.title).join(', ')}
-                      </p>
-                    </div>
 
-                    {/* View details */}
-                    <div className="flex-shrink-0">
-                      <motion.div whileTap={{ scale: 0.97 }}>
-                        <Link
-                          href={`/orders/${order._id}`}
-                          className="inline-block border border-gray-200 px-4 py-2 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          View Details
-                        </Link>
-                      </motion.div>
+                      {/* View details */}
+                      <div className="flex-shrink-0">
+                        <motion.div whileTap={{ scale: 0.97 }}>
+                          <Link
+                            href={`/orders/${order._id}`}
+                            className="inline-block border border-gray-200 px-4 py-2 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            View Details
+                          </Link>
+                        </motion.div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
+            </div>
           </motion.div>
         )}
       </motion.div>

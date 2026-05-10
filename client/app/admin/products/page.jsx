@@ -94,7 +94,7 @@ function ProductModal({ product, onClose, onSaved }) {
               <label className="block text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">{label}</label>
               <input type={type} value={form[f]} onChange={set(f)} placeholder={ph}
                 className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 transition-colors
-                  ${errors[f] ? 'border-red-400 focus:ring-red-200' : 'border-gray-200 focus:ring-indigo-200 focus:border-indigo-400'}`} />
+                  ${errors[f] ? 'border-red-400 focus:ring-red-200' : 'border-gray-200 focus:ring-stone-300 focus:border-stone-400'}`} />
               {errors[f] && <p className="text-red-500 text-xs mt-0.5">{errors[f]}</p>}
             </div>
           ))}
@@ -103,7 +103,7 @@ function ProductModal({ product, onClose, onSaved }) {
             <label className="block text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">Category</label>
             <select value={form.category} onChange={set('category')}
               className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 transition-colors
-                ${errors.category ? 'border-red-400 focus:ring-red-200' : 'border-gray-200 focus:ring-indigo-200 focus:border-indigo-400'}`}>
+                ${errors.category ? 'border-red-400 focus:ring-red-200' : 'border-gray-200 focus:ring-stone-300 focus:border-stone-400'}`}>
               <option value="">Select category</option>
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -114,7 +114,7 @@ function ProductModal({ product, onClose, onSaved }) {
             <label className="block text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">Description</label>
             <textarea value={form.description} onChange={set('description')} rows={3} placeholder="Describe the product…"
               className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 resize-none transition-colors
-                ${errors.description ? 'border-red-400 focus:ring-red-200' : 'border-gray-200 focus:ring-indigo-200 focus:border-indigo-400'}`} />
+                ${errors.description ? 'border-red-400 focus:ring-red-200' : 'border-gray-200 focus:ring-stone-300 focus:border-stone-400'}`} />
             {errors.description && <p className="text-red-500 text-xs mt-0.5">{errors.description}</p>}
           </div>
 
@@ -239,7 +239,7 @@ export default function AdminProductsPage() {
           placeholder="Search products by name or category…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-colors"
+          className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-stone-300 focus:border-stone-400 transition-colors"
         />
       </motion.div>
 
@@ -333,7 +333,7 @@ export default function AdminProductsPage() {
                         whileTap={{ scale: 0.97 }}
                         onClick={() => setModal(p)}
                         title="Edit"
-                        className="p-2 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                        className="p-2 rounded-lg text-gray-400 hover:text-stone-700 hover:bg-stone-50 transition-colors"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
