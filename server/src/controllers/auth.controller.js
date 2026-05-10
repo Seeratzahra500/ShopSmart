@@ -63,8 +63,8 @@ exports.login = async (req, res) => {
       { expiresIn: refreshExpiry }
     );
 
-    const isProd = process.env.NODE_ENV === 'production';
-    const cookieBase = { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' : 'lax' };
+    const secure   = process.env.NODE_ENV === 'production' || process.env.SECURE_COOKIES === 'true';
+    const cookieBase = { httpOnly: true, secure, sameSite: secure ? 'none' : 'lax' };
     res.cookie('accessToken', accessToken, { ...cookieBase, maxAge: 15 * 60 * 1000 });
     res.cookie('refreshToken', refreshToken, {
       ...cookieBase,
@@ -78,8 +78,8 @@ exports.login = async (req, res) => {
 };
 
 exports.logout = (req, res) => {
-  const isProd = process.env.NODE_ENV === 'production';
-  const cookieBase = { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' : 'lax' };
+  const secure = process.env.NODE_ENV === 'production' || process.env.SECURE_COOKIES === 'true';
+  const cookieBase = { httpOnly: true, secure, sameSite: secure ? 'none' : 'lax' };
   res.clearCookie('accessToken', cookieBase);
   res.clearCookie('refreshToken', cookieBase);
   res.json({ message: 'Logged out successfully.' });
