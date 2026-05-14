@@ -106,7 +106,7 @@ exports.getOwnProducts = async (req, res) => {
     if (!store) return res.status(404).json({ message: 'Store not found.' });
 
     const { page = 1, limit = 100, search } = req.query;
-    const query = { store: store._id };
+    const query = { store: store._id, isActive: true };
     if (search) query.title = { $regex: search, $options: 'i' };
 
     const total    = await Product.countDocuments(query);

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
@@ -67,14 +67,14 @@ export default function ProductCard({ product, currency = 'PKR', locale = 'ur-PK
           </span>
         )}
 
-        {/* Category badge — bottom-left of image */}
+        {/* Category badge â€” bottom-left of image */}
         {product.category && (
           <span className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium px-3 py-1 rounded-full z-10">
             {product.category}
           </span>
         )}
 
-        {/* Wishlist heart — only for customers, top-right */}
+        {/* Wishlist heart â€” only for customers, top-right */}
         {canShop && (
           <motion.button
             whileTap={{ scale: 1.3 }}
@@ -108,7 +108,7 @@ export default function ProductCard({ product, currency = 'PKR', locale = 'ur-PK
           </motion.button>
         )}
 
-        {/* Quick Add overlay — only for customers on hover */}
+        {/* Quick Add overlay â€” only for customers on hover */}
         <AnimatePresence>
           {hovered && canShop && product.stock > 0 && (
             <motion.div
@@ -149,7 +149,7 @@ export default function ProductCard({ product, currency = 'PKR', locale = 'ur-PK
             </>
           ) : (
             <>
-              <p className="text-2xl font-bold" style={{ color: 'var(--color-brand, #4f46e5)' }}>
+              <p className="text-2xl font-bold" style={{ color: 'var(--color-brand, #5C4E4E)' }}>
                 {formatPrice(product.price, currency, locale)}
               </p>
               {isLowStock && (
@@ -170,7 +170,7 @@ export default function ProductCard({ product, currency = 'PKR', locale = 'ur-PK
             onClick={handleAdd}
             disabled={isOutOfStock}
             className="w-full flex items-center justify-center gap-2 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
-            style={{ backgroundColor: 'var(--color-brand, #4f46e5)' }}
+            style={{ backgroundColor: 'var(--color-brand, #5C4E4E)' }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -193,10 +193,11 @@ export default function ProductCard({ product, currency = 'PKR', locale = 'ur-PK
         )}
       </div>
 
-      {/* Bottom brand accent — only when in stock */}
+      {/* Bottom brand accent â€” only when in stock */}
       {!isOutOfStock && (
         <div className="h-0.5 bg-[var(--color-brand)]" />
       )}
     </motion.div>
   );
 }
+

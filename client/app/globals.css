@@ -1,42 +1,44 @@
 @import "tailwindcss";
 
-:root {
-  --color-brand:        #5C4E4E;
-  --color-accent:       #988686;
-  --color-light:        #D1D0D0;
-  --color-dark:         #000000;
-  --font-heading:       'Inter', sans-serif;
-  --border-radius-card: 8px;
-  --border-radius-btn:  8px;
-  --font-size-heading:  1.5rem;
-  --card-shadow:        none;
-  --card-border:        1px solid #D1D0D0;
+@layer base {
+  :root {
+    --color-brand:        #5C4E4E;
+    --color-accent:       #988686;
+    --color-light:        #D1D0D0;
+    --color-dark:         #000000;
+    --font-heading:       'Inter', sans-serif;
+    --border-radius-card: 8px;
+    --border-radius-btn:  8px;
+    --font-size-heading:  1.5rem;
+    --card-shadow:        none;
+    --card-border:        1px solid #D1D0D0;
 
-  /* Light mode surfaces */
-  --bg-page:    #f8f7f7;
-  --bg-card:    #ffffff;
-  --text-main:  #000000;
-  --text-muted: #6b7280;
-  --border:     #D1D0D0;
-}
+    /* Light mode surfaces */
+    --bg-page:    #f8f7f7;
+    --bg-card:    #ffffff;
+    --text-main:  #000000;
+    --text-muted: #6b7280;
+    --border:     #D1D0D0;
+  }
 
-.dark {
-  --bg-page:    #0a0a0a;
-  --bg-card:    #1a1515;
-  --text-main:  #f5f0f0;
-  --text-muted: #988686;
-  --border:     #3d3030;
-  --card-border: 1px solid #3d3030;
-}
+  .dark {
+    --bg-page:    #0a0a0a;
+    --bg-card:    #1a1515;
+    --text-main:  #f5f0f0;
+    --text-muted: #988686;
+    --border:     #3d3030;
+    --card-border: 1px solid #3d3030;
+  }
 
-body {
-  font-family: var(--font-heading), system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  background-color: var(--bg-page);
-  color: var(--text-main);
-}
+  body {
+    font-family: var(--font-heading), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background-color: var(--bg-page);
+    color: var(--text-main);
+  }
 
-h1, h2, h3 {
-  font-family: var(--font-heading);
-  font-size: var(--font-size-heading);
+  h1, h2, h3 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-heading);
+  }
 }

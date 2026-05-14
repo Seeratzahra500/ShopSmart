@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { useStore } from '@/context/StoreContext';
 
-/* ─── Animated nav link with sliding underline ─── */
+/* â”€â”€â”€ Animated nav link with sliding underline â”€â”€â”€ */
 const NavLink = ({ href, children, onClick, mobile }) => {
   const pathname = usePathname();
   const active = pathname === href || pathname.startsWith(href + '/');
@@ -43,7 +43,7 @@ const NavLink = ({ href, children, onClick, mobile }) => {
       </span>
       <motion.span
         className="absolute bottom-0 left-0 h-0.5 rounded-full"
-        style={{ backgroundColor: 'var(--color-brand, #4f46e5)' }}
+        style={{ backgroundColor: 'var(--color-brand, #5C4E4E)' }}
         initial={{ width: active ? '100%' : '0%' }}
         animate={{ width: active || hovered ? '100%' : '0%' }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
@@ -52,7 +52,7 @@ const NavLink = ({ href, children, onClick, mobile }) => {
   );
 };
 
-/* ─── Cart icon with animated badge ─── */
+/* â”€â”€â”€ Cart icon with animated badge â”€â”€â”€ */
 const CartIcon = ({ count, className = '' }) => (
   <Link href="/cart" className={`relative text-gray-500 hover:text-gray-900 transition-colors ${className}`}>
     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -68,7 +68,7 @@ const CartIcon = ({ count, className = '' }) => (
           exit={{ scale: 0, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 500, damping: 25 }}
           className="absolute -top-2 -right-2 text-white text-[10px] rounded-full w-5 h-5 flex items-center justify-center font-bold"
-          style={{ backgroundColor: 'var(--color-brand, #4f46e5)' }}
+          style={{ backgroundColor: 'var(--color-brand, #5C4E4E)' }}
         >
           {count > 9 ? '9+' : count}
         </motion.span>
@@ -77,7 +77,7 @@ const CartIcon = ({ count, className = '' }) => (
   </Link>
 );
 
-/* ─── Main Navbar ─── */
+/* â”€â”€â”€ Main Navbar â”€â”€â”€ */
 export default function Navbar() {
   const { user, logout }  = useAuth();
   const { cartCount }     = useCart();
@@ -104,27 +104,27 @@ export default function Navbar() {
       <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
 
-          {/* ── Brand / Logo ── */}
+          {/* â”€â”€ Brand / Logo â”€â”€ */}
           <Link href={brandHref} className="flex items-center gap-2 shrink-0">
             {logoUrl ? (
               <img src={logoUrl} alt={storeName} className="h-8 w-auto object-contain" />
             ) : (
-              <span className="text-xl font-bold tracking-tight" style={{ color: 'var(--color-brand, #4f46e5)' }}>
+              <span className="text-xl font-bold tracking-tight" style={{ color: 'var(--color-brand, #5C4E4E)' }}>
                 {storeName}
               </span>
             )}
           </Link>
 
-          {/* ── Desktop Nav Links (center) ── */}
+          {/* â”€â”€ Desktop Nav Links (center) â”€â”€ */}
           <div className="hidden md:flex items-center gap-7">
             {isAdmin && (
               <motion.div whileTap={{ scale: 0.97 }}>
                 <Link
                   href="/admin/dashboard"
                   className="text-sm font-semibold hover:opacity-80 transition-opacity"
-                  style={{ color: 'var(--color-brand, #4f46e5)' }}
+                  style={{ color: 'var(--color-brand, #5C4E4E)' }}
                 >
-                  Admin Panel ↗
+                  Admin Panel â†—
                 </Link>
               </motion.div>
             )}
@@ -133,9 +133,9 @@ export default function Navbar() {
                 <Link
                   href="/dashboard"
                   className="text-sm font-semibold hover:opacity-80 transition-opacity"
-                  style={{ color: 'var(--color-brand, #4f46e5)' }}
+                  style={{ color: 'var(--color-brand, #5C4E4E)' }}
                 >
-                  Dashboard ↗
+                  Dashboard â†—
                 </Link>
               </motion.div>
             )}
@@ -147,7 +147,7 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* ── Desktop Auth + Cart (right) ── */}
+          {/* â”€â”€ Desktop Auth + Cart (right) â”€â”€ */}
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <motion.button
@@ -164,7 +164,7 @@ export default function Navbar() {
                   <Link
                     href="/auth/register"
                     className="text-sm font-semibold text-white px-6 py-2.5 rounded-full hover:opacity-90 transition-opacity"
-                    style={{ backgroundColor: 'var(--color-brand, #4f46e5)' }}
+                    style={{ backgroundColor: 'var(--color-brand, #5C4E4E)' }}
                   >
                     Register
                   </Link>
@@ -175,7 +175,7 @@ export default function Navbar() {
             {isCustomer && <CartIcon count={cartCount} />}
           </div>
 
-          {/* ── Mobile: cart + hamburger ── */}
+          {/* â”€â”€ Mobile: cart + hamburger â”€â”€ */}
           <div className="md:hidden flex items-center gap-3">
             {isCustomer && (
               <CartIcon count={cartCount} className="text-gray-600 hover:text-gray-900" />
@@ -199,7 +199,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* ── Mobile Drawer ── */}
+      {/* â”€â”€ Mobile Drawer â”€â”€ */}
       <AnimatePresence>
         {open && (
           <>
@@ -222,7 +222,7 @@ export default function Navbar() {
               exit={{ x: '100%' }}
               transition={{ type: 'tween', duration: 0.28, ease: 'easeInOut' }}
               className="fixed top-0 right-0 bottom-0 z-50 w-72 flex flex-col md:hidden overflow-hidden"
-              style={{ backgroundColor: 'var(--color-brand, #4f46e5)' }}
+              style={{ backgroundColor: 'var(--color-brand, #5C4E4E)' }}
             >
               {/* Drawer header */}
               <div className="flex items-center justify-between px-5 py-4 border-b border-white/20">
@@ -273,7 +273,7 @@ export default function Navbar() {
                 )}
               </nav>
 
-              {/* Drawer footer — signed-in user info */}
+              {/* Drawer footer â€” signed-in user info */}
               {user && (
                 <div className="px-5 py-4 border-t border-white/20">
                   <p className="text-xs font-semibold uppercase tracking-widest text-white/50">Signed in as</p>
@@ -288,3 +288,4 @@ export default function Navbar() {
     </>
   );
 }
+
