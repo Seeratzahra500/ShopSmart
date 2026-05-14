@@ -5,6 +5,17 @@ import api from '@/lib/api';
 const AuthContext = createContext(null);
 
 const INACTIVITY_MS = 30 * 60 * 1000; // 30 minutes
+const CACHE_KEY = '_ss_auth';
+
+function readCache() {
+  try { return JSON.parse(sessionStorage.getItem(CACHE_KEY)); } catch { return null; }
+}
+function writeCache(u) {
+  try { sessionStorage.setItem(CACHE_KEY, JSON.stringify(u)); } catch {}
+}
+function clearCache() {
+  try { sessionStorage.removeItem(CACHE_KEY); } catch {}
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null);
@@ -12,6 +23,7 @@ export function AuthProvider({ children }) {
   const inactivityTimer       = useRef(null);
 
   const doLogout = useCallback(() => {
+    clearCache();
     setUser(null);
     api.post('/auth/logout').catch(() => {});
   }, []);
@@ -37,15 +49,31 @@ export function AuthProvider({ children }) {
   }, [user, resetInactivityTimer]);
 
   useEffect(() => {
+    // Restore from sessionStorage immediately so protected layouts don't redirect
+    const cached = readCache();
+    if (cached) {
+      setUser(cached);
+      setLoading(false);
+    }
+
+    // Verify / refresh in background
     api.get('/auth/me')
-      .then(res => setUser(res.data))
-      // Only clear user if login() hasn't already set one
-      .catch(() => setUser(prev => prev ?? null))
-      .finally(() => setLoading(false));
+      .then(res => {
+        setUser(res.data);
+        writeCache(res.data);
+        setLoading(false);
+      })
+      .catch(() => {
+        // If server says no session, clear the cache and user
+        clearCache();
+        setUser(null);
+        setLoading(false);
+      });
   }, []);
 
   const login = async (email, password, rememberMe = false) => {
     const { data } = await api.post('/auth/login', { email, password, rememberMe });
+    writeCache(data.user);
     setUser(data.user);
     setLoading(false);
     return data.user;
