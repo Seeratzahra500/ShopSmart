@@ -63,7 +63,7 @@ exports.login = async (req, res) => {
       { expiresIn: refreshExpiry }
     );
 
-    const secure   = process.env.NODE_ENV === 'production' || !!process.env.RENDER || process.env.SECURE_COOKIES === 'true';
+    const secure   = process.env.NODE_ENV === 'production' || !!process.env.RAILWAY_ENVIRONMENT_NAME || process.env.SECURE_COOKIES === 'true';
     const cookieBase = { httpOnly: true, secure, sameSite: secure ? 'none' : 'lax' };
     res.cookie('accessToken', accessToken, { ...cookieBase, maxAge: 15 * 60 * 1000 });
     res.cookie('refreshToken', refreshToken, {
