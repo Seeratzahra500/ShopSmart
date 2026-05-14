@@ -11,9 +11,9 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const inactivityTimer       = useRef(null);
 
-  const doLogout = useCallback(async () => {
-    try { await api.post('/auth/logout'); } catch {}
+  const doLogout = useCallback(() => {
     setUser(null);
+    api.post('/auth/logout').catch(() => {});
   }, []);
 
   const resetInactivityTimer = useCallback(() => {
