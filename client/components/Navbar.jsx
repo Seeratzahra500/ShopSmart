@@ -8,7 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { useStore } from '@/context/StoreContext';
 
 /* â”€â”€â”€ Animated nav link with sliding underline â”€â”€â”€ */
-const NavLink = ({ href, children, onClick, mobile }) => {
+const NavLink = ({ href, children, onClick, mobile, prefetch }) => {
   const pathname = usePathname();
   const active = pathname === href || pathname.startsWith(href + '/');
   const [hovered, setHovered] = useState(false);
@@ -18,6 +18,7 @@ const NavLink = ({ href, children, onClick, mobile }) => {
       <Link
         href={href}
         onClick={onClick}
+        prefetch={prefetch}
         className={`block py-3 px-4 rounded-xl text-sm font-medium transition-colors ${
           active
             ? 'text-white bg-white/15'
@@ -33,6 +34,7 @@ const NavLink = ({ href, children, onClick, mobile }) => {
     <Link
       href={href}
       onClick={onClick}
+      prefetch={prefetch}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className="relative text-sm font-medium pb-0.5"
@@ -121,6 +123,7 @@ export default function Navbar() {
               <motion.div whileTap={{ scale: 0.97 }}>
                 <Link
                   href="/admin/dashboard"
+                  prefetch={false}
                   className="text-sm font-semibold hover:opacity-80 transition-opacity"
                   style={{ color: 'var(--color-brand, #5C4E4E)' }}
                 >
@@ -242,7 +245,7 @@ export default function Navbar() {
               {/* Drawer links */}
               <nav className="flex-1 px-4 py-5 space-y-1 overflow-y-auto">
                 {isAdmin && (
-                  <NavLink href="/admin/dashboard" mobile onClick={close}>Admin Panel</NavLink>
+                  <NavLink href="/admin/dashboard" mobile prefetch={false} onClick={close}>Admin Panel</NavLink>
                 )}
                 {isShopowner && (
                   <NavLink href="/dashboard" mobile onClick={close}>Dashboard</NavLink>
