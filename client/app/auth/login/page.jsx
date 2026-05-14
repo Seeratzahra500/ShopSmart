@@ -1,6 +1,6 @@
 'use client';
-import { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -24,9 +24,8 @@ const fadeUp = {
   show:   { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
-function LoginForm() {
+export default function LoginPage() {
   const router       = useRouter();
-  const searchParams = useSearchParams();
   const { login }    = useAuth();
 
   const [form, setForm]         = useState({ email: '', password: '', rememberMe: false });
@@ -52,10 +51,10 @@ function LoginForm() {
       const user = await login(form.email, form.password, form.rememberMe);
       toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
 
-      if (user.role === 'admin')     { window.location.href = '/admin/dashboard'; return; }
+      if (user.role === 'admin')     { router.push('/admin/dashboard'); return; }
       if (user.role === 'shopowner') { router.push('/dashboard'); return; }
 
-      const next = searchParams.get('next');
+      const next = new URLSearchParams(window.location.search).get('next');
       router.push(next && next.startsWith('/') ? next : '/stores');
     } catch (err) {
       const msg = err.response?.data?.message || 'Login failed. Please try again.';
@@ -250,13 +249,5 @@ function LoginForm() {
         </motion.div>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense>
-      <LoginForm />
-    </Suspense>
   );
 }
