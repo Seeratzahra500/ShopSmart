@@ -52,7 +52,7 @@ function LoginForm() {
       const user = await login(form.email, form.password, form.rememberMe);
       toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
 
-      if (user.role === 'admin')     { router.push('/admin/dashboard'); return; }
+      if (user.role === 'admin')     { window.location.href = '/admin/dashboard'; return; }
       if (user.role === 'shopowner') { router.push('/dashboard'); return; }
 
       const next = searchParams.get('next');
