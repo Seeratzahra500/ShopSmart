@@ -52,11 +52,11 @@ function LoginForm() {
       const user = await login(form.email, form.password, form.rememberMe);
       toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
 
-      if (user.role === 'admin')     { router.push('/admin/dashboard'); return; }
-      if (user.role === 'shopowner') { router.push('/dashboard'); return; }
+      if (user.role === 'admin')     { window.location.href = '/admin/dashboard'; return; }
+      if (user.role === 'shopowner') { window.location.href = '/dashboard';       return; }
 
       const next = searchParams.get('next');
-      router.push(next && next.startsWith('/') ? next : '/stores');
+      window.location.href = (next && next.startsWith('/')) ? next : '/stores';
     } catch (err) {
       const msg = err.response?.data?.message || 'Login failed. Please try again.';
       toast.error(msg);
