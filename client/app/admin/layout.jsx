@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -103,10 +104,10 @@ export default function AdminLayout({ children }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== 'admin')) {
+    if (!loading && !user) {
       router.replace('/auth/login');
     }
-  }, [user, loading, router]);
+  }, [user, loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Close drawer on route change
   useEffect(() => {
