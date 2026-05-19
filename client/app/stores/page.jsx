@@ -9,19 +9,12 @@ import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
 
 const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 
 const IconSearch = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
     <circle cx="11" cy="11" r="8" />
     <path d="M21 21l-4.35-4.35" />
-  </svg>
-);
-
-const IconStoreFront = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="w-9 h-9 text-gray-400">
-    <path d="M3 9l1-5h16l1 5" />
-    <path d="M3 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0" />
-    <path d="M5 9v11a1 1 0 0 0 1 1h4V15h4v6h4a1 1 0 0 0 1-1V9" />
   </svg>
 );
 
@@ -37,9 +30,9 @@ export default function StoresPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user)                          { router.replace('/auth/login?next=/stores'); return; }
-    if (user.role === 'admin')          { router.replace('/admin/dashboard'); return; }
-    if (user.role === 'shopowner')      { router.replace('/dashboard'); return; }
+    if (!user)                     { router.replace('/auth/login?next=/stores'); return; }
+    if (user.role === 'admin')     { router.replace('/admin/dashboard'); return; }
+    if (user.role === 'shopowner') { router.replace('/dashboard'); return; }
   }, [user, authLoading, router]);
 
   useEffect(() => {
@@ -62,140 +55,173 @@ export default function StoresPage() {
 
   return (
     <PageWrapper>
-      <div className="max-w-7xl mx-auto px-4 py-10">
+      <div className="max-w-7xl mx-auto px-8">
 
-        {/* ── Hero section ── */}
+        {/* ── Editorial header ── */}
         <motion.div
+          className="grid grid-cols-12 gap-8 pt-16 pb-12 border-b border-gray-100"
           initial="hidden"
           animate="show"
-          variants={fadeUp}
-          transition={{ duration: 0.45 }}
-          className="w-full bg-gradient-to-br from-stone-50 to-stone-100 rounded-2xl py-12 px-8 mb-8 text-center"
+          variants={stagger}
         >
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
-            Discover Amazing Stores
-          </h1>
-          <p className="mt-3 text-gray-500 text-base">
-            Shop from hundreds of curated small businesses
-          </p>
-          {!loading && (
-            <p className="mt-2 text-sm text-gray-400">
-              {total} store{total !== 1 ? 's' : ''} available
-            </p>
-          )}
+          <motion.div variants={fadeUp} transition={{ duration: 0.4 }} className="col-span-12 md:col-span-2 flex items-start">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400 mt-1">Explore</p>
+          </motion.div>
+
+          <div className="col-span-12 md:col-span-10">
+            <motion.h1
+              variants={fadeUp}
+              transition={{ duration: 0.5 }}
+              className="text-5xl md:text-6xl font-bold tracking-tight text-gray-900"
+            >
+              Discover Stores
+            </motion.h1>
+            <motion.p
+              variants={fadeUp}
+              transition={{ duration: 0.5 }}
+              className="mt-3 text-gray-500 text-lg"
+            >
+              Shop from curated independent businesses
+            </motion.p>
+            {!loading && (
+              <motion.p
+                variants={fadeUp}
+                transition={{ duration: 0.4 }}
+                className="mt-1 text-sm text-gray-400"
+              >
+                {total} store{total !== 1 ? 's' : ''} available
+              </motion.p>
+            )}
+          </div>
         </motion.div>
 
         {/* ── Search bar ── */}
-        <form onSubmit={handleSearch} className="relative flex items-center w-full mb-8 rounded-2xl shadow-sm border border-gray-200 bg-white overflow-hidden">
-          {/* Magnifying glass icon */}
-          <span className="absolute left-4 text-gray-400 pointer-events-none flex items-center">
-            <IconSearch />
-          </span>
-
-          <input
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search stores…"
-            className="flex-1 pl-12 pr-4 py-3.5 text-sm text-gray-800 bg-transparent focus:outline-none placeholder-gray-400"
-          />
-
-          {/* Clear button (×) when search is active */}
-          {searchInput && (
-            <button
-              type="button"
-              onClick={() => { setSearch(''); setSearchInput(''); }}
-              className="flex items-center justify-center w-7 h-7 mr-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors text-lg leading-none flex-shrink-0"
-              aria-label="Clear search"
+        <div className="grid grid-cols-12 gap-8 py-8">
+          <div className="col-span-12 md:col-span-2" />
+          <div className="col-span-12 md:col-span-10">
+            <form
+              onSubmit={handleSearch}
+              className="relative flex items-center w-full max-w-xl border-b border-gray-300 focus-within:border-gray-900 transition-colors"
             >
-              ×
-            </button>
-          )}
-
-          {/* Search pill button */}
-          <button
-            type="submit"
-            className="m-1.5 px-5 py-2 rounded-full text-white text-sm font-semibold hover:opacity-90 transition-opacity flex-shrink-0"
-            style={{ backgroundColor: 'var(--color-brand)' }}
-          >
-            Search
-          </button>
-        </form>
-
-        {/* ── Content ── */}
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="animate-pulse bg-white rounded-2xl border border-gray-100 overflow-hidden">
-                <div className="h-40 bg-gray-200" />
-                <div className="p-4 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-2/3" />
-                  <div className="h-3 bg-gray-200 rounded w-full" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : stores.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-5">
-              <IconStoreFront />
-            </div>
-            <p className="text-xl font-bold text-gray-700">No stores found</p>
-            {search && <p className="text-sm mt-2 text-gray-400">Try a different search term</p>}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {stores.map((store) => (
-              <motion.div
-                key={store._id}
-                whileHover={{ y: -6, boxShadow: '0 20px 40px rgba(0,0,0,0.10)' }}
-                transition={{ duration: 0.2 }}
-                className="rounded-2xl overflow-hidden"
-              >
-                <Link
-                  href={`/store/${store.slug}`}
-                  className="block bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm transition-shadow"
+              <span className="text-gray-400 flex-shrink-0 mr-3">
+                <IconSearch />
+              </span>
+              <input
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Search stores…"
+                className="flex-1 py-3 text-sm text-gray-800 bg-transparent focus:outline-none placeholder-gray-400"
+              />
+              {searchInput && (
+                <button
+                  type="button"
+                  onClick={() => { setSearch(''); setSearchInput(''); }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors mr-3 text-lg leading-none flex-shrink-0"
+                  aria-label="Clear search"
                 >
-                  {/* Color banner with gradient overlay */}
-                  <div
-                    className="relative h-40 flex items-center justify-center"
-                    style={{ backgroundColor: store.primaryColor || '#5C4E4E' }}
-                  >
-                    {/* Gradient overlay for depth */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 pointer-events-none" />
-
-                    {store.logoUrl ? (
-                      <Image
-                        src={store.logoUrl}
-                        alt={store.name}
-                        width={80}
-                        height={80}
-                        className="object-contain rounded-lg relative z-10"
-                      />
-                    ) : (
-                      <span className="text-4xl font-bold text-white relative z-10">
-                        {store.name[0].toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="p-4">
-                    <h3 className="text-lg font-bold text-gray-900">{store.name}</h3>
-                    {store.tagline && (
-                      <p className="text-sm text-gray-500 mt-1 truncate">{store.tagline}</p>
-                    )}
-                    {/* Visit Store link */}
-                    <p
-                      className="mt-2 text-xs font-semibold"
-                      style={{ color: 'var(--color-brand)' }}
-                    >
-                      Visit Store →
-                    </p>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+                  ×
+                </button>
+              )}
+              <button
+                type="submit"
+                className="text-xs font-semibold uppercase tracking-widest text-gray-500 hover:text-gray-900 transition-colors flex-shrink-0"
+              >
+                Search
+              </button>
+            </form>
           </div>
-        )}
+        </div>
+
+        {/* ── Store grid ── */}
+        <div className="grid grid-cols-12 gap-8 pb-20">
+          <div className="col-span-12 md:col-span-2" />
+          <div className="col-span-12 md:col-span-10">
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="animate-pulse bg-white border border-gray-100 overflow-hidden">
+                    <div className="h-48 bg-gray-100" />
+                    <div className="p-5 space-y-2">
+                      <div className="h-4 bg-gray-100 rounded w-2/3" />
+                      <div className="h-3 bg-gray-100 rounded w-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : stores.length === 0 ? (
+              <div className="py-24 text-center">
+                <p className="text-xs uppercase tracking-[0.2em] text-gray-400 mb-4">No results</p>
+                <p className="text-2xl font-bold text-gray-900">No stores found</p>
+                {search && (
+                  <p className="text-sm mt-2 text-gray-400">
+                    Try a different search term
+                  </p>
+                )}
+              </div>
+            ) : (
+              <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                variants={stagger}
+                initial="hidden"
+                animate="show"
+              >
+                {stores.map((store) => (
+                  <motion.div
+                    key={store._id}
+                    variants={fadeUp}
+                    transition={{ duration: 0.4 }}
+                    whileHover={{ y: -4 }}
+                  >
+                    <Link
+                      href={`/store/${store.slug}`}
+                      className="block group overflow-hidden border border-gray-100 hover:border-gray-300 transition-colors"
+                    >
+                      {/* Color banner */}
+                      <div
+                        className="relative h-48 flex items-center justify-center overflow-hidden"
+                        style={{ backgroundColor: store.primaryColor || '#5C4E4E' }}
+                      >
+                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
+                        {store.logoUrl ? (
+                          <Image
+                            src={store.logoUrl}
+                            alt={store.name}
+                            width={80}
+                            height={80}
+                            className="object-contain relative z-10"
+                          />
+                        ) : (
+                          <span className="text-5xl font-black text-white/30 select-none relative z-10">
+                            {store.name[0].toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="p-5 bg-white">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <h3 className="text-base font-bold text-gray-900 group-hover:text-[var(--color-brand)] transition-colors truncate">
+                              {store.name}
+                            </h3>
+                            {store.tagline && (
+                              <p className="text-xs text-gray-400 mt-1 truncate">{store.tagline}</p>
+                            )}
+                          </div>
+                          <span className="text-gray-300 group-hover:text-gray-600 transition-colors flex-shrink-0 mt-0.5">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </div>
+        </div>
+
       </div>
     </PageWrapper>
   );

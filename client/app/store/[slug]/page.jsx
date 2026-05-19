@@ -211,26 +211,28 @@ function StoreContent() {
       </div>
 
       {/* Products section */}
-      <section id="products" className="max-w-7xl mx-auto px-6 py-20">
-        {/* Section heading */}
+      <section id="products" className="max-w-7xl mx-auto px-8 py-20">
+        {/* Section heading — editorial layout */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4 }}
-          className="mb-10"
+          className="grid grid-cols-12 gap-8 mb-12"
         >
-          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
-            Catalogue
-          </p>
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-            {store?.name ? `${store.name}'s Collection` : 'Shop All Products'}
-          </h2>
-          {!loading && (
-            <p className="text-sm text-gray-400 mt-1">
-              Showing {total} product{total !== 1 ? 's' : ''}
-            </p>
-          )}
+          <div className="col-span-12 md:col-span-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400 mt-1">Catalogue</p>
+          </div>
+          <div className="col-span-12 md:col-span-10">
+            <h2 className="text-4xl font-bold tracking-tight text-gray-900">
+              {store?.name ? `${store.name}'s Collection` : 'Shop All Products'}
+            </h2>
+            {!loading && (
+              <p className="text-sm text-gray-400 mt-2">
+                {total} product{total !== 1 ? 's' : ''}
+              </p>
+            )}
+          </div>
         </motion.div>
 
         {/* Search bar */}
@@ -359,40 +361,33 @@ function StoreContent() {
         )}
       </section>
 
-      {/* About this store */}
+      {/* About this store — Estate editorial layout */}
       {store && (store.tagline || store.name) && (
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="py-20 bg-gray-50 border-t border-gray-100"
+          className="py-24 border-t border-gray-100"
         >
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-              {/* Left: text */}
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">
-                  About
-                </p>
-                <h2 className="text-3xl font-bold tracking-tight text-gray-900 mb-4">
+          <div className="max-w-7xl mx-auto px-8">
+            <div className="grid grid-cols-12 gap-8">
+              <div className="col-span-12 md:col-span-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">About</p>
+              </div>
+              <div className="col-span-12 md:col-span-10">
+                <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 leading-tight">
                   {store.name}
                 </h2>
                 {store.tagline && (
-                  <p className="text-gray-600 leading-relaxed text-lg">
+                  <p className="text-gray-500 leading-relaxed text-lg mt-6 max-w-2xl">
                     {store.tagline}
                   </p>
                 )}
-              </div>
-
-              {/* Right: decorative card */}
-              <div
-                className="rounded-2xl flex items-center justify-center h-48 md:h-64 overflow-hidden"
-                style={{ backgroundColor: store.primaryColor || 'var(--color-brand)' }}
-              >
-                <span className="text-9xl font-black select-none" style={{ color: 'rgba(255,255,255,0.2)' }}>
-                  {store.name ? store.name.charAt(0).toUpperCase() : '?'}
-                </span>
+                <div
+                  className="mt-10 h-px w-24"
+                  style={{ backgroundColor: store.primaryColor || 'var(--color-brand)' }}
+                />
               </div>
             </div>
           </div>
