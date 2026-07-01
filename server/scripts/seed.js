@@ -1,85 +1,277 @@
 /**
- * Run with:  node scripts/seed.js
- * Does two things:
- *   1. Removes any admin user whose email ends in .pk
- *   2. Seeds dummy products into the first active store it finds
+ * Run with: node scripts/seed.js
+ * Seeds realistic storefronts, shopowners, and products with external image URLs.
  */
 
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const mongoose = require('mongoose');
-const User    = require('../src/models/User');
-const Store   = require('../src/models/Store');
+const User = require('../src/models/User');
+const Store = require('../src/models/Store');
 const Product = require('../src/models/Product');
 
-const PRODUCTS = [
-  // Electronics
-  { title: 'Wireless Bluetooth Earbuds', description: 'High-fidelity sound with active noise cancellation. Up to 24 hours battery life with charging case.', price: 4500, stock: 30, category: 'Electronics', images: ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400'] },
-  { title: 'Mechanical Keyboard', description: 'Compact TKL layout with Cherry MX Red switches. RGB backlighting and aluminium top plate.', price: 8900, stock: 15, category: 'Electronics', images: ['https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=400'] },
-  { title: '4-Port USB-C Hub', description: 'Expand your laptop ports with 2× USB-A, 1× HDMI 4K, and 1× 100W PD pass-through.', price: 2200, stock: 50, category: 'Electronics', images: ['https://images.unsplash.com/photo-1625842268584-8f3296236761?w=400'] },
+function slugify(value) {
+  return String(value)
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
 
-  // Clothing
-  { title: 'Classic White T-Shirt', description: '100% organic cotton. Pre-shrunk, relaxed fit. Available in sizes S–XXL.', price: 1200, stock: 100, category: 'Clothing', images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400'] },
-  { title: 'Slim Fit Chinos', description: 'Stretch-cotton twill chinos in a modern slim fit. Perfect for smart-casual occasions.', price: 3400, stock: 40, category: 'Clothing', images: ['https://images.unsplash.com/photo-1490367532201-b9bc1dc483f6?w=400'] },
-  { title: 'Floral Summer Dress', description: 'Lightweight viscose with a flattering A-line cut. Machine washable.', price: 2800, stock: 25, category: 'Clothing', images: ['https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400'] },
-
-  // Food & Beverages
-  { title: 'Premium Kashmiri Green Tea', description: 'Hand-picked from high-altitude gardens. Earthy, smooth flavour with floral notes. 50g tin.', price: 950, stock: 80, category: 'Food & Beverages', images: ['https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400'] },
-  { title: 'Artisan Dark Roast Coffee', description: 'Single-origin Ethiopian beans, medium-dark roast. Tasting notes of dark chocolate and cherry. 250g.', price: 1600, stock: 60, category: 'Food & Beverages', images: ['https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400'] },
-
-  // Home & Living
-  { title: 'Lavender Soy Candle', description: 'Hand-poured with 100% natural soy wax and pure lavender essential oil. 40-hour burn time.', price: 1100, stock: 45, category: 'Home & Living', images: ['https://images.unsplash.com/photo-1602028915047-37269d1a73f7?w=400'] },
-  { title: 'Ceramic Mug Set (4 pcs)', description: 'Minimalist matte-finish ceramic mugs in four earth tones. Microwave and dishwasher safe.', price: 2400, stock: 20, category: 'Home & Living', images: ['https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=400'] },
-
-  // Beauty
-  { title: 'Vitamin C Brightening Serum', description: '15% L-ascorbic acid with ferulic acid. Brightens skin tone and reduces dark spots. 30ml.', price: 3200, stock: 35, category: 'Beauty', images: ['https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400'] },
-  { title: 'Rose Hip Face Oil', description: 'Cold-pressed Chilean rosehip seed oil. Rich in omega fatty acids. Brightens and hydrates. 30ml.', price: 1800, stock: 50, category: 'Beauty', images: ['https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400'] },
-
-  // Books
-  { title: 'Atomic Habits', description: 'James Clear\'s international bestseller on building good habits and breaking bad ones.', price: 1500, stock: 30, category: 'Books', images: ['https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400'] },
-
-  // Sports
-  { title: 'Premium Yoga Mat (6mm)', description: 'Non-slip TPE foam with alignment lines. Includes carry strap. 183 × 61cm.', price: 3500, stock: 20, category: 'Sports', images: ['https://images.unsplash.com/photo-1601925228606-4de0471cb2c9?w=400'] },
+const STORE_SEEDS = [
+  {
+    ownerName: 'Amina Hassan',
+    ownerEmail: 'amina@northstarstudio.com',
+    store: {
+      name: 'Northstar Studio',
+      tagline: 'Modern essentials for calm, curated living',
+      description: 'A design-led home and lifestyle shop featuring sculptural decor, handcrafted objects, and warm minimal pieces.',
+      slug: 'northstar-studio',
+      logoUrl: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=600&q=80',
+      heroImage: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80',
+      primaryColor: '#111827',
+      accentColor: '#f59e0b',
+      theme: 'minimal',
+      fontFamily: 'Montserrat',
+      contact: {
+        email: 'hello@northstarstudio.com',
+        phone: '+92 300 1234567',
+        address: 'Block 6, Gulberg III, Lahore',
+        instagram: '@northstarstudio',
+      },
+    },
+    products: [
+      {
+        title: 'Sculptural Oak Lamp',
+        description: 'A warm, matte-finish lamp made for reading nooks and elegant side tables.',
+        price: 18500,
+        stock: 12,
+        category: 'Home & Living',
+        images: ['https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=800&q=80'],
+      },
+      {
+        title: 'Textured Linen Throw',
+        description: 'Soft, breathable linen with a relaxed weave and muted earthy tones.',
+        price: 6200,
+        stock: 18,
+        category: 'Home & Living',
+        images: ['https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=800&q=80'],
+      },
+      {
+        title: 'Stoneware Dinner Set',
+        description: 'Hand-finished ceramic plates and bowls in a warm, natural glaze.',
+        price: 12900,
+        stock: 9,
+        category: 'Home & Living',
+        images: ['https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=800&q=80'],
+      },
+    ],
+  },
+  {
+    ownerName: 'Bilal Khan',
+    ownerEmail: 'bilal@loomandthread.com',
+    store: {
+      name: 'Loom & Thread',
+      tagline: 'Tailored staples for everyday confidence',
+      description: 'A contemporary clothing label creating polished essentials from breathable cotton and refined textures.',
+      slug: 'loom-thread',
+      logoUrl: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=600&q=80',
+      heroImage: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&q=80',
+      primaryColor: '#1f2937',
+      accentColor: '#ec4899',
+      theme: 'bold',
+      fontFamily: 'Poppins',
+      contact: {
+        email: 'hello@loomandthread.com',
+        phone: '+92 333 4455666',
+        address: 'DHA Phase 2, Karachi',
+        instagram: '@loomandthread',
+      },
+    },
+    products: [
+      {
+        title: 'Relaxed Cotton Shirt',
+        description: 'A lightly structured shirt in a refined, soft cotton that wears effortlessly.',
+        price: 4200,
+        stock: 24,
+        category: 'Clothing',
+        images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80'],
+      },
+      {
+        title: 'Tailored Wool Blazer',
+        description: 'Sharp shoulders and a clean drape designed for workdays and evenings out.',
+        price: 11800,
+        stock: 10,
+        category: 'Clothing',
+        images: ['https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80'],
+      },
+      {
+        title: 'Weekend Knit Set',
+        description: 'An easy knit pairing crafted for travel, brunch, and layered comfort.',
+        price: 7600,
+        stock: 15,
+        category: 'Clothing',
+        images: ['https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=800&q=80'],
+      },
+    ],
+  },
+  {
+    ownerName: 'Sara Mir',
+    ownerEmail: 'sara@saffronstreet.pk',
+    store: {
+      name: 'Saffron Street',
+      tagline: 'Small-batch pantry staples and timeless treats',
+      description: 'A pantry boutique curating premium tea, roasted coffee, and handcrafted confections from regional makers.',
+      slug: 'saffron-street',
+      logoUrl: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80',
+      heroImage: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80',
+      primaryColor: '#7c2d12',
+      accentColor: '#f59e0b',
+      theme: 'elegant',
+      fontFamily: 'Playfair Display',
+      contact: {
+        email: 'hello@saffronstreet.pk',
+        phone: '+92 321 1122334',
+        address: 'B-17, Liberty Market, Lahore',
+        instagram: '@saffronstreetpk',
+      },
+    },
+    products: [
+      {
+        title: 'Kashmiri Green Tea Tin',
+        description: 'A fragrant, hand-picked green tea with soft floral notes and bright finish.',
+        price: 1450,
+        stock: 40,
+        category: 'Food & Beverages',
+        images: ['https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=800&q=80'],
+      },
+      {
+        title: 'Single-Origin Espresso Beans',
+        description: 'Rich dark-roast beans balanced with caramel, cocoa, and toasted spice.',
+        price: 2100,
+        stock: 30,
+        category: 'Food & Beverages',
+        images: ['https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80'],
+      },
+      {
+        title: 'Honey Pistachio Shortbread',
+        description: 'Buttery shortbread with pistachio crunch and a hint of honey glaze.',
+        price: 1100,
+        stock: 22,
+        category: 'Food & Beverages',
+        images: ['https://images.unsplash.com/photo-1606312619070-d48b4c652a52?auto=format&fit=crop&w=800&q=80'],
+      },
+    ],
+  },
+  {
+    ownerName: 'Hammad Rauf',
+    ownerEmail: 'hammad@aeroandoak.com',
+    store: {
+      name: 'Aero & Oak',
+      tagline: 'Thoughtful technology for modern work',
+      description: 'A sleek accessories store for laptop, desk, and travel essentials with a refined industrial aesthetic.',
+      slug: 'aero-oak',
+      logoUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80',
+      heroImage: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80',
+      primaryColor: '#0f172a',
+      accentColor: '#38bdf8',
+      theme: 'minimal',
+      fontFamily: 'Inter',
+      contact: {
+        email: 'hello@aeroandoak.com',
+        phone: '+92 312 9988776',
+        address: 'Main Boulevard, Gulberg, Islamabad',
+        instagram: '@aeroandoak',
+      },
+    },
+    products: [
+      {
+        title: 'USB-C Hub with 4K HDMI',
+        description: 'Expand your workspace with high-speed ports for charging, display, and data.',
+        price: 6900,
+        stock: 28,
+        category: 'Electronics',
+        images: ['https://images.unsplash.com/photo-1625842268584-8f3296236761?auto=format&fit=crop&w=800&q=80'],
+      },
+      {
+        title: 'Wireless Noise-Cancelling Earbuds',
+        description: 'Compact earbuds with rich sound and all-day comfort for commutes and calls.',
+        price: 11500,
+        stock: 20,
+        category: 'Electronics',
+        images: ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80'],
+      },
+      {
+        title: 'Mechanical Keyboard Pro',
+        description: 'A tactile keyboard with adjustable backlight and a durable aluminum frame.',
+        price: 14900,
+        stock: 14,
+        category: 'Electronics',
+        images: ['https://images.unsplash.com/photo-1541140532154-b024d705b90a?auto=format&fit=crop&w=800&q=80'],
+      },
+    ],
+  },
 ];
 
 async function main() {
-  await mongoose.connect(process.env.MONGO_URI);
+  await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/shopsmart');
   console.log('Connected to MongoDB\n');
 
-  // ── 1. Remove .pk admin ──────────────────────────────────────────────────
-  const pkAdmins = await User.find({ email: /.+\.pk$/i, role: 'admin' });
-  if (pkAdmins.length === 0) {
-    console.log('No .pk admin found — nothing to remove.');
-  } else {
-    for (const u of pkAdmins) {
-      await User.findByIdAndDelete(u._id);
-      console.log(`Removed admin: ${u.email}`);
+  let createdStores = 0;
+  let createdProducts = 0;
+
+  for (const seed of STORE_SEEDS) {
+    let owner = await User.findOne({ email: seed.ownerEmail });
+    if (!owner) {
+      owner = await User.create({
+        name: seed.ownerName,
+        email: seed.ownerEmail,
+        passwordHash: 'seeded-password-hash',
+        role: 'shopowner',
+        isActive: true,
+      });
+      console.log(`Created shopowner: ${owner.email}`);
+    }
+
+    const storePayload = {
+      owner: owner._id,
+      ...seed.store,
+      slug: seed.store.slug || slugify(seed.store.name),
+      heroHeadline: seed.store.tagline,
+      announcement: {
+        text: 'Fresh arrivals are now live.',
+        color: '#4f46e5',
+        isActive: true,
+      },
+    };
+
+    let store = await Store.findOne({ slug: storePayload.slug });
+    if (!store) {
+      store = await Store.create(storePayload);
+      createdStores += 1;
+      console.log(`Created store: ${store.name}`);
+    } else {
+      Object.assign(store, storePayload);
+      await store.save();
+      console.log(`Updated store: ${store.name}`);
+    }
+
+    for (const productSeed of seed.products) {
+      const existingProduct = await Product.findOne({ store: store._id, title: productSeed.title });
+      if (!existingProduct) {
+        await Product.create({ ...productSeed, store: store._id });
+        createdProducts += 1;
+        console.log(`  + ${productSeed.title}`);
+      } else {
+        console.log(`  • ${productSeed.title} already exists`);
+      }
     }
   }
 
-  // ── 2. Seed dummy products ───────────────────────────────────────────────
-  const store = await Store.findOne({ isActive: true });
-  if (!store) {
-    console.log('\nNo active store found. Register as a shopowner first, then re-run this script.');
-    await mongoose.disconnect();
-    return;
-  }
-
-  console.log(`\nSeeding products into store: "${store.name}" (${store.slug})`);
-
-  let created = 0;
-  for (const p of PRODUCTS) {
-    const exists = await Product.findOne({ store: store._id, title: p.title });
-    if (exists) {
-      console.log(`  skip  ${p.title}`);
-      continue;
-    }
-    await Product.create({ ...p, store: store._id });
-    console.log(`  added ${p.title}`);
-    created++;
-  }
-
-  console.log(`\nDone — ${created} product(s) created, ${PRODUCTS.length - created} already existed.`);
+  console.log(`\nSeed complete — ${createdStores} store(s) created, ${createdProducts} product(s) added.`);
   await mongoose.disconnect();
 }
 
-main().catch((err) => { console.error(err); process.exit(1); });
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

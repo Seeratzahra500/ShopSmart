@@ -2,8 +2,6 @@
 
 A multi-tenant e-commerce platform that gives small businesses their own branded storefront with full personalization — no code required.
 
-**Live Demo:** _deploy your own instance using the steps below_
-
 ---
 
 ## Team

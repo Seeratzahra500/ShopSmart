@@ -13,5 +13,6 @@ router.get('/orders',                  adminController.getAllOrders);
 router.patch('/orders/:id/status',     adminController.updateOrderStatus);
 router.get('/stores',                  adminController.getAllStores);
 router.patch('/stores/:id/status',     adminController.toggleStoreStatus);
+router.delete('/stores/:id',           adminController.deleteStore);
 
 module.exports = router;

@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback, Suspense } from 'react';
+import Image from 'next/image';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import PageWrapper from '@/components/PageWrapper';
@@ -98,18 +99,31 @@ function StoreContent() {
       {/* Hero */}
       {store && (
         <section
-          className="relative min-h-[70vh] flex items-center overflow-hidden"
+          className="relative min-h-[80vh] flex items-center overflow-hidden"
           style={{
-            backgroundImage: store.heroImage ? `url(${store.heroImage})` : undefined,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
             backgroundColor: store.heroImage ? undefined : '#0a0a0a',
           }}
         >
+          {store.heroImage && (
+            <div className="absolute inset-0">
+              <Image src={store.heroImage} alt={store.name} fill className="object-cover" />
+            </div>
+          )}
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/70" />
 
           <div className="relative z-10 max-w-7xl mx-auto px-6 py-24 text-center w-full">
+            {store.logoUrl && (
+              <div className="absolute left-6 top-6 rounded-[2rem] overflow-hidden border border-white/15 shadow-2xl bg-white/10 backdrop-blur-md p-3">
+                <Image
+                  src={store.logoUrl}
+                  alt={`${store.name} logo`}
+                  width={112}
+                  height={112}
+                  className="object-cover rounded-3xl"
+                />
+              </div>
+            )}
             <motion.p
               {...fadeUp(0)}
               className="text-xs font-semibold uppercase tracking-widest text-white/60 mb-4"

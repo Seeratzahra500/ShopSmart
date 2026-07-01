@@ -118,3 +118,17 @@ exports.updateOrderStatus = async (req, res) => {
     res.status(500).json({ message: 'Server error.' });
   }
 };
+
+exports.deleteStore = async (req, res) => {
+  try {
+    const store = await Store.findById(req.params.id);
+    if (!store) return res.status(404).json({ message: 'Store not found.' });
+
+    await Product.deleteMany({ store: store._id });
+    await Store.deleteOne({ _id: store._id });
+
+    res.json({ message: 'Store and related products deleted successfully.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error.' });
+  }
+};
