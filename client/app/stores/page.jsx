@@ -19,7 +19,7 @@ function FeaturedCard({ store }) {
       transition={{ duration: 0.5 }}
       whileHover={{ y: -4 }}
       className="col-span-1 lg:col-span-2 rounded-3xl overflow-hidden relative group"
-      style={{ minHeight: 320 }}
+      style={{ minHeight: 420 }}
     >
       <Link href={`/store/${store.slug}`} className="block h-full">
         {/* Background */}
@@ -115,7 +115,7 @@ function StoreCard({ store, index }) {
       <Link href={`/store/${store.slug}`} className="block">
         {/* Banner */}
         <div
-          className="relative h-72 flex items-end overflow-hidden"
+          className="relative h-80 flex items-end overflow-hidden"
           style={{ backgroundColor: store.heroImage ? undefined : store.primaryColor || '#5C4E4E' }}
         >
           {store.heroImage && (
