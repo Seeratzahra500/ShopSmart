@@ -70,7 +70,7 @@ export default function RegisterPage() {
 
   const validate = () => {
     const e = {};
-    if (!form.name.trim())                           e.name     = 'Name is required';
+    if (!form.name.trim() || form.name.trim().length < 2) e.name = 'Name must be at least 2 characters';
     if (!/\S+@\S+\.\S+/.test(form.email))            e.email    = 'Enter a valid email address';
     if (!rules.every((r) => r.test(form.password)))  e.password = 'Password does not meet requirements';
     if (form.password !== form.confirm)              e.confirm  = 'Passwords do not match';

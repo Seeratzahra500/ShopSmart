@@ -41,6 +41,16 @@ export default function CheckoutPage() {
     FIELDS.forEach(({ name, label }) => {
       if (!form[name].trim()) e[name] = `${label} is required`;
     });
+
+    if (form.city.trim() && !/^[a-zA-Z\s\-'\.]+$/.test(form.city.trim()))
+      e.city = 'City must contain letters only';
+
+    if (form.country.trim() && !/^[a-zA-Z\s]+$/.test(form.country.trim()))
+      e.country = 'Country must contain letters only';
+
+    if (form.zip.trim() && !/^[a-zA-Z0-9][a-zA-Z0-9 \-]{1,9}$/.test(form.zip.trim()))
+      e.zip = 'Enter a valid ZIP / postal code (e.g. 44000, SW1A 1AA)';
+
     if (!user && !/\S+@\S+\.\S+/.test(guestEmail)) e.guestEmail = 'Valid email required for guest checkout';
     if (!items.length) e.items = 'Your cart is empty';
     if (!storeSlug) e.items = 'Cart has no store associated. Please add items from a store.';

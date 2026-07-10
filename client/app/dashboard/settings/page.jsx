@@ -90,6 +90,29 @@ export default function DashboardSettingsPage() {
   const save = async () => {
     if (!storeId) return;
 
+    if (!form.name.trim() || form.name.trim().length < 2) {
+      toast.error('Store name must be at least 2 characters.'); return;
+    }
+    if (form.slug.trim() && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(form.slug.trim())) {
+      toast.error('Slug must be lowercase letters, numbers, and hyphens only (e.g. my-store).'); return;
+    }
+    if (form.logoUrl.trim() && !/^https?:\/\/.+/.test(form.logoUrl.trim())) {
+      toast.error('Logo URL must start with https://'); return;
+    }
+    if (form.heroImage.trim() && !/^https?:\/\/.+/.test(form.heroImage.trim())) {
+      toast.error('Hero Image URL must start with https://'); return;
+    }
+    if (form.contactEmail.trim() && !/\S+@\S+\.\S+/.test(form.contactEmail.trim())) {
+      toast.error('Contact email is not a valid email address.'); return;
+    }
+    if (form.contactPhone.trim() && !/^[+\d][\d\s\-().]{4,19}$/.test(form.contactPhone.trim())) {
+      toast.error('Phone number must contain digits only (e.g. +92 300 1234567).'); return;
+    }
+    for (const [label, key] of [['Instagram', 'contactInstagram'], ['Facebook', 'contactFacebook'], ['Twitter', 'contactTwitter']]) {
+      if (form[key].trim() && !/^https?:\/\/.+/.test(form[key].trim())) {
+        toast.error(`${label} URL must start with https://`); return;
+      }
+    }
     if (!/^[a-zA-Z]{2,5}$/.test(form.currency.trim())) {
       toast.error('Currency must be 2–5 letters only (e.g. PKR, USD).');
       return;
