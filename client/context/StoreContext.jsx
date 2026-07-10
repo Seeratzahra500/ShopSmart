@@ -14,6 +14,10 @@ export function StoreProvider({ slug, children }) {
     const root = document.documentElement;
     Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
 
+    if (storeData.fontFamily) {
+      document.body.style.fontFamily = `'${storeData.fontFamily}', sans-serif`;
+    }
+
     const scheme = storeData.colorScheme || 'system';
     if (scheme === 'dark')       root.classList.add('dark');
     else if (scheme === 'light') root.classList.remove('dark');

@@ -34,6 +34,19 @@ function ProductModal({ product, onClose, onSaved }) {
     if (!form.category)           e.category    = 'Required';
     if (isNaN(form.price) || Number(form.price) < 0)  e.price = 'Must be a positive number';
     if (isNaN(form.stock) || Number(form.stock) < 0)  e.stock = 'Must be a non-negative number';
+
+    if (form.images.trim()) {
+      const VALID_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.avif'];
+      const urls = form.images.split(',').map((s) => s.trim()).filter(Boolean);
+      const bad = urls.filter((url) => {
+        if (!/^https?:\/\//i.test(url)) return true;
+        const path = url.split('?')[0].toLowerCase();
+        return !VALID_EXTS.some((ext) => path.endsWith(ext));
+      });
+      if (bad.length)
+        e.images = 'Each URL must start with https:// and end in .jpg, .jpeg, .png, .gif, .webp, or .svg.';
+    }
+
     return e;
   };
 

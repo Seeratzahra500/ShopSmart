@@ -89,6 +89,16 @@ export default function DashboardSettingsPage() {
 
   const save = async () => {
     if (!storeId) return;
+
+    if (!/^[a-zA-Z]{2,5}$/.test(form.currency.trim())) {
+      toast.error('Currency must be 2–5 letters only (e.g. PKR, USD).');
+      return;
+    }
+    if (!/^[a-zA-Z]{2,3}(-[a-zA-Z]{2,4})?$/.test(form.locale.trim())) {
+      toast.error('Locale must be letters only (e.g. en-PK, en-US).');
+      return;
+    }
+
     setSaving(true);
     try {
       const payload = {

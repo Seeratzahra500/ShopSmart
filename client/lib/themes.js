@@ -43,13 +43,15 @@ export const themes = {
 
 export const buildStoreVars = (store) => {
   const base = themes[store?.theme] || themes.minimal;
+  const fontValue = store?.fontFamily
+    ? `'${store.fontFamily}', sans-serif`
+    : base['--font-display'];
   return {
     ...base,
     '--color-brand':  store?.primaryColor  || base['--color-brand'],
     '--color-accent': store?.accentColor   || base['--color-accent'],
-    '--font-display': store?.fontFamily
-      ? `'${store.fontFamily}', sans-serif`
-      : base['--font-display'],
-    '--font-body': base['--font-body'],
+    '--font-display': fontValue,
+    '--font-heading': fontValue,
+    '--font-body':    base['--font-body'],
   };
 };
