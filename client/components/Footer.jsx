@@ -55,7 +55,7 @@ const FooterLink = ({ href, children }) => (
   <li>
     <Link
       href={href}
-      className="text-sm text-gray-400 hover:text-white transition-colors duration-200"
+      className="text-sm text-white/50 hover:text-white transition-colors duration-200"
     >
       {children}
     </Link>
@@ -85,7 +85,7 @@ export default function Footer() {
             <span className="font-display text-2xl font-semibold tracking-tight" style={{ color: 'var(--color-brand)' }}>
               {name}
             </span>
-            <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
+            <p className="text-sm text-white/50 leading-relaxed max-w-xs">
               {tagline}
             </p>
 
@@ -107,7 +107,7 @@ export default function Footer() {
 
           {/* ── Col 2: Quick Links ── */}
           <motion.div variants={itemVariants}>
-            <h4 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-5">
+            <h4 className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-white/40 mb-5">
               Quick Links
             </h4>
             <ul className="space-y-3">
@@ -119,7 +119,7 @@ export default function Footer() {
 
           {/* ── Col 3: Account ── */}
           <motion.div variants={itemVariants}>
-            <h4 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-5">
+            <h4 className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-white/40 mb-5">
               Account
             </h4>
             <ul className="space-y-3">
@@ -131,10 +131,10 @@ export default function Footer() {
 
           {/* ── Col 4: Contact ── */}
           <motion.div variants={itemVariants}>
-            <h4 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-5">
+            <h4 className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-white/40 mb-5">
               Contact
             </h4>
-            <div className="space-y-2 text-sm text-gray-400 leading-relaxed">
+            <div className="space-y-2 text-sm text-white/50 leading-relaxed">
               {contact.email && (
                 <p>
                   <a href={`mailto:${contact.email}`} className="hover:text-white transition-colors">
@@ -145,7 +145,7 @@ export default function Footer() {
               {contact.phone && <p>{contact.phone}</p>}
               {contact.address && <p>{contact.address}</p>}
               {!contact.email && !contact.phone && !contact.address && (
-                <p className="text-gray-600 text-xs">
+                <p className="text-white/30 text-xs">
                   No contact info configured yet.
                 </p>
               )}
@@ -157,10 +157,10 @@ export default function Footer() {
       {/* ── Bottom bar ── */}
       <div className="border-t border-white/5 px-4 sm:px-6 py-5">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="text-xs text-gray-600">
+          <p className="text-xs text-white/40">
             &copy; {new Date().getFullYear()} {name}. All rights reserved.
           </p>
-          <p className="text-xs text-gray-600">
+          <p className="text-xs text-white/40">
             Powered by{' '}
             <span className="font-semibold" style={{ color: 'var(--color-brand)' }}>
               ShopSmart

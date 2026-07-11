@@ -5,9 +5,20 @@ import { ProductCardSkeleton } from './ui/Skeleton';
 import EmptyState from './ui/EmptyState';
 import { fadeUp, stagger, revealOnce } from '@/lib/motion';
 
-export default function ProductGrid({ products, loading = false, columns = 3, currency, locale, slug }) {
-  const gridClass =
-    columns === 2
+const GAP_BY_DENSITY = {
+  airy:    'gap-x-8 gap-y-14',
+  regular: 'gap-x-6 gap-y-10',
+  compact: 'gap-x-4 gap-y-5',
+};
+
+export default function ProductGrid({ products, loading = false, columns = 3, currency, locale, slug, cardStyle = 'gallery', density = 'regular' }) {
+  const gapClass = GAP_BY_DENSITY[density] || GAP_BY_DENSITY.regular;
+
+  // The compact card is horizontal/list-like — a single column reads best
+  // regardless of the store's configured grid column count.
+  const gridClass = cardStyle === 'compact'
+    ? 'grid-cols-1 max-w-2xl'
+    : columns === 2
       ? 'grid-cols-1 sm:grid-cols-2'
       : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
@@ -17,7 +28,7 @@ export default function ProductGrid({ products, loading = false, columns = 3, cu
         variants={stagger()}
         initial="hidden"
         animate="show"
-        className={`grid gap-x-6 gap-y-10 ${gridClass}`}
+        className={`grid ${gapClass} ${gridClass}`}
       >
         {Array.from({ length: 8 }).map((_, i) => (
           <motion.div key={i} variants={fadeUp}>
@@ -38,7 +49,7 @@ export default function ProductGrid({ products, loading = false, columns = 3, cu
       initial="hidden"
       whileInView="show"
       viewport={revealOnce}
-      className={`grid gap-x-6 gap-y-10 ${gridClass}`}
+      className={`grid ${gapClass} ${gridClass}`}
     >
       <AnimatePresence mode="popLayout">
         {products.map((product) => (
@@ -53,6 +64,7 @@ export default function ProductGrid({ products, loading = false, columns = 3, cu
               currency={currency}
               locale={locale}
               slug={slug}
+              cardStyle={cardStyle}
             />
           </motion.div>
         ))}

@@ -168,7 +168,7 @@ exports.updateStore = async (req, res) => {
       'name', 'tagline', 'description', 'slug',
       'logoUrl', 'primaryColor', 'accentColor', 'fontFamily', 'theme', 'colorScheme',
       'heroImage', 'heroHeadline', 'heroCta', 'announcement', 'gridColumns',
-      'contact', 'currency', 'locale',
+      'contact', 'currency', 'locale', 'design',
     ];
     allowed.forEach(key => {
       if (req.body[key] !== undefined) store[key] = req.body[key];

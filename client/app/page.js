@@ -268,14 +268,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer className="bg-[#161311] py-14">
-        <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="font-display text-white font-semibold text-xl">ShopSmart</p>
-          <p className="text-white/40 text-sm">© {new Date().getFullYear()} ShopSmart. All rights reserved.</p>
-        </div>
-      </footer>
-
     </div>
   );
 }

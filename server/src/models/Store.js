@@ -19,13 +19,23 @@ const storeSchema = new mongoose.Schema({
   },
   theme: {
     type: String,
-    enum: ['minimal', 'bold', 'elegant', 'playful'],
+    enum: ['minimal', 'bold', 'elegant', 'playful', 'brutalist', 'midnight'],
     default: 'minimal',
   },
   colorScheme: {
     type: String,
     enum: ['light', 'dark', 'system'],
     default: 'system',
+  },
+
+  // Design overrides — every field defaults to '' meaning "inherit from theme preset"
+  design: {
+    heroLayout:     { type: String, enum: ['', 'fullbleed', 'split', 'banner', 'editorial'], default: '' },
+    cardStyle:      { type: String, enum: ['', 'gallery', 'framed', 'tilted', 'compact'], default: '' },
+    buttonShape:    { type: String, enum: ['', 'pill', 'rounded', 'sharp'], default: '' },
+    density:        { type: String, enum: ['', 'airy', 'regular', 'compact'], default: '' },
+    background:     { type: String, enum: ['', 'clean', 'tinted', 'texture'], default: '' },
+    showTrustStrip: { type: Boolean, default: true },
   },
 
   // Home page

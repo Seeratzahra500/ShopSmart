@@ -7,12 +7,17 @@ import api from '@/lib/api';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import { fadeUp } from '@/lib/motion';
+import StorefrontPreview from '@/components/dashboard/StorefrontPreview';
+import { ThemePresetPicker, HeroLayoutPicker, CardStylePicker, SegmentedControl } from '@/components/dashboard/DesignPickers';
 
-const TABS   = ['Branding', 'Appearance', 'Home Page', 'Store Info'];
+const TABS   = ['Branding', 'Design', 'Home Page', 'Store Info'];
 const FONTS  = ['Inter', 'Playfair Display', 'Poppins', 'Lato', 'Merriweather', 'Nunito', 'Raleway', 'Oswald'];
-const THEMES = ['minimal', 'bold', 'elegant', 'playful'];
 const SCHEMES = ['light', 'dark', 'system'];
 const GRIDS  = [2, 3];
+
+const BUTTON_SHAPES = [{ key: '', label: 'Theme default' }, { key: 'pill', label: 'Pill' }, { key: 'rounded', label: 'Rounded' }, { key: 'sharp', label: 'Sharp' }];
+const DENSITIES      = [{ key: '', label: 'Theme default' }, { key: 'airy', label: 'Airy' }, { key: 'regular', label: 'Regular' }, { key: 'compact', label: 'Compact' }];
+const BACKGROUNDS    = [{ key: '', label: 'Theme default' }, { key: 'clean', label: 'Clean' }, { key: 'tinted', label: 'Tinted' }, { key: 'texture', label: 'Texture' }];
 
 const tabFade = { hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: 0.25 } }, exit: { opacity: 0, y: -8, transition: { duration: 0.15 } } };
 
@@ -60,6 +65,7 @@ export default function DashboardSettingsPage() {
     contactEmail: '', contactPhone: '', contactAddress: '',
     contactInstagram: '', contactFacebook: '', contactTwitter: '',
     currency: 'PKR', locale: 'en-PK',
+    heroLayout: '', cardStyle: '', buttonShape: '', density: '', background: '', showTrustStrip: true,
   });
 
   useEffect(() => {
@@ -91,6 +97,12 @@ export default function DashboardSettingsPage() {
         contactTwitter:     data.contact?.twitter      || '',
         currency:           data.currency || 'PKR',
         locale:             data.locale   || 'en-PK',
+        heroLayout:         data.design?.heroLayout      || '',
+        cardStyle:          data.design?.cardStyle       || '',
+        buttonShape:        data.design?.buttonShape     || '',
+        density:            data.design?.density         || '',
+        background:         data.design?.background      || '',
+        showTrustStrip:     data.design?.showTrustStrip !== false,
       });
     }).catch(() => toast.error('Could not load store settings.'));
   }, []);
@@ -149,6 +161,10 @@ export default function DashboardSettingsPage() {
           instagram: form.contactInstagram, facebook: form.contactFacebook, twitter: form.contactTwitter,
         },
         currency: form.currency, locale: form.locale,
+        design: {
+          heroLayout: form.heroLayout, cardStyle: form.cardStyle, buttonShape: form.buttonShape,
+          density: form.density, background: form.background, showTrustStrip: form.showTrustStrip,
+        },
       };
       await api.patch(`/store/${storeId}`, payload);
       setSlug(form.slug);
@@ -195,8 +211,8 @@ export default function DashboardSettingsPage() {
       )}
     </motion.div>,
 
-    /* ── Appearance ──────────────────────────────── */
-    <motion.div key="appearance" variants={tabFade} initial="hidden" animate="show" exit="exit" className="space-y-5">
+    /* ── Design ──────────────────────────────────── */
+    <motion.div key="design" variants={tabFade} initial="hidden" animate="show" exit="exit" className="space-y-7">
       <Field label="Font Family">
         <select
           value={form.fontFamily}
@@ -207,25 +223,8 @@ export default function DashboardSettingsPage() {
         </select>
       </Field>
 
-      <Field label="Theme Style">
-        <div className="grid grid-cols-2 gap-3">
-          {THEMES.map((t) => (
-            <motion.button
-              key={t}
-              type="button"
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setForm((p) => ({ ...p, theme: t }))}
-              className={`py-3 rounded-[var(--radius-md)] border text-sm font-semibold capitalize transition-all ${
-                form.theme === t
-                  ? 'text-white border-transparent'
-                  : 'border-[var(--border-strong)] text-[var(--text-secondary)] hover:bg-[var(--bg-sunken)]'
-              }`}
-              style={form.theme === t ? { backgroundColor: 'var(--color-brand)' } : {}}
-            >
-              {t}
-            </motion.button>
-          ))}
-        </div>
+      <Field label="Theme Preset" hint="Each preset is a complete design language — page background, card design, typography, and layout defaults.">
+        <ThemePresetPicker value={form.theme} onChange={(v) => setForm((p) => ({ ...p, theme: v }))} />
       </Field>
 
       <Field label="Color Scheme">
@@ -249,6 +248,26 @@ export default function DashboardSettingsPage() {
         </div>
       </Field>
 
+      <Field label="Hero Layout" hint="'Theme default' inherits the layout the selected preset ships with.">
+        <HeroLayoutPicker value={form.heroLayout} onChange={(v) => setForm((p) => ({ ...p, heroLayout: v }))} />
+      </Field>
+
+      <Field label="Product Card Style" hint="'Theme default' inherits the card style the selected preset ships with.">
+        <CardStylePicker value={form.cardStyle} onChange={(v) => setForm((p) => ({ ...p, cardStyle: v }))} />
+      </Field>
+
+      <Field label="Button Shape">
+        <SegmentedControl options={BUTTON_SHAPES} value={form.buttonShape} onChange={(v) => setForm((p) => ({ ...p, buttonShape: v }))} />
+      </Field>
+
+      <Field label="Density">
+        <SegmentedControl options={DENSITIES} value={form.density} onChange={(v) => setForm((p) => ({ ...p, density: v }))} />
+      </Field>
+
+      <Field label="Background Treatment">
+        <SegmentedControl options={BACKGROUNDS} value={form.background} onChange={(v) => setForm((p) => ({ ...p, background: v }))} />
+      </Field>
+
       <Field label="Product Grid Columns">
         <div className="flex gap-3">
           {GRIDS.map((g) => (
@@ -269,6 +288,25 @@ export default function DashboardSettingsPage() {
           ))}
         </div>
       </Field>
+
+      <label className="flex items-center gap-3 cursor-pointer select-none group">
+        <div className="relative">
+          <input
+            type="checkbox"
+            checked={form.showTrustStrip}
+            onChange={set('showTrustStrip')}
+            className="sr-only"
+          />
+          <div
+            className={`w-10 h-6 rounded-full transition-colors ${form.showTrustStrip ? '' : 'bg-[var(--bg-sunken)]'}`}
+            style={form.showTrustStrip ? { backgroundColor: 'var(--color-brand)' } : {}}
+          />
+          <div
+            className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-[var(--shadow-lift)] transition-transform ${form.showTrustStrip ? 'translate-x-4' : ''}`}
+          />
+        </div>
+        <span className="text-sm text-[var(--text-secondary)] font-medium">Show trust strip (delivery, checkout, returns, support)</span>
+      </label>
     </motion.div>,
 
     /* ── Home Page ───────────────────────────────── */
@@ -345,38 +383,45 @@ export default function DashboardSettingsPage() {
         <p className="text-sm text-[var(--text-secondary)] mt-0.5 leading-relaxed">Customize your storefront appearance and information</p>
       </motion.div>
 
-      {/* Settings card */}
-      <motion.div variants={fadeUp} className="p-6 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)]">
-        {/* Pill tabs */}
-        <div className="flex gap-2 flex-wrap mb-6 pb-5 border-b border-[var(--border)]">
-          {TABS.map((t, i) => (
-            <motion.button
-              key={t}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setTab(i)}
-              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all border ${
-                tab === i
-                  ? 'text-white border-transparent'
-                  : 'border-[var(--border-strong)] text-[var(--text-secondary)] hover:bg-[var(--bg-sunken)]'
-              }`}
-              style={tab === i ? { backgroundColor: 'var(--color-brand)' } : {}}
-            >
-              {t}
-            </motion.button>
-          ))}
+      <motion.div variants={fadeUp} className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
+        {/* Settings card */}
+        <div className="p-6 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)]">
+          {/* Pill tabs */}
+          <div className="flex gap-2 flex-wrap mb-6 pb-5 border-b border-[var(--border)]">
+            {TABS.map((t, i) => (
+              <motion.button
+                key={t}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setTab(i)}
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all border ${
+                  tab === i
+                    ? 'text-white border-transparent'
+                    : 'border-[var(--border-strong)] text-[var(--text-secondary)] hover:bg-[var(--bg-sunken)]'
+                }`}
+                style={tab === i ? { backgroundColor: 'var(--color-brand)' } : {}}
+              >
+                {t}
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Tab content with AnimatePresence */}
+          <AnimatePresence mode="wait">
+            {tabPanels[tab]}
+          </AnimatePresence>
+
+          {/* Save button */}
+          <div className="pt-6 mt-6 border-t border-[var(--border)] flex items-center justify-between flex-wrap gap-3">
+            <p className="text-xs text-[var(--text-muted)]">Changes apply immediately after saving.</p>
+            <Button variant="primary" className="rounded-full" onClick={save} loading={saving}>
+              {saving ? 'Saving…' : 'Save Changes'}
+            </Button>
+          </div>
         </div>
 
-        {/* Tab content with AnimatePresence */}
-        <AnimatePresence mode="wait">
-          {tabPanels[tab]}
-        </AnimatePresence>
-
-        {/* Save button */}
-        <div className="pt-6 mt-6 border-t border-[var(--border)] flex items-center justify-between flex-wrap gap-3">
-          <p className="text-xs text-[var(--text-muted)]">Changes apply immediately after saving.</p>
-          <Button variant="primary" className="rounded-full" onClick={save} loading={saving}>
-            {saving ? 'Saving…' : 'Save Changes'}
-          </Button>
+        {/* Live preview panel */}
+        <div className="hidden lg:block">
+          <StorefrontPreview formState={form} />
         </div>
       </motion.div>
     </motion.div>

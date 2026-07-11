@@ -1,27 +1,46 @@
 'use client';
 import { useState, useEffect, useCallback, Suspense } from 'react';
-import Image from 'next/image';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import PageWrapper from '@/components/PageWrapper';
 import ProductGrid from '@/components/ProductGrid';
 import Button from '@/components/ui/Button';
+import TrustStrip from '@/components/storefront/TrustStrip';
+import FullBleedHero from '@/components/storefront/heroes/FullBleedHero';
+import SplitHero from '@/components/storefront/heroes/SplitHero';
+import BannerHero from '@/components/storefront/heroes/BannerHero';
+import EditorialHero from '@/components/storefront/heroes/EditorialHero';
 import { useStore } from '@/context/StoreContext';
 import api from '@/lib/api';
 
 const CATEGORIES = ['All', 'Electronics', 'Clothing', 'Food & Beverages', 'Home & Living', 'Beauty', 'Books', 'Sports', 'Toys'];
 
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 30 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5, delay, ease: 'easeOut' },
-});
+const HEROES = {
+  fullbleed: FullBleedHero,
+  split:     SplitHero,
+  banner:    BannerHero,
+  editorial: EditorialHero,
+};
+
+// Vertical rhythm per density — applied to section padding/gaps around the catalogue.
+const SECTION_PADDING = {
+  airy:    'py-24',
+  regular: 'py-20',
+  compact: 'py-14',
+};
+
+// Low-opacity fractal-noise overlay for the 'texture' background treatment.
+const NOISE_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E";
+
+export default function StorePage() {
+  return <Suspense><StoreContent /></Suspense>;
+}
 
 function StoreContent() {
   const { slug }         = useParams();
   const router           = useRouter();
   const searchParams     = useSearchParams();
-  const { store, loading: storeLoading } = useStore();
+  const { store, design, loading: storeLoading } = useStore();
 
   const [products, setProducts] = useState([]);
   const [total, setTotal]       = useState(0);
@@ -92,291 +111,179 @@ function StoreContent() {
     );
   }
 
+  const Hero = HEROES[design?.heroLayout] || FullBleedHero;
+  const sectionPad = SECTION_PADDING[design?.density] || SECTION_PADDING.regular;
+
+  // 'tinted' washes sections with a faint brand tint; 'texture' overlays fractal
+  // noise at low opacity; 'clean' leaves the plain page background.
+  const sectionStyle = design?.background === 'tinted'
+    ? { backgroundColor: 'color-mix(in oklch, var(--color-brand) 4%, var(--bg-page))' }
+    : undefined;
+  const textureOverlay = design?.background === 'texture' && (
+    <div
+      className="pointer-events-none absolute inset-0 opacity-[0.035] mix-blend-overlay"
+      style={{ backgroundImage: `url("${NOISE_SVG}")` }}
+    />
+  );
+
   return (
     <PageWrapper>
-      {/* Hero — editorial, gallery-like, per-tenant brand color driven */}
-      {store && (
-        <section
-          className="relative min-h-[80vh] flex items-center overflow-hidden"
-          style={{
-            backgroundColor: store.heroImage ? undefined : '#161311',
-          }}
-        >
-          {store.heroImage && (
-            <div className="absolute inset-0">
-              <Image src={store.heroImage} alt={store.name} fill className="object-cover" priority />
-            </div>
-          )}
-          {/* Warm gradient overlay + brand-tinted ambient glow */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/75" />
-          <div
-            className="absolute -top-32 -right-32 w-[36rem] h-[36rem] rounded-full blur-3xl opacity-20 pointer-events-none"
-            style={{ background: 'radial-gradient(circle, var(--color-brand), transparent 70%)' }}
-          />
+      {store && <Hero store={store} />}
 
-          <div className="relative z-10 max-w-7xl mx-auto px-6 py-24 text-center w-full">
-            {store.logoUrl && (
-              <div className="absolute left-6 top-6 rounded-[var(--radius-xl)] overflow-hidden border border-white/15 shadow-[var(--shadow-overlay)] bg-white/10 backdrop-blur-md p-3">
-                <Image
-                  src={store.logoUrl}
-                  alt={`${store.name} logo`}
-                  width={112}
-                  height={112}
-                  className="object-cover rounded-[var(--radius-lg)]"
-                />
-              </div>
-            )}
-            <motion.p
-              {...fadeUp(0)}
-              className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60 mb-4"
-            >
-              {store.tagline || 'Welcome'}
-            </motion.p>
-
-            <motion.h1
-              {...fadeUp(0.1)}
-              className="hero-heading text-white mb-6"
-            >
-              {store.heroHeadline || store.name}
-            </motion.h1>
-
-            {store.tagline && (
-              <motion.p
-                {...fadeUp(0.2)}
-                className="text-xl text-white/80 mb-10 max-w-2xl mx-auto leading-relaxed font-display"
-              >
-                {store.tagline}
-              </motion.p>
-            )}
-
-            <motion.a
-              href="#products"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3, ease: 'easeOut' }}
-              whileHover={{ y: -2 }}
-              className="inline-block px-8 py-3 bg-white font-semibold rounded-full hover:opacity-90 transition-opacity text-sm"
-              style={{ color: 'var(--color-brand)' }}
-            >
-              {store.heroCta || 'Shop Now'}
-            </motion.a>
-          </div>
-        </section>
-      )}
-
-      {/* Trust / Features strip */}
-      <div className="bg-[var(--bg-card)] border-b border-[var(--border)] py-4">
-        <div className="hidden sm:flex items-center justify-center gap-10 flex-wrap px-6">
-          {/* Free Delivery */}
-          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
-            <svg className="w-4 h-4 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Free Delivery on orders over PKR 1,000</span>
-          </div>
-          {/* Secure Checkout */}
-          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
-            <svg className="w-4 h-4 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            <span>Secure Checkout</span>
-          </div>
-          {/* Easy Returns */}
-          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
-            <svg className="w-4 h-4 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span>Easy Returns</span>
-          </div>
-          {/* 24/7 Support */}
-          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
-            <svg className="w-4 h-4 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-            <span>24/7 Support</span>
-          </div>
-        </div>
-        {/* Mobile: wrap nicely */}
-        <div className="flex sm:hidden items-center justify-center gap-6 flex-wrap px-6">
-          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
-            <svg className="w-4 h-4 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Free Delivery</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
-            <svg className="w-4 h-4 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            <span>Secure</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
-            <svg className="w-4 h-4 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span>Easy Returns</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
-            <svg className="w-4 h-4 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-            <span>24/7 Support</span>
-          </div>
-        </div>
-      </div>
+      {design?.showTrustStrip !== false && <TrustStrip />}
 
       {/* Products section */}
-      <section id="products" className="max-w-7xl mx-auto px-8 py-20">
-        {/* Section heading — editorial layout */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4 }}
-          className="grid grid-cols-12 gap-8 mb-12"
-        >
-          <div className="col-span-12 md:col-span-2">
-            <p className="eyebrow mt-1">Catalogue</p>
-          </div>
-          <div className="col-span-12 md:col-span-10">
-            <h2 className="font-display text-4xl font-semibold tracking-tight text-[var(--text-main)]">
-              {store?.name ? `${store.name}'s Collection` : 'Shop All Products'}
-            </h2>
-            {!loading && (
-              <p className="text-sm text-[var(--text-muted)] mt-2">
-                {total} product{total !== 1 ? 's' : ''}
-              </p>
+      <section id="products" className={`relative max-w-7xl mx-auto px-8 ${sectionPad}`} style={sectionStyle}>
+        {textureOverlay}
+        <div className="relative">
+          {/* Section heading — editorial layout */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4 }}
+            className="grid grid-cols-12 gap-8 mb-12"
+          >
+            <div className="col-span-12 md:col-span-2">
+              <p className="eyebrow mt-1">Catalogue</p>
+            </div>
+            <div className="col-span-12 md:col-span-10">
+              <h2 className="font-display text-4xl font-semibold tracking-tight text-[var(--text-main)]">
+                {store?.name ? `${store.name}'s Collection` : 'Shop All Products'}
+              </h2>
+              {!loading && (
+                <p className="text-sm text-[var(--text-muted)] mt-2">
+                  {total} product{total !== 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Search bar */}
+          <div className="relative max-w-lg mb-6">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+              <svg className="w-4 h-4 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z" />
+              </svg>
+            </span>
+            <input
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && pushParam('search', searchInput.trim())}
+              placeholder="Search products…"
+              className="w-full pl-12 pr-10 py-2.5 rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--bg-card)] text-sm focus:ring-2 focus:ring-[var(--color-brand)]/15 focus:border-[var(--color-brand)] outline-none transition-colors"
+            />
+            {searchInput && (
+              <button
+                onClick={() => { setSearchInput(''); pushParam('search', ''); }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
+                aria-label="Clear search"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             )}
           </div>
-        </motion.div>
 
-        {/* Search bar */}
-        <div className="relative max-w-lg mb-6">
-          {/* Search icon */}
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-            <svg className="w-4 h-4 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z" />
-            </svg>
-          </span>
-          <input
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && pushParam('search', searchInput.trim())}
-            placeholder="Search products…"
-            className="w-full pl-12 pr-10 py-2.5 rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--bg-card)] text-sm focus:ring-2 focus:ring-[var(--color-brand)]/15 focus:border-[var(--color-brand)] outline-none transition-colors"
-          />
-          {/* Clear × button */}
-          {searchInput && (
-            <button
-              onClick={() => { setSearchInput(''); pushParam('search', ''); }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
-              aria-label="Clear search"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+          {/* Category pills — horizontally scrollable on mobile */}
+          <div className="flex gap-2 overflow-x-auto pb-2 mb-8 scrollbar-hide">
+            {CATEGORIES.map((cat) => {
+              const active = cat === 'All' ? !category : category === cat;
+              return (
+                <motion.button
+                  key={cat}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => pushParam('category', cat === 'All' ? '' : cat)}
+                  className={`flex-shrink-0 px-5 py-2.5 rounded-full text-sm transition-colors whitespace-nowrap ${
+                    active
+                      ? 'text-white font-semibold'
+                      : 'bg-[var(--bg-sunken)] text-[var(--text-secondary)] hover:bg-[var(--border)] font-medium'
+                  }`}
+                  style={active ? { backgroundColor: 'var(--color-brand)' } : undefined}
+                >
+                  {cat}
+                </motion.button>
+              );
+            })}
+          </div>
+
+          {/* Product count with hr */}
+          {total > 0 && !loading && (
+            <>
+              <p className="text-sm text-[var(--text-muted)] font-medium mb-4">
+                Showing {total} product{total !== 1 ? 's' : ''}
+                {search && ` for "${search}"`}
+                {category && ` in ${category}`}
+              </p>
+              <hr className="border-[var(--border)] mb-6" />
+            </>
           )}
-        </div>
 
-        {/* Category pills — horizontally scrollable on mobile */}
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-8 scrollbar-hide">
-          {CATEGORIES.map((cat) => {
-            const active = cat === 'All' ? !category : category === cat;
-            return (
-              <motion.button
-                key={cat}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => pushParam('category', cat === 'All' ? '' : cat)}
-                className={`flex-shrink-0 px-5 py-2.5 rounded-full text-sm transition-colors whitespace-nowrap ${
-                  active
-                    ? 'text-white font-semibold'
-                    : 'bg-[var(--bg-sunken)] text-[var(--text-secondary)] hover:bg-[var(--border)] font-medium'
-                }`}
-                style={active ? { backgroundColor: 'var(--color-brand)' } : undefined}
-              >
-                {cat}
-              </motion.button>
-            );
-          })}
-        </div>
+          <ProductGrid
+            products={products}
+            loading={loading}
+            columns={store?.gridColumns || 3}
+            currency={store?.currency}
+            locale={store?.locale}
+            slug={slug}
+            cardStyle={design?.cardStyle}
+            density={design?.density}
+          />
 
-        {/* Product count with hr */}
-        {total > 0 && !loading && (
-          <>
-            <p className="text-sm text-[var(--text-muted)] font-medium mb-4">
-              Showing {total} product{total !== 1 ? 's' : ''}
-              {search && ` for "${search}"`}
-              {category && ` in ${category}`}
-            </p>
-            <hr className="border-[var(--border)] mb-6" />
-          </>
-        )}
-
-        <ProductGrid
-          products={products}
-          loading={loading}
-          columns={store?.gridColumns || 3}
-          currency={store?.currency}
-          locale={store?.locale}
-          slug={slug}
-        />
-
-        {/* Pagination */}
-        {pages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-12">
-            {/* Previous */}
-            <button
-              onClick={() => {
-                if (page <= 1) return;
-                const params = new URLSearchParams(searchParams.toString());
-                params.set('page', page - 1);
-                router.push(`/store/${slug}?${params.toString()}`);
-              }}
-              disabled={page <= 1}
-              className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-colors disabled:opacity-30 px-2"
-            >
-              Previous
-            </button>
-
-            {/* Page numbers */}
-            {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
+          {/* Pagination */}
+          {pages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-12">
               <button
-                key={p}
                 onClick={() => {
+                  if (page <= 1) return;
                   const params = new URLSearchParams(searchParams.toString());
-                  params.set('page', p);
+                  params.set('page', page - 1);
                   router.push(`/store/${slug}?${params.toString()}`);
                 }}
-                className={`w-10 h-10 rounded-[var(--radius-md)] text-sm font-semibold transition-colors ${
-                  p === page
-                    ? 'text-white'
-                    : 'bg-[var(--bg-sunken)] text-[var(--text-secondary)] hover:bg-[var(--border)]'
-                }`}
-                style={p === page ? { backgroundColor: 'var(--color-brand)' } : undefined}
+                disabled={page <= 1}
+                className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-colors disabled:opacity-30 px-2"
               >
-                {p}
+                Previous
               </button>
-            ))}
 
-            {/* Next */}
-            <button
-              onClick={() => {
-                if (page >= pages) return;
-                const params = new URLSearchParams(searchParams.toString());
-                params.set('page', page + 1);
-                router.push(`/store/${slug}?${params.toString()}`);
-              }}
-              disabled={page >= pages}
-              className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-colors disabled:opacity-30 px-2"
-            >
-              Next
-            </button>
-          </div>
-        )}
+              {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => {
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.set('page', p);
+                    router.push(`/store/${slug}?${params.toString()}`);
+                  }}
+                  className={`w-10 h-10 rounded-[var(--radius-md)] text-sm font-semibold transition-colors ${
+                    p === page
+                      ? 'text-white'
+                      : 'bg-[var(--bg-sunken)] text-[var(--text-secondary)] hover:bg-[var(--border)]'
+                  }`}
+                  style={p === page ? { backgroundColor: 'var(--color-brand)' } : undefined}
+                >
+                  {p}
+                </button>
+              ))}
+
+              <button
+                onClick={() => {
+                  if (page >= pages) return;
+                  const params = new URLSearchParams(searchParams.toString());
+                  params.set('page', page + 1);
+                  router.push(`/store/${slug}?${params.toString()}`);
+                }}
+                disabled={page >= pages}
+                className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-colors disabled:opacity-30 px-2"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
       </section>
 
-      {/* About this store — Estate editorial layout */}
+      {/* About this store — editorial layout */}
       {store && (store.tagline || store.name) && (
         <motion.section
           initial={{ opacity: 0, y: 30 }}
@@ -408,6 +315,7 @@ function StoreContent() {
           </div>
         </motion.section>
       )}
+
       {/* Contact & Social */}
       {store && (store.contact?.email || store.contact?.phone || store.contact?.address ||
         store.contact?.instagram || store.contact?.facebook || store.contact?.twitter) && (
@@ -448,7 +356,6 @@ function StoreContent() {
                   )}
                 </div>
 
-                {/* Social links */}
                 {(store.contact?.instagram || store.contact?.facebook || store.contact?.twitter) && (
                   <div className="flex items-center gap-4 pt-1">
                     {store.contact?.instagram && (
@@ -485,11 +392,6 @@ function StoreContent() {
           </div>
         </section>
       )}
-
     </PageWrapper>
   );
-}
-
-export default function StorePage() {
-  return <Suspense><StoreContent /></Suspense>;
 }
