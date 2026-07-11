@@ -10,6 +10,7 @@ import Badge from '@/components/ui/Badge';
 import EmptyState from '@/components/ui/EmptyState';
 import { fadeUp, stagger } from '@/lib/motion';
 import { validateImageUrl } from '@/lib/validateImage';
+import { uploadImage } from '@/lib/uploadImage';
 
 const EMPTY = { title: '', description: '', price: '', stock: '', category: '', images: '' };
 const CATEGORIES = ['Electronics', 'Clothing', 'Food & Beverages', 'Home & Living', 'Beauty', 'Books', 'Sports', 'Toys'];
@@ -60,10 +61,29 @@ function ProductModal({ product, onClose, onSaved }) {
   } : EMPTY);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const set = (f) => (e) => {
     setForm((p) => ({ ...p, [f]: e.target.value }));
     setErrors((p) => ({ ...p, [f]: '' }));
+  };
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const url = await uploadImage(file);
+      setForm((p) => ({ ...p, images: p.images.trim() ? `${p.images.trim()}, ${url}` : url }));
+      setErrors((p) => ({ ...p, images: '' }));
+      toast.success('Image uploaded');
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Upload failed.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const validate = () => {
@@ -164,7 +184,13 @@ function ProductModal({ product, onClose, onSaved }) {
           <Input label="Price (PKR)" type="number" value={form.price} onChange={set('price')} placeholder="0" error={errors.price} />
           <Input label="Stock" type="number" value={form.stock} onChange={set('stock')} placeholder="0" error={errors.stock} />
           <div>
-            <Input label="Image URLs (comma-separated)" type="text" value={form.images} onChange={set('images')} placeholder="https://…" error={errors.images} />
+            <div className="flex items-end gap-2">
+              <Input label="Image URLs (comma-separated)" type="text" value={form.images} onChange={set('images')} placeholder="https://…" error={errors.images} className="flex-1" />
+              <Button type="button" variant="secondary" onClick={() => document.getElementById('product-image-upload').click()} loading={uploading}>
+                {uploading ? 'Uploading…' : 'Upload image'}
+              </Button>
+              <input id="product-image-upload" type="file" accept="image/*" onChange={handleUpload} className="hidden" />
+            </div>
             <ImagesPreview images={form.images} />
           </div>
 

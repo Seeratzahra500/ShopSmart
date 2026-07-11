@@ -6,6 +6,7 @@ import Link from 'next/link';
 import api from '@/lib/api';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import ImageField from '@/components/ui/ImageField';
 import { fadeUp } from '@/lib/motion';
 import StorefrontPreview from '@/components/dashboard/StorefrontPreview';
 import { ThemePresetPicker, HeroLayoutPicker, CardStylePicker, SegmentedControl } from '@/components/dashboard/DesignPickers';
@@ -30,36 +31,6 @@ function Field({ label, children, hint }) {
       <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">{label}</label>
       {children}
       {hint && <p className="text-xs text-[var(--text-muted)] mt-1.5 leading-relaxed">{hint}</p>}
-    </div>
-  );
-}
-
-// Small live thumbnail preview for URL-ish image fields — shows an inline
-// "couldn't load" warning via onError rather than a broken-image icon.
-function ImagePreview({ url }) {
-  const [failed, setFailed] = useState(false);
-  const looksLikeUrl = /^https?:\/\/.+/.test(url?.trim() || '');
-
-  useEffect(() => { setFailed(false); }, [url]);
-
-  if (!looksLikeUrl) return null;
-
-  return (
-    <div className="mt-2 flex items-center gap-3">
-      <div className="w-14 h-14 flex-shrink-0 rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--bg-sunken)] overflow-hidden flex items-center justify-center">
-        {!failed && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={url}
-            alt="Preview"
-            onError={() => setFailed(true)}
-            className="w-full h-full object-cover"
-          />
-        )}
-      </div>
-      {failed && (
-        <p className="text-xs text-[var(--danger)] leading-relaxed">Couldn&apos;t load this image</p>
-      )}
     </div>
   );
 }
@@ -233,9 +204,12 @@ export default function DashboardSettingsPage() {
       <p className="text-xs text-[var(--text-muted)] -mt-4 leading-relaxed">Short phrase shown under your store name</p>
       <Input label="URL Slug" value={form.slug} onChange={set('slug')} placeholder="my-store" />
       <p className="text-xs text-[var(--text-muted)] -mt-4 leading-relaxed">{`Your store will be live at: /store/${form.slug || 'your-slug'}`}</p>
-      <Input label="Logo URL" value={form.logoUrl} onChange={set('logoUrl')} placeholder="https://…" />
-      <p className="text-xs text-[var(--text-muted)] -mt-4 leading-relaxed">Direct link to your logo image</p>
-      <ImagePreview url={form.logoUrl} />
+      <ImageField
+        label="Logo URL"
+        value={form.logoUrl}
+        onChange={(url) => setForm((p) => ({ ...p, logoUrl: url }))}
+        hint="Direct link to your logo image"
+      />
 
       {/* Color pickers */}
       <div className="grid grid-cols-2 gap-4">
@@ -361,9 +335,12 @@ export default function DashboardSettingsPage() {
 
     /* ── Home Page ───────────────────────────────── */
     <motion.div key="homepage" variants={tabFade} initial="hidden" animate="show" exit="exit" className="space-y-5">
-      <Input label="Hero Image URL" value={form.heroImage} onChange={set('heroImage')} placeholder="https://…" />
-      <p className="text-xs text-[var(--text-muted)] -mt-4 leading-relaxed">Full-width banner shown at the top of your store</p>
-      <ImagePreview url={form.heroImage} />
+      <ImageField
+        label="Hero Image URL"
+        value={form.heroImage}
+        onChange={(url) => setForm((p) => ({ ...p, heroImage: url }))}
+        hint="Full-width banner shown at the top of your store"
+      />
       <Input label="Hero Headline" value={form.heroHeadline} onChange={set('heroHeadline')} placeholder="Discover amazing products" />
       <Input label="Hero Button Text" value={form.heroCta} onChange={set('heroCta')} placeholder="Shop Now" />
 
