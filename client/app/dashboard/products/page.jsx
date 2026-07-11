@@ -254,6 +254,14 @@ export default function DashboardProductsPage() {
     } catch { toast.error('Failed to remove product.'); }
   };
 
+  const handleRestore = async (id, title) => {
+    try {
+      await api.put(`/products/${id}`, { isActive: true });
+      toast.success(`"${title}" is visible in your store again.`);
+      load();
+    } catch { toast.error('Failed to restore product.'); }
+  };
+
   return (
     <motion.div
       className="space-y-6"
@@ -366,9 +374,15 @@ export default function DashboardProductsPage() {
                 <Button variant="secondary" size="sm" className="flex-1 rounded-full" onClick={() => setModal(p)}>
                   Edit
                 </Button>
-                <Button variant="destructive" size="sm" className="flex-1 rounded-full border border-[var(--danger)]/20" onClick={() => handleDelete(p._id, p.title)}>
-                  Remove
-                </Button>
+                {p.isActive ? (
+                  <Button variant="destructive" size="sm" className="flex-1 rounded-full border border-[var(--danger)]/20" onClick={() => handleDelete(p._id, p.title)}>
+                    Remove
+                  </Button>
+                ) : (
+                  <Button variant="secondary" size="sm" className="flex-1 rounded-full" onClick={() => handleRestore(p._id, p.title)}>
+                    Restore
+                  </Button>
+                )}
               </div>
             </motion.div>
           ))}
