@@ -49,6 +49,8 @@ const SocialButton = ({ href, icon: Icon, label }) => (
   </motion.a>
 );
 
+const hasSocial = (contact) => !!(contact.instagram || contact.facebook || contact.twitter);
+
 const FooterLink = ({ href, children }) => (
   <li>
     <Link
@@ -68,7 +70,8 @@ export default function Footer() {
   const tagline = store?.tagline || 'Empowering small businesses with a personalised e-commerce platform.';
 
   return (
-    <footer className="mt-auto" style={{ backgroundColor: '#0a0a0a', color: '#fff' }}>
+    <footer className="mt-auto bg-[#161311] text-white relative">
+      <div className="h-px w-full" style={{ backgroundColor: 'var(--color-brand)' }} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20">
         <motion.div
           variants={containerVariants}
@@ -79,39 +82,27 @@ export default function Footer() {
         >
           {/* ── Col 1: Logo + Tagline + Social ── */}
           <motion.div variants={itemVariants} className="flex flex-col gap-4">
-            <span className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-brand, #5C4E4E)' }}>
+            <span className="font-display text-2xl font-semibold tracking-tight" style={{ color: 'var(--color-brand)' }}>
               {name}
             </span>
             <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
               {tagline}
             </p>
 
-            {/* Social icons */}
-            <div className="flex items-center gap-2 mt-1">
-              {contact.instagram && (
-                <SocialButton href={contact.instagram} icon={IconInstagram} label="Instagram" />
-              )}
-              {contact.facebook && (
-                <SocialButton href={contact.facebook} icon={IconFacebook} label="Facebook" />
-              )}
-              {contact.twitter && (
-                <SocialButton href={contact.twitter} icon={IconTwitter} label="Twitter" />
-              )}
-              {/* Fallback placeholder icons if none configured */}
-              {!contact.instagram && !contact.facebook && !contact.twitter && (
-                <>
-                  <span className="inline-flex items-center justify-center rounded-full border border-white/10 p-2 text-white/20 cursor-default">
-                    <IconInstagram />
-                  </span>
-                  <span className="inline-flex items-center justify-center rounded-full border border-white/10 p-2 text-white/20 cursor-default">
-                    <IconFacebook />
-                  </span>
-                  <span className="inline-flex items-center justify-center rounded-full border border-white/10 p-2 text-white/20 cursor-default">
-                    <IconTwitter />
-                  </span>
-                </>
-              )}
-            </div>
+            {/* Social icons — only shown once the store has configured at least one */}
+            {hasSocial(contact) && (
+              <div className="flex items-center gap-2 mt-1">
+                {contact.instagram && (
+                  <SocialButton href={contact.instagram} icon={IconInstagram} label="Instagram" />
+                )}
+                {contact.facebook && (
+                  <SocialButton href={contact.facebook} icon={IconFacebook} label="Facebook" />
+                )}
+                {contact.twitter && (
+                  <SocialButton href={contact.twitter} icon={IconTwitter} label="Twitter" />
+                )}
+              </div>
+            )}
           </motion.div>
 
           {/* ── Col 2: Quick Links ── */}
@@ -171,7 +162,7 @@ export default function Footer() {
           </p>
           <p className="text-xs text-gray-600">
             Powered by{' '}
-            <span className="font-semibold" style={{ color: 'var(--color-brand, #5C4E4E)' }}>
+            <span className="font-semibold" style={{ color: 'var(--color-brand)' }}>
               ShopSmart
             </span>
           </p>

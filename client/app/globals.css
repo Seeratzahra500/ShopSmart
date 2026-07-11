@@ -1,44 +1,116 @@
 @import "tailwindcss";
 
+@theme {
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-lift:    0 1px 2px rgb(28 25 23 / 0.04), 0 8px 24px -8px rgb(28 25 23 / 0.12);
+  --shadow-overlay: 0 24px 48px -12px rgb(28 25 23 / 0.25);
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Registers font-display / font-body / font-mono Tailwind utilities.
+     Sources are the CSS vars next/font sets on <html> in layout.js. */
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-body:    var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
 @layer base {
   :root {
-    --color-brand:        #5C4E4E;
-    --color-accent:       #988686;
-    --color-light:        #D1D0D0;
-    --color-dark:         #000000;
-    --font-heading:       'Inter', sans-serif;
-    --border-radius-card: 8px;
-    --border-radius-btn:  8px;
-    --font-size-heading:  1.5rem;
-    --card-shadow:        none;
-    --card-border:        1px solid #D1D0D0;
+    /* Per-tenant identity — overridden at runtime by StoreContext for storefront pages */
+    --color-brand:  #5C4E4E;
+    --color-accent: #988686;
 
-    /* Light mode surfaces */
-    --bg-page:    #f8f7f7;
-    --bg-card:    #ffffff;
-    --text-main:  #000000;
-    --text-muted: #6b7280;
-    --border:     #D1D0D0;
+    /* Derived brand states (hover/tint) so per-tenant colors get real interaction states,
+       not just a flat opacity fade. */
+    --brand-soft: color-mix(in oklch, var(--color-brand) 8%, white);
+    --brand-ink:  color-mix(in oklch, var(--color-brand) 85%, black);
+
+    /* Warm ink-on-paper neutrals (not gray-scale) */
+    --bg-page:      #FAF9F7;
+    --bg-card:      #FFFFFF;
+    --bg-sunken:    #F3F1EE;
+    --text-main:      #1C1917;
+    --text-secondary: #57534E;
+    --text-muted:     #A8A29E;
+    --border:        #E7E5E4;
+    --border-strong: #D6D3D1;
+
+    --success: #15803D;
+    --warning: #B45309;
+    --danger:  #B91C1C;
+
+    /* Legacy aliases some components still read directly */
+    --font-heading:       var(--font-display);
+    --border-radius-card: var(--radius-lg);
+    --border-radius-btn:  var(--radius-md);
+    --card-shadow:        none;
+    --card-border:        1px solid var(--border);
   }
 
   .dark {
-    --bg-page:    #0a0a0a;
-    --bg-card:    #1a1515;
-    --text-main:  #f5f0f0;
-    --text-muted: #988686;
-    --border:     #3d3030;
-    --card-border: 1px solid #3d3030;
+    --bg-page:   #131110;
+    --bg-card:   #1C1917;
+    --bg-sunken: #201C1A;
+    --text-main:      #F5F2F0;
+    --text-secondary: #C7C0BB;
+    --text-muted:     #8A8480;
+    --border:        #2E2A28;
+    --border-strong: #3D3835;
+    --card-border: 1px solid var(--border);
+
+    --brand-soft: color-mix(in oklch, var(--color-brand) 16%, black);
+    --brand-ink:  color-mix(in oklch, var(--color-brand) 70%, white);
   }
 
   body {
-    font-family: var(--font-heading), system-ui, sans-serif;
+    font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "cv11";
     background-color: var(--bg-page);
     color: var(--text-main);
   }
 
-  h1, h2, h3 {
-    font-family: var(--font-heading);
-    font-size: var(--font-size-heading);
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .font-tabular {
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-mono);
+  }
+
+  .eyebrow {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* Hero-scale display headline. Sets its own size — don't pair with a
+     Tailwind text-* size utility, only weight/color/etc. */
+  .hero-heading {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.05;
+  }
+
+  @keyframes shimmer {
+    from { background-position: -200% 0; }
+    to   { background-position: 200% 0; }
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--bg-sunken) 25%, var(--border) 37%, var(--bg-sunken) 63%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
   }
 }
