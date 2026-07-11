@@ -3,9 +3,16 @@ const Order   = require('../models/Order');
 const Product = require('../models/Product');
 const Store   = require('../models/Store');
 
+// Admin list pages don't paginate their UI yet, so these keep returning a
+// plain array (the shape the client already expects) but cap how many
+// documents a single request can pull back, to bound response size/cost.
+const HARD_CAP = 1000;
+
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({}, '-passwordHash -resetToken -resetTokenExpiry').sort({ createdAt: -1 });
+    const users = await User.find({}, '-passwordHash -resetToken -resetTokenExpiry')
+      .sort({ createdAt: -1 })
+      .limit(HARD_CAP);
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: 'Server error.' });
@@ -17,6 +24,7 @@ exports.toggleUserStatus = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found.' });
     user.isActive = !user.isActive;
+    if (!user.isActive) user.tokenVersion += 1; // kill any active sessions on deactivation
     await user.save();
     res.json({ message: `User ${user.isActive ? 'activated' : 'deactivated'}.`, isActive: user.isActive });
   } catch (err) {
@@ -75,7 +83,8 @@ exports.getAllStores = async (req, res) => {
   try {
     const stores = await Store.find()
       .populate('owner', 'name email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(HARD_CAP);
     res.json(stores);
   } catch (err) {
     res.status(500).json({ message: 'Server error.' });
@@ -98,22 +107,9 @@ exports.getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
       .populate('customer', 'name email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(HARD_CAP);
     res.json(orders);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error.' });
-  }
-};
-
-exports.updateOrderStatus = async (req, res) => {
-  try {
-    const order = await Order.findByIdAndUpdate(
-      req.params.id,
-      { status: req.body.status },
-      { returnDocument: 'after' }
-    );
-    if (!order) return res.status(404).json({ message: 'Order not found.' });
-    res.json(order);
   } catch (err) {
     res.status(500).json({ message: 'Server error.' });
   }

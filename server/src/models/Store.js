@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const storeSchema = new mongoose.Schema({
-  owner:       { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  owner:       { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
   name:        { type: String, required: true, trim: true },
   tagline:     { type: String, default: '' },
   description: { type: String, default: '' },

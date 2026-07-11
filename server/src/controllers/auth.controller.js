@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const User   = require('../models/User');
 const Store  = require('../models/Store');
 const { sendResetEmail } = require('../utils/email');
+const { cookieOptions } = require('../utils/cookies');
 
 async function generateUniqueSlug(name) {
   const base = name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -58,13 +59,12 @@ exports.login = async (req, res) => {
 
     const refreshExpiry = rememberMe ? '7d' : '1d';
     const refreshToken = jwt.sign(
-      { id: user._id },
+      { id: user._id, tokenVersion: user.tokenVersion },
       process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: refreshExpiry }
     );
 
-    const secure   = process.env.NODE_ENV === 'production' || !!process.env.RAILWAY_ENVIRONMENT_NAME || process.env.SECURE_COOKIES === 'true';
-    const cookieBase = { httpOnly: true, secure, sameSite: secure ? 'none' : 'lax' };
+    const cookieBase = cookieOptions();
     res.cookie('accessToken', accessToken, { ...cookieBase, maxAge: 15 * 60 * 1000 });
     res.cookie('refreshToken', refreshToken, {
       ...cookieBase,
@@ -85,6 +85,8 @@ exports.refresh = async (req, res) => {
     const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
     const user = await User.findById(decoded.id);
     if (!user || !user.isActive) return res.status(401).json({ message: 'Invalid refresh token.' });
+    if (decoded.tokenVersion !== user.tokenVersion)
+      return res.status(401).json({ message: 'Session revoked.' });
 
     const accessToken = jwt.sign(
       { id: user._id, role: user.role, name: user.name },
@@ -92,9 +94,7 @@ exports.refresh = async (req, res) => {
       { expiresIn: '15m' }
     );
 
-    const secure = process.env.NODE_ENV === 'production' || process.env.SECURE_COOKIES === 'true';
-    const cookieBase = { httpOnly: true, secure, sameSite: secure ? 'none' : 'lax' };
-    res.cookie('accessToken', accessToken, { ...cookieBase, maxAge: 15 * 60 * 1000 });
+    res.cookie('accessToken', accessToken, { ...cookieOptions(), maxAge: 15 * 60 * 1000 });
 
     res.json({ ok: true });
   } catch (err) {
@@ -102,9 +102,19 @@ exports.refresh = async (req, res) => {
   }
 };
 
-exports.logout = (req, res) => {
-  const secure = process.env.NODE_ENV === 'production' || process.env.SECURE_COOKIES === 'true';
-  const cookieBase = { httpOnly: true, secure, sameSite: secure ? 'none' : 'lax' };
+exports.logout = async (req, res) => {
+  try {
+    const token = req.cookies.refreshToken;
+    if (token) {
+      // Bump tokenVersion so the refresh token can't be replayed after logout,
+      // even though the JWT itself remains cryptographically valid until it expires.
+      const decoded = jwt.decode(token);
+      if (decoded?.id) await User.findByIdAndUpdate(decoded.id, { $inc: { tokenVersion: 1 } });
+    }
+  } catch {
+    // best-effort revocation — still clear cookies below regardless
+  }
+  const cookieBase = cookieOptions();
   res.clearCookie('accessToken', cookieBase);
   res.clearCookie('refreshToken', cookieBase);
   res.json({ message: 'Logged out successfully.' });
@@ -151,6 +161,7 @@ exports.resetPassword = async (req, res) => {
     user.passwordHash = await bcrypt.hash(req.body.password, 12);
     user.resetToken = undefined;
     user.resetTokenExpiry = undefined;
+    user.tokenVersion += 1; // invalidate any sessions taken out before the reset
     await user.save();
 
     res.json({ message: 'Password reset successful.' });

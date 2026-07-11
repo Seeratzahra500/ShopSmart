@@ -8,6 +8,9 @@ const userSchema = new mongoose.Schema({
   isActive:         { type: Boolean, default: true },
   resetToken:       String,
   resetTokenExpiry: Date,
+  // Bumped on logout, password reset, and deactivation to invalidate all
+  // outstanding refresh tokens for this user without needing a token blacklist.
+  tokenVersion:     { type: Number, default: 0 },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

@@ -1,22 +1,36 @@
 const Store   = require('../models/Store');
 const Product = require('../models/Product');
 const Order   = require('../models/Order');
+const { escapeRegex } = require('../utils/sanitize');
+
+const MAX_LIMIT = 100;
+// Slugs must not collide with static path segments used by store.routes.js
+// (e.g. /api/store/analytics would otherwise be shadowed by /api/store/:slug).
+const RESERVED_SLUGS = ['default', 'analytics', 'products', 'mine', 'me', 'admin', 'api'];
+const SLUG_PATTERN = /^[a-z0-9-]{3,40}$/;
+
+function validateSlug(slug) {
+  if (!SLUG_PATTERN.test(slug)) return 'Slug must be 3-40 characters, lowercase letters, numbers, and hyphens only.';
+  if (RESERVED_SLUGS.includes(slug)) return 'That slug is reserved.';
+  return null;
+}
 
 // GET /api/stores — public list of all active stores
 exports.listStores = async (req, res) => {
   try {
     const { search, page = 1, limit = 12 } = req.query;
+    const clampedLimit = Math.min(Number(limit) || 12, MAX_LIMIT);
     const query = { isActive: true };
-    if (search) query.name = { $regex: search, $options: 'i' };
+    if (search) query.name = { $regex: escapeRegex(search), $options: 'i' };
 
     const total  = await Store.countDocuments(query);
     const stores = await Store.find(query)
       .select('name tagline slug logoUrl primaryColor theme gridColumns')
-      .skip((page - 1) * limit)
-      .limit(Number(limit))
+      .skip((page - 1) * clampedLimit)
+      .limit(clampedLimit)
       .sort({ createdAt: -1 });
 
-    res.json({ stores, total, pages: Math.ceil(total / limit) });
+    res.json({ stores, total, pages: Math.ceil(total / clampedLimit) });
   } catch (err) {
     res.status(500).json({ message: 'Server error.' });
   }
@@ -29,17 +43,18 @@ exports.getStoreProducts = async (req, res) => {
     if (!store) return res.status(404).json({ message: 'Store not found.' });
 
     const { category, search, page = 1, limit = 12 } = req.query;
+    const clampedLimit = Math.min(Number(limit) || 12, MAX_LIMIT);
     const query = { store: store._id, isActive: true };
     if (category) query.category = category;
-    if (search)   query.title = { $regex: search, $options: 'i' };
+    if (search)   query.title = { $regex: escapeRegex(search), $options: 'i' };
 
     const total    = await Product.countDocuments(query);
     const products = await Product.find(query)
-      .skip((page - 1) * limit)
-      .limit(Number(limit))
+      .skip((page - 1) * clampedLimit)
+      .limit(clampedLimit)
       .sort({ createdAt: -1 });
 
-    res.json({ products, total, pages: Math.ceil(total / limit) });
+    res.json({ products, total, pages: Math.ceil(total / clampedLimit) });
   } catch (err) {
     res.status(500).json({ message: 'Server error.' });
   }
@@ -77,18 +92,7 @@ exports.getMine = async (req, res) => {
   }
 };
 
-// GET /api/store/default — public, returns first active store
-exports.getDefault = async (req, res) => {
-  try {
-    const store = await Store.findOne({ isActive: true }).select('-owner');
-    if (!store) return res.status(404).json({ message: 'No store found.' });
-    res.json(store);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error.' });
-  }
-};
-
-// GET /api/store/:slug — public, get by slug
+// GET /api/stores/:slug — public, get by slug
 exports.getBySlug = async (req, res) => {
   try {
     const store = await Store.findOne({ slug: req.params.slug, isActive: true }).select('-owner');
@@ -102,20 +106,19 @@ exports.getBySlug = async (req, res) => {
 // GET /api/store/products — shopowner's own products (all, incl. inactive)
 exports.getOwnProducts = async (req, res) => {
   try {
-    const store = await Store.findOne({ owner: req.user.id });
-    if (!store) return res.status(404).json({ message: 'Store not found.' });
-
+    const store = req.store;
     const { page = 1, limit = 100, search } = req.query;
-    const query = { store: store._id, isActive: true };
-    if (search) query.title = { $regex: search, $options: 'i' };
+    const clampedLimit = Math.min(Number(limit) || 100, MAX_LIMIT);
+    const query = { store: store._id };
+    if (search) query.title = { $regex: escapeRegex(search), $options: 'i' };
 
     const total    = await Product.countDocuments(query);
     const products = await Product.find(query)
-      .skip((page - 1) * limit)
-      .limit(Number(limit))
+      .skip((page - 1) * clampedLimit)
+      .limit(clampedLimit)
       .sort({ createdAt: -1 });
 
-    res.json({ products, total, pages: Math.ceil(total / limit) });
+    res.json({ products, total, pages: Math.ceil(total / clampedLimit) });
   } catch (err) {
     res.status(500).json({ message: 'Server error.' });
   }
@@ -124,9 +127,7 @@ exports.getOwnProducts = async (req, res) => {
 // GET /api/store/analytics — shopowner store-scoped analytics
 exports.getAnalytics = async (req, res) => {
   try {
-    const store = await Store.findOne({ owner: req.user.id });
-    if (!store) return res.status(404).json({ message: 'Store not found.' });
-
+    const store = req.store;
     const totalOrders = await Order.countDocuments({ store: store._id });
     const revenueAgg  = await Order.aggregate([
       { $match: { store: store._id } },
@@ -157,6 +158,11 @@ exports.updateStore = async (req, res) => {
   try {
     const store = await Store.findOne({ _id: req.params.id, owner: req.user.id });
     if (!store) return res.status(404).json({ message: 'Store not found.' });
+
+    if (req.body.slug !== undefined) {
+      const slugError = validateSlug(req.body.slug);
+      if (slugError) return res.status(400).json({ message: slugError });
+    }
 
     const allowed = [
       'name', 'tagline', 'description', 'slug',

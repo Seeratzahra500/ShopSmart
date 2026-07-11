@@ -3,5 +3,8 @@
     "allow": [
       "Bash(git push *)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "repowise"
+  ]
 }

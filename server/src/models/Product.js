@@ -13,4 +13,7 @@ const productSchema = new mongoose.Schema({
   reviewCount:   { type: Number, default: 0, min: 0 },
 }, { timestamps: true });
 
+productSchema.index({ store: 1, isActive: 1, createdAt: -1 });
+productSchema.index({ store: 1, category: 1 });
+
 module.exports = mongoose.model('Product', productSchema);
