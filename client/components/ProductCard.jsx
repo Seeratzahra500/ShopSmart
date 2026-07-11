@@ -37,6 +37,32 @@ function AddToCartIcon({ justAdded }) {
   );
 }
 
+// Shared product image block — renders the sunken "No image" placeholder
+// whenever there's no image URL *or* the image failed to load at render time.
+function ProductImage({ product, className, sizes, fallbackTextClassName = 'text-sm' }) {
+  const [failed, setFailed] = useState(false);
+  const src = product.images?.[0];
+
+  if (!src || failed) {
+    return (
+      <div className={`w-full h-full flex items-center justify-center text-[var(--text-muted)] ${fallbackTextClassName}`}>
+        No image
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={product.title}
+      fill
+      className={className}
+      sizes={sizes}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 function StockBadge({ isOutOfStock, isLowStock, stock }) {
   if (isOutOfStock) {
     return (
@@ -92,17 +118,11 @@ function GalleryCard({ product, href, price, canShop, isOutOfStock, isLowStock, 
   return (
     <div className="group flex flex-col">
       <Link href={href} className="relative block aspect-[4/5] rounded-[var(--radius-lg)] bg-[var(--bg-sunken)] overflow-hidden">
-        {product.images?.[0] ? (
-          <Image
-            src={product.images[0]}
-            alt={product.title}
-            fill
-            className={['object-cover transition-transform duration-700 ease-out', 'group-hover:scale-[1.04]', isOutOfStock ? 'saturate-0 opacity-60' : ''].join(' ')}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)] text-sm">No image</div>
-        )}
+        <ProductImage
+          product={product}
+          className={['object-cover transition-transform duration-700 ease-out', 'group-hover:scale-[1.04]', isOutOfStock ? 'saturate-0 opacity-60' : ''].join(' ')}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        />
 
         <StockBadge isOutOfStock={isOutOfStock} isLowStock={isLowStock} stock={product.stock} />
 
@@ -152,17 +172,11 @@ function FramedCard({ product, href, price, canShop, isOutOfStock, isLowStock, l
     >
       <Link href={href} className="relative block aspect-[4/5] p-3">
         <div className="relative w-full h-full rounded-[var(--radius-sm)] overflow-hidden bg-[var(--bg-sunken)]">
-          {product.images?.[0] ? (
-            <Image
-              src={product.images[0]}
-              alt={product.title}
-              fill
-              className={['object-cover transition-transform duration-500', 'group-hover:scale-[1.03]', isOutOfStock ? 'saturate-0 opacity-60' : ''].join(' ')}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)] text-sm">No image</div>
-          )}
+          <ProductImage
+            product={product}
+            className={['object-cover transition-transform duration-500', 'group-hover:scale-[1.03]', isOutOfStock ? 'saturate-0 opacity-60' : ''].join(' ')}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
           <StockBadge isOutOfStock={isOutOfStock} isLowStock={isLowStock} stock={product.stock} />
           {canShop && (
             <WishlistButton
@@ -211,17 +225,11 @@ function TiltedCard({ product, href, price, canShop, isOutOfStock, isLowStock, l
           transition={SPRING}
           className="relative w-full h-full rounded-[var(--radius-xl)] bg-[var(--bg-sunken)] overflow-hidden"
         >
-          {product.images?.[0] ? (
-            <Image
-              src={product.images[0]}
-              alt={product.title}
-              fill
-              className={['object-cover', isOutOfStock ? 'saturate-0 opacity-60' : ''].join(' ')}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)] text-sm">No image</div>
-          )}
+          <ProductImage
+            product={product}
+            className={['object-cover', isOutOfStock ? 'saturate-0 opacity-60' : ''].join(' ')}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
           <StockBadge isOutOfStock={isOutOfStock} isLowStock={isLowStock} stock={product.stock} />
           {canShop && (
             <WishlistButton
@@ -263,17 +271,12 @@ function CompactCard({ product, href, price, canShop, isOutOfStock, isLowStock, 
   return (
     <Link href={href} className="group flex items-center gap-3 py-2 border-b border-[var(--border)]">
       <div className="relative w-16 h-16 flex-shrink-0 rounded-[var(--radius-sm)] bg-[var(--bg-sunken)] overflow-hidden">
-        {product.images?.[0] ? (
-          <Image
-            src={product.images[0]}
-            alt={product.title}
-            fill
-            className={['object-cover', isOutOfStock ? 'saturate-0 opacity-60' : ''].join(' ')}
-            sizes="64px"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)] text-[10px]">No image</div>
-        )}
+        <ProductImage
+          product={product}
+          className={['object-cover', isOutOfStock ? 'saturate-0 opacity-60' : ''].join(' ')}
+          sizes="64px"
+          fallbackTextClassName="text-[10px]"
+        />
       </div>
 
       <div className="flex-1 min-w-0">

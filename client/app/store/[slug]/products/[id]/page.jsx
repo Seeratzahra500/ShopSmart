@@ -54,6 +54,7 @@ export default function StoreProductPage() {
   const [quantity, setQuantity] = useState(1);
   const [imgIdx, setImgIdx]     = useState(0);
 
+  const [failedImgs, setFailedImgs]       = useState(() => new Set());
   const [reviews, setReviews]             = useState([]);
   const [reviewTotal, setReviewTotal]     = useState(0);
   const [reviewLoading, setReviewLoading] = useState(true);
@@ -119,6 +120,7 @@ export default function StoreProductPage() {
   if (!product) return null;
 
   const images = product.images?.length ? product.images : [null];
+  const markFailed = (i) => setFailedImgs((prev) => (prev.has(i) ? prev : new Set(prev).add(i)));
 
   return (
     <PageWrapper>
@@ -140,13 +142,14 @@ export default function StoreProductPage() {
           {/* Image gallery */}
           <div className="space-y-3">
             <div className="relative aspect-square bg-[var(--bg-sunken)] rounded-[var(--radius-lg)] overflow-hidden">
-              {images[imgIdx] ? (
+              {images[imgIdx] && !failedImgs.has(imgIdx) ? (
                 <Image
                   src={images[imgIdx]}
                   alt={product.title}
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 50vw"
+                  onError={() => markFailed(imgIdx)}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)] text-sm">
@@ -171,8 +174,8 @@ export default function StoreProductPage() {
                     className={`relative w-16 h-16 flex-shrink-0 rounded-[var(--radius-md)] overflow-hidden border-2 transition-colors
                       ${i === imgIdx ? 'border-[var(--color-brand)]' : 'border-[var(--border)] hover:border-[var(--border-strong)]'}`}
                   >
-                    {img ? (
-                      <Image src={img} alt="" fill className="object-cover" />
+                    {img && !failedImgs.has(i) ? (
+                      <Image src={img} alt="" fill className="object-cover" onError={() => markFailed(i)} />
                     ) : (
                       <div className="bg-[var(--bg-sunken)] w-full h-full" />
                     )}

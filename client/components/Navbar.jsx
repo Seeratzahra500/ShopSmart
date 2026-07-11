@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'framer-motion';
@@ -136,6 +136,7 @@ export default function Navbar() {
   const { store }         = useStore();
   const [open, setOpen]   = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [logoFailed, setLogoFailed] = useState(false);
   const close = () => setOpen(false);
 
   const { scrollY } = useScroll();
@@ -143,6 +144,7 @@ export default function Navbar() {
 
   const storeName = store?.name || 'ShopSmart';
   const logoUrl   = store?.logoUrl;
+  useEffect(() => { setLogoFailed(false); }, [logoUrl]);
   const isCustomer  = user?.role === 'customer';
   const isShopowner = user?.role === 'shopowner';
   const isAdmin     = user?.role === 'admin';
@@ -173,8 +175,8 @@ export default function Navbar() {
 
           {/* ── Brand / Logo ── */}
           <Link href={brandHref} className="flex items-center gap-2 shrink-0">
-            {logoUrl ? (
-              <img src={logoUrl} alt={storeName} className="h-8 w-auto object-contain" />
+            {logoUrl && !logoFailed ? (
+              <img src={logoUrl} alt={storeName} onError={() => setLogoFailed(true)} className="h-8 w-auto object-contain" />
             ) : (
               <span
                 className="font-display text-xl font-semibold tracking-tight"

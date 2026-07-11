@@ -78,7 +78,7 @@ export default function Footer() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: '-80px' }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"
         >
           {/* ── Col 1: Logo + Tagline + Social ── */}
           <motion.div variants={itemVariants} className="flex flex-col gap-4">
@@ -127,29 +127,6 @@ export default function Footer() {
               <FooterLink href="/auth/register">Register</FooterLink>
               <FooterLink href="/dashboard">Dashboard</FooterLink>
             </ul>
-          </motion.div>
-
-          {/* ── Col 4: Contact ── */}
-          <motion.div variants={itemVariants}>
-            <h4 className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-white/40 mb-5">
-              Contact
-            </h4>
-            <div className="space-y-2 text-sm text-white/50 leading-relaxed">
-              {contact.email && (
-                <p>
-                  <a href={`mailto:${contact.email}`} className="hover:text-white transition-colors">
-                    {contact.email}
-                  </a>
-                </p>
-              )}
-              {contact.phone && <p>{contact.phone}</p>}
-              {contact.address && <p>{contact.address}</p>}
-              {!contact.email && !contact.phone && !contact.address && (
-                <p className="text-white/30 text-xs">
-                  No contact info configured yet.
-                </p>
-              )}
-            </div>
           </motion.div>
         </motion.div>
       </div>

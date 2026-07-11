@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button';
 import { fadeUp } from '@/lib/motion';
 import StorefrontPreview from '@/components/dashboard/StorefrontPreview';
 import { ThemePresetPicker, HeroLayoutPicker, CardStylePicker, SegmentedControl } from '@/components/dashboard/DesignPickers';
+import { validateImageUrl } from '@/lib/validateImage';
 
 const TABS   = ['Branding', 'Design', 'Home Page', 'Store Info'];
 const FONTS  = ['Inter', 'Playfair Display', 'Poppins', 'Lato', 'Merriweather', 'Nunito', 'Raleway', 'Oswald'];
@@ -29,6 +30,36 @@ function Field({ label, children, hint }) {
       <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">{label}</label>
       {children}
       {hint && <p className="text-xs text-[var(--text-muted)] mt-1.5 leading-relaxed">{hint}</p>}
+    </div>
+  );
+}
+
+// Small live thumbnail preview for URL-ish image fields — shows an inline
+// "couldn't load" warning via onError rather than a broken-image icon.
+function ImagePreview({ url }) {
+  const [failed, setFailed] = useState(false);
+  const looksLikeUrl = /^https?:\/\/.+/.test(url?.trim() || '');
+
+  useEffect(() => { setFailed(false); }, [url]);
+
+  if (!looksLikeUrl) return null;
+
+  return (
+    <div className="mt-2 flex items-center gap-3">
+      <div className="w-14 h-14 flex-shrink-0 rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--bg-sunken)] overflow-hidden flex items-center justify-center">
+        {!failed && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={url}
+            alt="Preview"
+            onError={() => setFailed(true)}
+            className="w-full h-full object-cover"
+          />
+        )}
+      </div>
+      {failed && (
+        <p className="text-xs text-[var(--danger)] leading-relaxed">Couldn&apos;t load this image</p>
+      )}
     </div>
   );
 }
@@ -148,6 +179,24 @@ export default function DashboardSettingsPage() {
     }
 
     setSaving(true);
+
+    // Validate that logo/hero URLs actually load as images before saving —
+    // run both checks in parallel to avoid doubling the wait.
+    const [logoOk, heroOk] = await Promise.all([
+      form.logoUrl.trim() ? validateImageUrl(form.logoUrl.trim()) : Promise.resolve(true),
+      form.heroImage.trim() ? validateImageUrl(form.heroImage.trim()) : Promise.resolve(true),
+    ]);
+    if (!logoOk) {
+      toast.error('Logo URL did not load as an image — check the link.');
+      setSaving(false);
+      return;
+    }
+    if (!heroOk) {
+      toast.error('Hero Image URL did not load as an image — check the link.');
+      setSaving(false);
+      return;
+    }
+
     try {
       const payload = {
         name: form.name, tagline: form.tagline, slug: form.slug, logoUrl: form.logoUrl,
@@ -186,6 +235,7 @@ export default function DashboardSettingsPage() {
       <p className="text-xs text-[var(--text-muted)] -mt-4 leading-relaxed">{`Your store will be live at: /store/${form.slug || 'your-slug'}`}</p>
       <Input label="Logo URL" value={form.logoUrl} onChange={set('logoUrl')} placeholder="https://…" />
       <p className="text-xs text-[var(--text-muted)] -mt-4 leading-relaxed">Direct link to your logo image</p>
+      <ImagePreview url={form.logoUrl} />
 
       {/* Color pickers */}
       <div className="grid grid-cols-2 gap-4">
@@ -313,6 +363,7 @@ export default function DashboardSettingsPage() {
     <motion.div key="homepage" variants={tabFade} initial="hidden" animate="show" exit="exit" className="space-y-5">
       <Input label="Hero Image URL" value={form.heroImage} onChange={set('heroImage')} placeholder="https://…" />
       <p className="text-xs text-[var(--text-muted)] -mt-4 leading-relaxed">Full-width banner shown at the top of your store</p>
+      <ImagePreview url={form.heroImage} />
       <Input label="Hero Headline" value={form.heroHeadline} onChange={set('heroHeadline')} placeholder="Discover amazing products" />
       <Input label="Hero Button Text" value={form.heroCta} onChange={set('heroCta')} placeholder="Shop Now" />
 

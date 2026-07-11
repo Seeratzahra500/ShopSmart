@@ -9,6 +9,7 @@ import Input from '@/components/ui/Input';
 import Badge from '@/components/ui/Badge';
 import EmptyState from '@/components/ui/EmptyState';
 import { fadeUp, stagger } from '@/lib/motion';
+import { validateImageUrl } from '@/lib/validateImage';
 
 const EMPTY = { title: '', description: '', price: '', stock: '', category: '', images: '' };
 const CATEGORIES = ['Electronics', 'Clothing', 'Food & Beverages', 'Home & Living', 'Beauty', 'Books', 'Sports', 'Toys'];
@@ -20,6 +21,34 @@ const fieldStyle = (hasError) => [
     ? 'border-[var(--danger)] focus:ring-2 focus:ring-[var(--danger)]/20'
     : 'border-[var(--border-strong)] focus:border-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/15',
 ].join(' ');
+
+// Small live thumbnail with inline "couldn't load" state — mirrors the
+// pattern used on the settings page for logo/hero URL previews.
+function ImageThumb({ url }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => { setFailed(false); }, [url]);
+
+  return (
+    <div className="w-14 h-14 flex-shrink-0 rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--bg-sunken)] overflow-hidden flex flex-col items-center justify-center relative">
+      {!failed ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={url} alt="Preview" onError={() => setFailed(true)} className="w-full h-full object-cover" />
+      ) : (
+        <span className="text-[9px] text-[var(--danger)] text-center leading-tight px-1">Couldn&apos;t load</span>
+      )}
+    </div>
+  );
+}
+
+function ImagesPreview({ images }) {
+  const urls = images.split(',').map((s) => s.trim()).filter((u) => /^https?:\/\/.+/.test(u));
+  if (!urls.length) return null;
+  return (
+    <div className="flex flex-wrap gap-2 mt-2">
+      {urls.map((u, i) => <ImageThumb key={`${u}-${i}`} url={u} />)}
+    </div>
+  );
+}
 
 function ProductModal({ product, onClose, onSaved }) {
   const editing = !!product?._id;
@@ -66,13 +95,28 @@ function ProductModal({ product, onClose, onSaved }) {
     setErrors(errs);
     if (Object.keys(errs).length) return;
 
+    const imageUrls = form.images ? form.images.split(',').map((s) => s.trim()).filter(Boolean) : [];
+
     setSaving(true);
+
+    // Confirm every image URL actually loads before saving — run checks in
+    // parallel and surface the first failing URL by name.
+    if (imageUrls.length) {
+      const results = await Promise.all(imageUrls.map((url) => validateImageUrl(url)));
+      const badIndex = results.findIndex((ok) => !ok);
+      if (badIndex !== -1) {
+        toast.error(`Image URL did not load: ${imageUrls[badIndex]}`);
+        setSaving(false);
+        return;
+      }
+    }
+
     try {
       const payload = {
         ...form,
         price:  Number(form.price),
         stock:  Number(form.stock),
-        images: form.images ? form.images.split(',').map((s) => s.trim()).filter(Boolean) : [],
+        images: imageUrls,
       };
       if (editing) {
         await api.put(`/products/${product._id}`, payload);
@@ -119,7 +163,10 @@ function ProductModal({ product, onClose, onSaved }) {
           <Input label="Title" type="text" value={form.title} onChange={set('title')} placeholder="Product name" error={errors.title} />
           <Input label="Price (PKR)" type="number" value={form.price} onChange={set('price')} placeholder="0" error={errors.price} />
           <Input label="Stock" type="number" value={form.stock} onChange={set('stock')} placeholder="0" error={errors.stock} />
-          <Input label="Image URLs (comma-separated)" type="text" value={form.images} onChange={set('images')} placeholder="https://…" error={errors.images} />
+          <div>
+            <Input label="Image URLs (comma-separated)" type="text" value={form.images} onChange={set('images')} placeholder="https://…" error={errors.images} />
+            <ImagesPreview images={form.images} />
+          </div>
 
           <div>
             <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">Category</label>

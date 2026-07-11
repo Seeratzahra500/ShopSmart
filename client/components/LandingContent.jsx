@@ -45,6 +45,11 @@ export default function LandingContent() {
   const [stores, setStores] = useState([]);
   const [products, setProducts] = useState([]);
   const [loaded, setLoaded] = useState(false);
+  // Broken product image URLs (hero collage + marketplace marquee) — tiles
+  // whose src ends up here are filtered out entirely rather than showing a
+  // broken-image icon.
+  const [brokenSrcs, setBrokenSrcs] = useState(() => new Set());
+  const markBroken = (src) => setBrokenSrcs((prev) => (prev.has(src) ? prev : new Set(prev).add(src)));
 
   useEffect(() => {
     let cancelled = false;
@@ -110,9 +115,12 @@ export default function LandingContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stores]);
 
-  const collageProducts = (products.length ? products : FALLBACK_PRODUCTS).slice(0, 5);
+  const collageProducts = (products.length ? products : FALLBACK_PRODUCTS)
+    .filter((p) => !brokenSrcs.has(p.image))
+    .slice(0, 5);
   const collageStore = stores[0] || null;
-  const marketplaceProducts = products.length ? products : FALLBACK_PRODUCTS;
+  const marketplaceProducts = (products.length ? products : FALLBACK_PRODUCTS)
+    .filter((p) => !brokenSrcs.has(p.image));
   const marqueeLoop = [...marketplaceProducts, ...marketplaceProducts];
 
   return (
@@ -167,16 +175,16 @@ export default function LandingContent() {
             <div className="lg:col-span-7 hidden lg:block">
               <div className="grid grid-cols-3 gap-5">
                 <div className="flex flex-col gap-5 mt-12">
-                  <CollageProductTile item={collageProducts[0]} index={0} />
-                  <CollageProductTile item={collageProducts[1]} index={1} />
+                  <CollageProductTile item={collageProducts[0]} index={0} onBroken={markBroken} />
+                  <CollageProductTile item={collageProducts[1]} index={1} onBroken={markBroken} />
                 </div>
                 <div className="flex flex-col gap-5">
                   <CollageStoreTile store={collageStore} index={2} />
-                  <CollageProductTile item={collageProducts[2]} index={3} />
+                  <CollageProductTile item={collageProducts[2]} index={3} onBroken={markBroken} />
                 </div>
                 <div className="flex flex-col gap-5 mt-20">
-                  <CollageProductTile item={collageProducts[3]} index={4} />
-                  <CollageProductTile item={collageProducts[4]} index={5} />
+                  <CollageProductTile item={collageProducts[3]} index={4} onBroken={markBroken} />
+                  <CollageProductTile item={collageProducts[4]} index={5} onBroken={markBroken} />
                 </div>
               </div>
             </div>
@@ -186,7 +194,7 @@ export default function LandingContent() {
               <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2">
                 {collageProducts.map((item, i) => (
                   <div key={i} className="snap-start shrink-0 w-40">
-                    <CollageProductTile item={item} index={i} static />
+                    <CollageProductTile item={item} index={i} static onBroken={markBroken} />
                   </div>
                 ))}
               </div>
@@ -233,7 +241,7 @@ export default function LandingContent() {
           </h2>
         </div>
 
-        <MarketplaceMarquee items={marqueeLoop} loaded={loaded} />
+        <MarketplaceMarquee items={marqueeLoop} loaded={loaded} onBroken={markBroken} />
       </section>
 
       {/* ── ABOUT: editorial 12-col side-label layout ── */}
@@ -420,7 +428,7 @@ export default function LandingContent() {
 
 /* ── Collage tiles (hero) ─────────────────────────────────────────────── */
 
-function CollageProductTile({ item, index, static: isStatic }) {
+function CollageProductTile({ item, index, static: isStatic, onBroken }) {
   if (!item) return null;
   const rotate = ROTATIONS[index % ROTATIONS.length];
   const duration = DRIFT_DURATIONS[index % DRIFT_DURATIONS.length];
@@ -431,7 +439,7 @@ function CollageProductTile({ item, index, static: isStatic }) {
       className="relative rounded-[var(--radius-lg)] overflow-hidden bg-[var(--bg-sunken)] shadow-[var(--shadow-lift)]"
       style={{ aspectRatio: '4 / 5', transform: `rotate(${rotate}deg)` }}
     >
-      <img src={item.image} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
+      <img src={item.image} alt={item.title} onError={() => onBroken?.(item.image)} className="absolute inset-0 w-full h-full object-cover" />
       <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2">
         <span className="text-[11px] font-medium text-white bg-black/45 backdrop-blur-sm rounded-full px-2 py-1 truncate max-w-[65%]">
           {item.title}
@@ -552,7 +560,7 @@ function FeaturedStoreCard({ store }) {
 
 /* ── Marketplace marquee: drifting real products, pauses on hover ───────── */
 
-function MarketplaceMarquee({ items, loaded }) {
+function MarketplaceMarquee({ items, loaded, onBroken }) {
   const [paused, setPaused] = useState(false);
 
   return (
@@ -572,7 +580,7 @@ function MarketplaceMarquee({ items, loaded }) {
           return (
             <Link key={i} href={href} className="shrink-0 w-52">
               <div className="rounded-[var(--radius-lg)] overflow-hidden bg-[var(--bg-sunken)] aspect-[4/5] relative shadow-[var(--shadow-lift)]">
-                <img src={item.image} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
+                <img src={item.image} alt={item.title} onError={() => onBroken?.(item.image)} className="absolute inset-0 w-full h-full object-cover" />
               </div>
               <div className="mt-3">
                 <p className="text-sm font-medium text-[var(--text-main)] truncate">{item.title}</p>
