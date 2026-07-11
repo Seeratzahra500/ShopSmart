@@ -9,7 +9,7 @@ import { useStore } from '@/context/StoreContext';
 import Button from './ui/Button';
 
 /* ─── Animated nav link with sliding underline ─── */
-const NavLink = ({ href, children, onClick, mobile, prefetch }) => {
+const NavLink = ({ href, children, onClick, mobile, prefetch, light }) => {
   const pathname = usePathname();
   const active = pathname === href || pathname.startsWith(href + '/');
   const [hovered, setHovered] = useState(false);
@@ -41,7 +41,7 @@ const NavLink = ({ href, children, onClick, mobile, prefetch }) => {
       className="relative text-sm font-medium pb-0.5"
       style={{ color: active ? 'var(--color-brand)' : undefined }}
     >
-      <span className={active ? '' : 'text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-colors'}>
+      <span className={active ? '' : light ? 'text-white/70 hover:text-white transition-colors' : 'text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-colors'}>
         {children}
       </span>
       <motion.span
@@ -137,6 +137,7 @@ export default function Navbar() {
   const [open, setOpen]   = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const close = () => setOpen(false);
+  const pathname = usePathname();
 
   const { scrollY } = useScroll();
   useMotionValueEvent(scrollY, 'change', (y) => setScrolled(y > 24));
@@ -155,6 +156,11 @@ export default function Navbar() {
     ? '/stores'
     : '/auth/login';
 
+  // The hero on / and /about is a dark photo, so before the user scrolls
+  // (transparent bg) the navbar needs light-on-dark text for contrast.
+  const isPhotoHeroRoute = pathname === '/' || pathname === '/about';
+  const light = isPhotoHeroRoute && !scrolled;
+
   return (
     <>
       <nav
@@ -172,7 +178,10 @@ export default function Navbar() {
             {logoUrl ? (
               <img src={logoUrl} alt={storeName} className="h-8 w-auto object-contain" />
             ) : (
-              <span className="font-display text-xl font-semibold tracking-tight" style={{ color: 'var(--color-brand)' }}>
+              <span
+                className="font-display text-xl font-semibold tracking-tight"
+                style={{ color: light ? '#FFFFFF' : 'var(--color-brand)' }}
+              >
                 {storeName}
               </span>
             )}
@@ -180,12 +189,13 @@ export default function Navbar() {
 
           {/* ── Desktop Nav Links (center) ── */}
           <div className="hidden md:flex items-center gap-7">
+            <NavLink href="/about" light={light}>About</NavLink>
             {isAdmin && (
               <Link
                 href="/admin/dashboard"
                 prefetch={false}
                 className="text-sm font-semibold hover:opacity-80 transition-opacity"
-                style={{ color: 'var(--color-brand)' }}
+                style={{ color: light ? '#FFFFFF' : 'var(--color-brand)' }}
               >
                 Admin Panel ↗
               </Link>
@@ -194,15 +204,15 @@ export default function Navbar() {
               <Link
                 href="/dashboard"
                 className="text-sm font-semibold hover:opacity-80 transition-opacity"
-                style={{ color: 'var(--color-brand)' }}
+                style={{ color: light ? '#FFFFFF' : 'var(--color-brand)' }}
               >
                 Dashboard ↗
               </Link>
             )}
             {isCustomer && (
               <>
-                <NavLink href="/stores">Stores</NavLink>
-                <NavLink href="/orders">My Orders</NavLink>
+                <NavLink href="/stores" light={light}>Stores</NavLink>
+                <NavLink href="/orders" light={light}>My Orders</NavLink>
               </>
             )}
           </div>
@@ -213,7 +223,7 @@ export default function Navbar() {
               <UserMenu user={user} logout={logout} />
             ) : (
               <>
-                <NavLink href="/auth/login">Login</NavLink>
+                <NavLink href="/auth/login" light={light}>Login</NavLink>
                 <Button as={Link} href="/auth/register" size="sm">Register</Button>
               </>
             )}
@@ -229,7 +239,11 @@ export default function Navbar() {
             <motion.button
               whileTap={{ scale: 0.92 }}
               onClick={() => setOpen((o) => !o)}
-              className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sunken)] transition-colors"
+              className={`p-1.5 rounded-lg transition-colors ${
+                light
+                  ? 'text-white/80 hover:text-white hover:bg-white/10'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sunken)]'
+              }`}
               aria-label="Toggle menu"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -286,6 +300,7 @@ export default function Navbar() {
 
               {/* Drawer links */}
               <nav className="flex-1 px-4 py-5 space-y-1 overflow-y-auto">
+                <NavLink href="/about" mobile onClick={close}>About</NavLink>
                 {isAdmin && (
                   <NavLink href="/admin/dashboard" mobile prefetch={false} onClick={close}>Admin Panel</NavLink>
                 )}
