@@ -12,11 +12,12 @@ export default function StoreLayout({ children }) {
 
   useEffect(() => {
     if (loading) return;
-    if (!user)                 { router.replace(`/auth/login?next=/store/${slug}`); return; }
-    if (user.role === 'admin') { router.replace('/admin/dashboard'); return; }
+    // Guests and shopowners may browse any storefront; only admins are bounced
+    // (they manage the platform, not shop) back to their own dashboard.
+    if (user?.role === 'admin') { router.replace('/admin/dashboard'); return; }
   }, [user, loading, router]);
 
-  if (loading || !user || user.role === 'admin') return null;
+  if (loading || user?.role === 'admin') return null;
 
   return (
     <StoreProvider slug={slug}>

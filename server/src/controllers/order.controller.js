@@ -3,6 +3,7 @@ const mongoose  = require('mongoose');
 const Order     = require('../models/Order');
 const Product   = require('../models/Product');
 const Store     = require('../models/Store');
+const { sendOrderConfirmation, sendOrderStatusUpdate } = require('../utils/mailer');
 
 exports.createOrder = async (req, res) => {
   const { items, shippingAddress, guestEmail, storeSlug } = req.body;
@@ -13,9 +14,11 @@ exports.createOrder = async (req, res) => {
   const session = await mongoose.startSession();
   try {
     let order;
+    let orderStore;
     await session.withTransaction(async () => {
       const store = await Store.findOne({ slug: storeSlug, isActive: true }).session(session);
       if (!store) throw Object.assign(new Error('Store not found or inactive.'), { status: 400 });
+      orderStore = store;
 
       let totalAmount = 0;
       const resolvedItems = [];
@@ -61,6 +64,17 @@ exports.createOrder = async (req, res) => {
     });
 
     res.status(201).json(order);
+
+    // Fire-and-forget order confirmation email — never let mail delivery
+    // affect the response already sent above.
+    (async () => {
+      let recipientEmail = order.guestEmail;
+      if (!recipientEmail && order.customer) {
+        const populated = await Order.findById(order._id).populate('customer', 'email');
+        recipientEmail = populated?.customer?.email;
+      }
+      return sendOrderConfirmation(order, orderStore, recipientEmail);
+    })().catch((err) => console.error('[mailer]', err.message));
   } catch (err) {
     res.status(err.status || 500).json({ message: err.status ? err.message : 'Server error.' });
   } finally {
@@ -184,6 +198,21 @@ exports.updateOrderStatus = async (req, res) => {
     });
 
     res.json(result);
+
+    // Fire-and-forget status-update email, only for the customer-facing
+    // milestones (shipped/delivered) — never let mail delivery affect the
+    // response already sent above.
+    if (['shipped', 'delivered'].includes(result.status)) {
+      (async () => {
+        let recipientEmail = result.guestEmail;
+        if (!recipientEmail && result.customer) {
+          const populated = await Order.findById(result._id).populate('customer', 'email');
+          recipientEmail = populated?.customer?.email;
+        }
+        const orderStore = await Store.findById(result.store);
+        return sendOrderStatusUpdate(result, orderStore, recipientEmail);
+      })().catch((err) => console.error('[mailer]', err.message));
+    }
   } catch (err) {
     res.status(err.status || 500).json({ message: err.status ? err.message : 'Server error.' });
   } finally {

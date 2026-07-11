@@ -215,6 +215,7 @@ export default function Navbar() {
                 <NavLink href="/orders" light={light}>My Orders</NavLink>
               </>
             )}
+            {!user && <NavLink href="/stores" light={light}>Stores</NavLink>}
           </div>
 
           {/* ── Desktop Auth + Cart (right) ── */}
@@ -228,12 +229,12 @@ export default function Navbar() {
               </>
             )}
 
-            {isCustomer && <CartIcon count={cartCount} />}
+            {(isCustomer || !user) && <CartIcon count={cartCount} />}
           </div>
 
           {/* ── Mobile: cart + hamburger ── */}
           <div className="md:hidden flex items-center gap-3">
-            {isCustomer && (
+            {(isCustomer || !user) && (
               <CartIcon count={cartCount} className="text-[var(--text-secondary)] hover:text-[var(--text-main)]" />
             )}
             <motion.button
@@ -318,6 +319,10 @@ export default function Navbar() {
                 )}
                 {!user && (
                   <>
+                    <NavLink href="/stores" mobile onClick={close}>Stores</NavLink>
+                    <NavLink href="/cart" mobile onClick={close}>
+                      Cart{cartCount > 0 ? ` (${cartCount})` : ''}
+                    </NavLink>
                     <NavLink href="/auth/login" mobile onClick={close}>Login</NavLink>
                     <NavLink href="/auth/register" mobile onClick={close}>Register</NavLink>
                   </>

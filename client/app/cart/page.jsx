@@ -17,6 +17,8 @@ export default function CartPage() {
   const { items, storeSlug, removeFromCart, updateQuantity, clearCart, cartTotal } = useCart();
   const router = useRouter();
 
+  // Cart works for guests (localStorage-backed); only non-customer roles
+  // (admin/shopowner) are bounced since they can't shop.
   useEffect(() => {
     if (loading) return;
     if (!user) return;
@@ -29,26 +31,7 @@ export default function CartPage() {
 
   if (loading) return null;
 
-  if (!user) {
-    return (
-      <PageWrapper>
-        <motion.div
-          initial="hidden"
-          animate="show"
-          variants={fadeUp}
-          className="max-w-xl mx-auto px-4 py-28"
-        >
-          <EmptyState
-            title="Sign in to view your cart"
-            description="Your cart is saved to your account. Please log in to continue."
-            action={<Button as={Link} href="/auth/login?next=/cart">Log In</Button>}
-          />
-        </motion.div>
-      </PageWrapper>
-    );
-  }
-
-  if (user.role !== 'customer') return null;
+  if (user && user.role !== 'customer') return null;
 
   if (!items.length) {
     return (

@@ -30,8 +30,11 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: 'ShopSmart',
-  description: 'E-commerce platform for small businesses',
+  title: {
+    default: 'ShopSmart — Marketplace for independent business',
+    template: '%s',
+  },
+  description: 'ShopSmart is a multi-tenant marketplace platform where independent businesses run their own branded storefronts.',
 };
 
 export default function RootLayout({ children }) {
