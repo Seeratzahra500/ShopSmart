@@ -137,7 +137,6 @@ export default function Navbar() {
   const [open, setOpen]   = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const close = () => setOpen(false);
-  const pathname = usePathname();
 
   const { scrollY } = useScroll();
   useMotionValueEvent(scrollY, 'change', (y) => setScrolled(y > 24));
@@ -156,10 +155,9 @@ export default function Navbar() {
     ? '/stores'
     : '/auth/login';
 
-  // The hero on / and /about is a dark photo, so before the user scrolls
-  // (transparent bg) the navbar needs light-on-dark text for contrast.
-  const isPhotoHeroRoute = pathname === '/' || pathname === '/about';
-  const light = isPhotoHeroRoute && !scrolled;
+  // The landing hero is light (ink-on-paper), so the navbar always reads
+  // dark-on-light — only the scrolled blur/bg treatment changes.
+  const light = false;
 
   return (
     <>

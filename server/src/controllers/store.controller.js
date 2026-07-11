@@ -25,7 +25,7 @@ exports.listStores = async (req, res) => {
 
     const total  = await Store.countDocuments(query);
     const stores = await Store.find(query)
-      .select('name tagline slug logoUrl primaryColor theme gridColumns')
+      .select('name tagline slug logoUrl primaryColor theme gridColumns accentColor heroImage')
       .skip((page - 1) * clampedLimit)
       .limit(clampedLimit)
       .sort({ createdAt: -1 });
