@@ -5,9 +5,8 @@ import { motion } from 'framer-motion';
 import { formatPrice } from '@/lib/formatPrice';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
-
-const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
-const stagger = { show: { transition: { staggerChildren: 0.08 } } };
+import StatCard from '@/components/ui/StatCard';
+import { fadeUp, stagger } from '@/lib/motion';
 
 /* ── SVG icons ── */
 const IconOrders = () => (
@@ -15,30 +14,6 @@ const IconOrders = () => (
     <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
     <rect x="9" y="3" width="6" height="4" rx="1" />
     <path d="M9 12h6M9 16h4" />
-  </svg>
-);
-const IconRevenue = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-    <circle cx="12" cy="12" r="9" />
-    <path d="M14.5 9.5A2.5 2.5 0 0 0 12 7v0a2.5 2.5 0 0 0 0 5 2.5 2.5 0 0 1 0 5v0a2.5 2.5 0 0 1-2.5-2.5" />
-    <path d="M12 7V5.5M12 18.5V17" />
-  </svg>
-);
-const IconWarning = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-    <line x1="12" y1="9" x2="12" y2="13" />
-    <line x1="12" y1="17" x2="12.01" y2="17" />
-  </svg>
-);
-const IconTrophy = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-    <path d="M4 22h16" />
-    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
-    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
-    <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
   </svg>
 );
 const IconShop = () => (
@@ -68,63 +43,6 @@ const IconSettings = () => (
   </svg>
 );
 
-/* ── Stat card configs ── */
-const STAT_CONFIGS = [
-  {
-    key: 'orders',
-    topBarClass: 'bg-[var(--color-brand)]',
-    iconBg: 'bg-stone-50',
-    iconColor: 'text-stone-600',
-    Icon: IconOrders,
-  },
-  {
-    key: 'revenue',
-    topBarClass: 'bg-emerald-400',
-    iconBg: 'bg-emerald-50',
-    iconColor: 'text-emerald-600',
-    Icon: IconRevenue,
-  },
-  {
-    key: 'lowStock',
-    topBarClass: 'bg-amber-400',
-    iconBg: 'bg-amber-50',
-    iconColor: 'text-amber-600',
-    Icon: IconWarning,
-  },
-  {
-    key: 'topProduct',
-    topBarClass: 'bg-stone-500',
-    iconBg: 'bg-stone-50',
-    iconColor: 'text-stone-600',
-    Icon: IconTrophy,
-  },
-];
-
-function StatCard({ label, value, sub, config, delay }) {
-  const { topBarClass, iconBg, iconColor, Icon } = config;
-  return (
-    <motion.div
-      variants={fadeUp}
-      transition={{ duration: 0.4, delay }}
-      whileHover={{ y: -2 }}
-      className="relative pt-1 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden"
-    >
-      {/* Colored top bar */}
-      <div className={`absolute top-0 inset-x-0 h-1 rounded-t-2xl ${topBarClass}`} />
-      <div className="p-6 flex items-start justify-between">
-        <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{label}</p>
-          <p className="text-2xl font-bold tracking-tight text-gray-900 mt-1">{value}</p>
-          {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
-        </div>
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg} ${iconColor}`}>
-          <Icon />
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
 /* ── Quick action card configs ── */
 const QUICK_ACTIONS = [
   {
@@ -132,30 +50,18 @@ const QUICK_ACTIONS = [
     label: 'Manage Products',
     desc: 'Add, edit, or remove items',
     Icon: IconProducts,
-    topBarClass: 'bg-[var(--color-brand)]',
-    iconBg: 'bg-stone-50',
-    iconColor: 'text-stone-600',
-    hoverShadow: 'hover:shadow-stone-100',
   },
   {
     href: '/dashboard/orders',
     label: 'View Orders',
     desc: 'Track and update orders',
     Icon: IconOrdersAction,
-    topBarClass: 'bg-stone-500',
-    iconBg: 'bg-stone-50',
-    iconColor: 'text-stone-600',
-    hoverShadow: 'hover:shadow-stone-100',
   },
   {
     href: '/dashboard/settings',
     label: 'Store Settings',
     desc: 'Customize your storefront',
     Icon: IconSettings,
-    topBarClass: 'bg-stone-500',
-    iconBg: 'bg-stone-50',
-    iconColor: 'text-stone-600',
-    hoverShadow: 'hover:shadow-stone-100',
   },
 ];
 
@@ -173,14 +79,14 @@ export default function DashboardOverview() {
 
   if (loading) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-36 bg-gray-200 rounded-2xl w-full" />
+      <div className="space-y-6">
+        <div className="skeleton h-36 rounded-[var(--radius-lg)] w-full" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => <div key={i} className="h-28 bg-gray-100 rounded-2xl" />)}
+          {[1, 2, 3, 4].map((i) => <div key={i} className="skeleton h-28 rounded-[var(--radius-lg)]" />)}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-48 bg-gray-100 rounded-2xl" />
-          <div className="h-48 bg-gray-100 rounded-2xl" />
+          <div className="skeleton h-48 rounded-[var(--radius-lg)]" />
+          <div className="skeleton h-48 rounded-[var(--radius-lg)]" />
         </div>
       </div>
     );
@@ -194,26 +100,25 @@ export default function DashboardOverview() {
       className="space-y-8"
       initial="hidden"
       animate="show"
-      variants={stagger}
+      variants={stagger()}
     >
       {/* ── Welcome banner ── */}
       <motion.div
         variants={fadeUp}
-        transition={{ duration: 0.4 }}
-        className="relative overflow-hidden rounded-2xl py-8 px-8 text-white"
+        className="relative overflow-hidden rounded-[var(--radius-lg)] py-8 px-8 text-white"
         style={{ background: 'linear-gradient(135deg, var(--color-brand) 0%, var(--color-accent) 100%)' }}
       >
         <div className="relative z-10">
-          <p className="text-sm font-medium opacity-80 mb-1">Seller Dashboard</p>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <p className="eyebrow text-white/70 mb-1">Seller Dashboard</p>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">
             Welcome back{user?.name ? `, ${user.name}` : ''}!
           </h1>
           <p className="mt-2 opacity-75 text-sm leading-relaxed">
-            Here's what's happening in your store today.
+            Here&apos;s what&apos;s happening in your store today.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <span className="inline-flex items-center gap-1.5 bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-300 inline-block" />
+              <span className="w-1.5 h-1.5 rounded-full bg-white/80 inline-block" />
               Account Active
             </span>
             <span className="inline-flex items-center bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full capitalize">
@@ -238,44 +143,31 @@ export default function DashboardOverview() {
       {/* ── Stat cards ── */}
       <motion.div
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-        variants={stagger}
+        variants={stagger()}
         initial="hidden"
         animate="show"
       >
-        <StatCard
-          label="Total Orders"
-          value={data?.totalOrders ?? 0}
-          config={STAT_CONFIGS[0]}
-          delay={0}
-        />
-        <StatCard
-          label="Total Revenue"
-          value={formatPrice(data?.totalRevenue ?? 0)}
-          config={STAT_CONFIGS[1]}
-          delay={0.05}
-        />
-        <StatCard
-          label="Low Stock Items"
-          value={data?.lowStock?.length ?? 0}
-          sub="< 10 units"
-          config={STAT_CONFIGS[2]}
-          delay={0.1}
-        />
-        <StatCard
-          label="Top Product"
-          value={data?.topProducts?.[0]?._id ?? '—'}
-          config={STAT_CONFIGS[3]}
-          delay={0.15}
-        />
+        <motion.div variants={fadeUp}>
+          <StatCard label="Total Orders" value={data?.totalOrders ?? 0} />
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <StatCard label="Total Revenue" value={formatPrice(data?.totalRevenue ?? 0)} />
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <StatCard label="Low Stock Items" value={data?.lowStock?.length ?? 0} caption="< 10 units" />
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <StatCard label="Top Product" value={data?.topProducts?.[0]?._id ?? '—'} />
+        </motion.div>
       </motion.div>
 
       {/* ── Top products + Low stock ── */}
-      <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-6" variants={stagger} initial="hidden" animate="show">
+      <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-6" variants={stagger()} initial="hidden" animate="show">
 
         {/* Top products */}
-        <motion.div variants={fadeUp} transition={{ duration: 0.4 }} className="p-6 rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <motion.div variants={fadeUp} className="p-6 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)]">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="font-bold tracking-tight text-gray-800">Top Products</h2>
+            <h2 className="font-display font-semibold tracking-tight text-[var(--text-main)]">Top Products</h2>
             <Link
               href="/dashboard/products"
               className="text-xs font-medium hover:underline"
@@ -296,19 +188,14 @@ export default function DashboardOverview() {
                       >
                         {i + 1}
                       </span>
-                      {/* Colored dot indicator */}
-                      <span
-                        className="w-2 h-2 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: 'var(--color-brand)' }}
-                      />
-                      <span className="text-gray-700 truncate max-w-[160px]">{p._id}</span>
+                      <span className="text-[var(--text-secondary)] truncate max-w-[160px]">{p._id}</span>
                     </div>
-                    <span className="bg-stone-100 text-stone-700 rounded-full px-2.5 py-0.5 text-xs font-semibold flex-shrink-0">
+                    <span className="bg-[var(--bg-sunken)] text-[var(--text-secondary)] rounded-full px-2.5 py-0.5 text-xs font-semibold flex-shrink-0 font-tabular">
                       {p.totalSold} sold
                     </span>
                   </div>
                   {/* Progress bar */}
-                  <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-[var(--bg-sunken)] rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full"
                       style={{
@@ -322,16 +209,15 @@ export default function DashboardOverview() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-3xl mb-2">📊</p>
-              <p className="text-sm text-gray-400">No sales data yet.</p>
+              <p className="text-sm text-[var(--text-muted)]">No sales data yet.</p>
             </div>
           )}
         </motion.div>
 
         {/* Low stock */}
-        <motion.div variants={fadeUp} transition={{ duration: 0.4 }} className="p-6 rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <motion.div variants={fadeUp} className="p-6 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)]">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="font-bold tracking-tight text-gray-800">Low Stock Alerts</h2>
+            <h2 className="font-display font-semibold tracking-tight text-[var(--text-main)]">Low Stock Alerts</h2>
             <Link
               href="/dashboard/products"
               className="text-xs font-medium hover:underline"
@@ -345,25 +231,22 @@ export default function DashboardOverview() {
               {data.lowStock.map((p) => (
                 <div
                   key={p._id}
-                  className={`flex items-center justify-between text-sm px-3 py-2.5 rounded-xl ${
-                    p.stock === 0 ? 'bg-red-50' : 'bg-amber-50'
-                  }`}
+                  className="flex items-center justify-between text-sm px-3 py-2.5 rounded-[var(--radius-md)]"
+                  style={{ backgroundColor: p.stock === 0 ? 'color-mix(in oklch, var(--danger) 10%, white)' : 'color-mix(in oklch, var(--warning) 10%, white)' }}
                 >
                   <div className="flex items-center gap-2">
-                    {/* Colored dot */}
                     <span
-                      className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                        p.stock === 0 ? 'bg-red-400' : 'bg-amber-400'
-                      }`}
+                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: p.stock === 0 ? 'var(--danger)' : 'var(--warning)' }}
                     />
-                    <span className="text-gray-700 truncate max-w-[180px]">{p.title}</span>
+                    <span className="text-[var(--text-secondary)] truncate max-w-[180px]">{p.title}</span>
                   </div>
                   <span
-                    className={`text-xs font-semibold flex-shrink-0 px-2.5 py-1 rounded-full ${
-                      p.stock === 0
-                        ? 'bg-red-100 text-red-600'
-                        : 'bg-amber-100 text-amber-700'
-                    }`}
+                    className="text-xs font-semibold flex-shrink-0 px-2.5 py-1 rounded-full font-tabular"
+                    style={{
+                      backgroundColor: p.stock === 0 ? 'color-mix(in oklch, var(--danger) 16%, white)' : 'color-mix(in oklch, var(--warning) 16%, white)',
+                      color: p.stock === 0 ? 'var(--danger)' : 'var(--warning)',
+                    }}
                   >
                     {p.stock === 0 ? 'Out of stock' : `${p.stock} left`}
                   </span>
@@ -372,38 +255,34 @@ export default function DashboardOverview() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-3xl mb-2">✅</p>
-              <p className="text-sm text-gray-400">All products are well stocked.</p>
+              <p className="text-sm text-[var(--text-muted)]">All products are well stocked.</p>
             </div>
           )}
         </motion.div>
       </motion.div>
 
       {/* ── Quick action cards ── */}
-      <motion.div className="grid grid-cols-1 sm:grid-cols-3 gap-4" variants={stagger} initial="hidden" animate="show">
-        {QUICK_ACTIONS.map(({ href, label, desc, Icon, topBarClass, iconBg, iconColor, hoverShadow }) => (
+      <motion.div className="grid grid-cols-1 sm:grid-cols-3 gap-4" variants={stagger()} initial="hidden" animate="show">
+        {QUICK_ACTIONS.map(({ href, label, desc, Icon }) => (
           <motion.div
             key={href}
             variants={fadeUp}
-            transition={{ duration: 0.4 }}
-            whileHover={{ y: -4, boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}
+            whileHover={{ y: -4 }}
           >
             <Link
               href={href}
-              className={`relative overflow-hidden flex items-center gap-4 p-6 pt-7 rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md ${hoverShadow} transition-shadow group`}
+              className="relative overflow-hidden flex items-center gap-4 p-6 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)] hover:shadow-[var(--shadow-lift)] transition-shadow group"
             >
-              {/* Top gradient strip */}
-              <div className={`absolute top-0 inset-x-0 h-1 rounded-t-2xl ${topBarClass}`} />
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg} ${iconColor}`}>
+              <div className="w-12 h-12 rounded-[var(--radius-md)] flex items-center justify-center flex-shrink-0 bg-[var(--brand-soft)] text-[var(--brand-ink)]">
                 <Icon />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-800 text-sm">{label}</p>
-                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{desc}</p>
+                <p className="font-semibold text-[var(--text-main)] text-sm">{label}</p>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5 leading-relaxed">{desc}</p>
               </div>
               {/* Chevron arrow */}
               <svg
-                className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors flex-shrink-0"
+                className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--text-secondary)] transition-colors flex-shrink-0"
                 fill="none" viewBox="0 0 24 24" stroke="currentColor"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

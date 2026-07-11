@@ -3,22 +3,20 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import PageWrapper from '@/components/PageWrapper';
+import EmptyState from '@/components/ui/EmptyState';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
-
-const fadeUp  = { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0 } };
-const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
+import { fadeUp, stagger } from '@/lib/motion';
 
 /* ── Featured (first) store card ── */
 function FeaturedCard({ store }) {
   return (
     <motion.div
       variants={fadeUp}
-      transition={{ duration: 0.5 }}
       whileHover={{ y: -4 }}
-      className="col-span-1 lg:col-span-2 rounded-3xl overflow-hidden relative group"
+      className="col-span-1 lg:col-span-2 rounded-[var(--radius-xl)] overflow-hidden relative group"
       style={{ minHeight: 320 }}
     >
       <Link href={`/store/${store.slug}`} className="block h-full">
@@ -29,7 +27,7 @@ function FeaturedCard({ store }) {
           )}
           <div
             className="absolute inset-0"
-            style={{ backgroundColor: store.heroImage ? undefined : store.primaryColor || '#5C4E4E' }}
+            style={{ backgroundColor: store.heroImage ? undefined : store.primaryColor || 'var(--color-brand)' }}
           />
         </div>
         {/* Noise texture overlay */}
@@ -42,17 +40,17 @@ function FeaturedCard({ store }) {
 
         {/* Glowing ring on hover */}
         <div
-          className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-          style={{ boxShadow: `inset 0 0 0 1.5px ${store.primaryColor || '#5C4E4E'}` }}
+          className="absolute inset-0 rounded-[var(--radius-xl)] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          style={{ boxShadow: `inset 0 0 0 1.5px ${store.primaryColor || 'var(--color-brand)'}` }}
         />
 
         {/* Logo / initial */}
         <div className="absolute top-6 right-6">
           {store.logoUrl ? (
             <Image src={store.logoUrl} alt={store.name} width={56} height={56}
-              className="object-contain rounded-xl opacity-80" />
+              className="object-contain rounded-[var(--radius-md)] opacity-80" />
           ) : (
-            <span className="text-7xl font-black select-none"
+            <span className="font-display text-7xl font-black select-none"
               style={{ color: 'rgba(255,255,255,0.08)' }}>
               {store.name[0].toUpperCase()}
             </span>
@@ -71,7 +69,7 @@ function FeaturedCard({ store }) {
           <p className="text-white/50 text-xs uppercase tracking-[0.2em] mb-2">
             {store.tagline ? 'Store' : 'Independent Store'}
           </p>
-          <h2 className="text-3xl font-bold text-white tracking-tight leading-tight">
+          <h2 className="font-display text-3xl font-semibold text-white tracking-tight leading-tight">
             {store.name}
           </h2>
           {store.tagline && (
@@ -94,21 +92,18 @@ function FeaturedCard({ store }) {
 }
 
 /* ── Regular store card ── */
-function StoreCard({ store, index }) {
+function StoreCard({ store }) {
   const [hovered, setHovered] = useState(false);
 
   return (
     <motion.div
       variants={fadeUp}
-      transition={{ duration: 0.4 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       whileHover={{ y: -6 }}
-      className="rounded-3xl overflow-hidden relative group"
+      className="rounded-[var(--radius-xl)] overflow-hidden relative group bg-[var(--bg-card)]"
       style={{
-        boxShadow: hovered
-          ? `0 24px 60px ${store.primaryColor ? store.primaryColor + '55' : 'rgba(92,78,78,0.35)'}`
-          : '0 2px 16px rgba(0,0,0,0.06)',
+        boxShadow: hovered ? 'var(--shadow-overlay)' : 'var(--shadow-lift)',
         transition: 'box-shadow 0.35s ease',
       }}
     >
@@ -116,7 +111,7 @@ function StoreCard({ store, index }) {
         {/* Banner */}
         <div
           className="relative h-72 flex items-end overflow-hidden"
-          style={{ backgroundColor: store.heroImage ? undefined : store.primaryColor || '#5C4E4E' }}
+          style={{ backgroundColor: store.heroImage ? undefined : store.primaryColor || 'var(--color-brand)' }}
         >
           {store.heroImage && (
             <Image src={store.heroImage} alt={store.name} fill className="absolute inset-0 object-cover" />
@@ -127,7 +122,7 @@ function StoreCard({ store, index }) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
           {/* Big faint letter */}
-          <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[7rem] font-black select-none pointer-events-none"
+          <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-display text-[7rem] font-black select-none pointer-events-none"
             style={{ color: 'rgba(255,255,255,0.07)' }}>
             {store.name[0].toUpperCase()}
           </span>
@@ -135,7 +130,7 @@ function StoreCard({ store, index }) {
           {store.logoUrl && (
             <div className="absolute top-4 right-4">
               <Image src={store.logoUrl} alt={store.name} width={56} height={56}
-                className="object-contain rounded-2xl opacity-90 shadow-lg" />
+                className="object-contain rounded-[var(--radius-lg)] opacity-90 shadow-[var(--shadow-lift)]" />
             </div>
           )}
 
@@ -153,12 +148,12 @@ function StoreCard({ store, index }) {
         </div>
 
         {/* Footer */}
-        <div className="bg-white px-5 py-4 flex items-center justify-between gap-3">
+        <div className="bg-[var(--bg-card)] px-5 py-4 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-bold text-gray-900 truncate">{store.name}</p>
+            <p className="font-medium text-[var(--text-main)] truncate">{store.name}</p>
             {store.tagline
-              ? <p className="text-xs text-gray-400 mt-0.5 truncate">{store.tagline}</p>
-              : <p className="text-xs text-gray-300 mt-0.5">Independent Store</p>
+              ? <p className="text-xs text-[var(--text-muted)] mt-0.5 truncate">{store.tagline}</p>
+              : <p className="text-xs text-[var(--text-muted)] mt-0.5">Independent Store</p>
             }
           </div>
           <div
@@ -215,34 +210,34 @@ export default function StoresPage() {
   return (
     <PageWrapper>
 
-      {/* ── Dark premium header ── */}
-      <div className="bg-gray-950 relative overflow-hidden">
+      {/* ── Header ── */}
+      <div className="bg-[#161311] relative overflow-hidden">
         {/* Ambient glow */}
         <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl opacity-10"
           style={{ background: 'radial-gradient(circle, var(--color-brand), transparent 70%)' }} />
         <div className="absolute bottom-0 right-1/4 w-64 h-64 rounded-full blur-3xl opacity-8"
-          style={{ background: 'radial-gradient(circle, #6366f1, transparent 70%)' }} />
+          style={{ background: 'radial-gradient(circle, var(--color-accent), transparent 70%)' }} />
 
         <div className="relative max-w-7xl mx-auto px-6 py-14">
           <motion.div
-            initial="hidden" animate="show" variants={stagger}
+            initial="hidden" animate="show" variants={stagger()}
             className="flex flex-col md:flex-row md:items-end md:justify-between gap-8"
           >
             <div>
               <motion.p
-                variants={fadeUp} transition={{ duration: 0.4 }}
+                variants={fadeUp}
                 className="text-xs font-semibold uppercase tracking-[0.25em] text-white/30 mb-3"
               >
                 Marketplace
               </motion.p>
               <motion.h1
-                variants={fadeUp} transition={{ duration: 0.5 }}
-                className="text-5xl md:text-6xl font-bold tracking-tight text-white"
+                variants={fadeUp}
+                className="font-display text-5xl md:text-6xl font-semibold tracking-tight text-white"
               >
                 Discover Stores
               </motion.h1>
               <motion.p
-                variants={fadeUp} transition={{ duration: 0.45 }}
+                variants={fadeUp}
                 className="mt-3 text-white/40 text-base"
               >
                 {loading ? '…' : `${total} independent store${total !== 1 ? 's' : ''} to explore`}
@@ -251,9 +246,9 @@ export default function StoresPage() {
 
             {/* Search */}
             <motion.form
-              variants={fadeUp} transition={{ duration: 0.4 }}
+              variants={fadeUp}
               onSubmit={handleSearch}
-              className="relative flex items-center w-full md:w-96 bg-white/5 border border-white/10 rounded-2xl overflow-hidden focus-within:border-white/25 focus-within:bg-white/8 transition-all"
+              className="relative flex items-center w-full md:w-96 bg-white/5 border border-white/10 rounded-[var(--radius-lg)] overflow-hidden focus-within:border-white/25 focus-within:bg-white/8 transition-all"
             >
               <span className="pl-4 text-white/30 flex-shrink-0">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -273,7 +268,7 @@ export default function StoresPage() {
                 </button>
               )}
               <button type="submit"
-                className="m-1.5 px-5 py-2.5 rounded-xl text-white text-xs font-semibold hover:opacity-90 transition-opacity flex-shrink-0"
+                className="m-1.5 px-5 py-2.5 rounded-[var(--radius-md)] text-white text-xs font-semibold hover:opacity-90 transition-opacity flex-shrink-0"
                 style={{ backgroundColor: 'var(--color-brand)' }}>
                 Search
               </button>
@@ -283,41 +278,36 @@ export default function StoresPage() {
       </div>
 
       {/* ── Grid ── */}
-      <div className="bg-gray-50 min-h-screen">
+      <div className="bg-[var(--bg-page)] min-h-screen">
         <div className="max-w-7xl mx-auto px-6 py-10">
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className={`animate-pulse rounded-3xl overflow-hidden ${i === 0 ? 'lg:col-span-2' : ''}`}>
-                  <div className={`bg-gray-200 ${i === 0 ? 'h-80' : 'h-52'}`} />
-                  <div className="p-5 bg-white space-y-2">
-                    <div className="h-4 bg-gray-100 rounded w-1/2" />
-                    <div className="h-3 bg-gray-100 rounded w-3/4" />
+                <div key={i} className={`skeleton rounded-[var(--radius-xl)] overflow-hidden ${i === 0 ? 'lg:col-span-2' : ''}`}>
+                  <div className={`${i === 0 ? 'h-80' : 'h-52'}`} />
+                  <div className="p-5 bg-[var(--bg-card)] space-y-2">
+                    <div className="h-4 rounded w-1/2" />
+                    <div className="h-3 rounded w-3/4" />
                   </div>
                 </div>
               ))}
             </div>
           ) : stores.length === 0 ? (
-            <div className="py-24 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-white border border-gray-200 flex items-center justify-center mx-auto mb-4 shadow-sm">
-                <svg className="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9l1-5h16l1 5M3 9h18M3 9v11a1 1 0 001 1h4a1 1 0 001-1v-4h4v4a1 1 0 001 1h4a1 1 0 001-1V9" />
-                </svg>
-              </div>
-              <p className="text-lg font-bold text-gray-800">No stores found</p>
-              {search && <p className="text-sm text-gray-400 mt-1">Try a different search term</p>}
-            </div>
+            <EmptyState
+              title="No stores found"
+              description={search ? 'Try a different search term.' : undefined}
+            />
           ) : (
             <motion.div
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-              variants={stagger} initial="hidden" animate="show"
+              variants={stagger()} initial="hidden" animate="show"
             >
               {/* Featured first store */}
               {featured && <FeaturedCard store={featured} />}
 
               {/* Rest of stores */}
-              {rest.map((store, i) => (
-                <StoreCard key={store._id} store={store} index={i} />
+              {rest.map((store) => (
+                <StoreCard key={store._id} store={store} />
               ))}
             </motion.div>
           )}

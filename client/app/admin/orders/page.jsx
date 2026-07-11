@@ -1,24 +1,73 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { formatPrice } from '@/lib/formatPrice';
 import api from '@/lib/api';
+import StatusBadge from '@/components/ui/StatusBadge';
+import EmptyState from '@/components/ui/EmptyState';
+import { fadeUp, stagger } from '@/lib/motion';
 
 const STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
-const STATUS_COLORS = {
-  pending:    'bg-yellow-100 text-yellow-700',
-  processing: 'bg-stone-100 text-stone-700',
-  shipped:    'bg-[#988686]/20 text-[#5C4E4E]',
-  delivered:  'bg-green-100 text-green-700',
-  cancelled:  'bg-red-100 text-red-700',
-};
-
-const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
-const staggerContainer = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
+const staggerContainer = stagger(0.08);
 
 const TAB_ALL = 'all';
+
+function StatusDropdown({ value, onChange, disabled }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [open]);
+
+  return (
+    <div className="relative inline-block" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        disabled={disabled}
+        className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--bg-card)] text-[var(--text-main)] cursor-pointer hover:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 disabled:opacity-50 transition-colors capitalize"
+      >
+        {value}
+        <svg className="w-3 h-3 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 mt-1 w-36 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg-card)] shadow-[var(--shadow-overlay)] py-1 z-20"
+          >
+            {STATUSES.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => { onChange(s); setOpen(false); }}
+                className={[
+                  'block w-full text-left px-3 py-1.5 text-xs font-medium capitalize transition-colors',
+                  s === value
+                    ? 'text-[var(--brand-ink)] bg-[var(--brand-soft)]'
+                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-sunken)] hover:text-[var(--text-main)]',
+                ].join(' ')}
+              >
+                {s}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function AdminOrdersPage() {
   const [orders, setOrders]     = useState([]);
@@ -60,8 +109,8 @@ export default function AdminOrdersPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Orders</h1>
-        <p className="text-sm text-gray-600 leading-relaxed mt-0.5">
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--text-main)]">Orders</h1>
+        <p className="text-sm text-[var(--text-secondary)] leading-relaxed mt-0.5">
           {orders.length} total order{orders.length !== 1 ? 's' : ''}
         </p>
       </motion.div>
@@ -81,12 +130,12 @@ export default function AdminOrdersPage() {
             className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors capitalize
               ${activeTab === tab
                 ? 'text-white'
-                : 'border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                : 'border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-sunken)]'}`}
             style={activeTab === tab ? { backgroundColor: 'var(--color-brand)' } : {}}
           >
             {tab === TAB_ALL ? 'All' : tab}
             {tab !== TAB_ALL && (
-              <span className={`ml-1.5 text-xs ${activeTab === tab ? 'opacity-70' : 'text-gray-400'}`}>
+              <span className={`ml-1.5 text-xs font-tabular ${activeTab === tab ? 'opacity-70' : 'text-[var(--text-muted)]'}`}>
                 ({orders.filter((o) => o.status === tab).length})
               </span>
             )}
@@ -98,33 +147,28 @@ export default function AdminOrdersPage() {
       {loading ? (
         <div className="space-y-2 animate-pulse">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 bg-gray-100 rounded-2xl" />
+            <div key={i} className="h-20 skeleton rounded-[var(--radius-lg)]" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <svg className="w-12 h-12 mx-auto mb-3 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-          <p className="text-sm">
-            {activeTab === TAB_ALL ? 'No orders yet.' : `No ${activeTab} orders.`}
-          </p>
-        </div>
+        <EmptyState
+          title="No orders"
+          description={activeTab === TAB_ALL ? 'No orders yet.' : `No ${activeTab} orders.`}
+        />
       ) : (
-        <div className="rounded-2xl overflow-x-auto border border-gray-100 bg-white shadow-sm">
+        <div className="rounded-[var(--radius-lg)] overflow-x-auto border border-[var(--border)] bg-[var(--bg-card)]">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-[var(--bg-sunken)] border-b border-[var(--border)]">
               <tr>
                 {['Order ID', 'Customer', 'Date', 'Items', 'Total', 'Status', 'Update'].map((h) => (
-                  <th key={h} className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-widest text-gray-400">
+                  <th key={h} className="text-left px-5 py-3 eyebrow">
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
             <motion.tbody
-              className="divide-y divide-gray-100"
+              className="divide-y divide-[var(--border)]"
               variants={staggerContainer}
               initial="hidden"
               animate="show"
@@ -134,58 +178,46 @@ export default function AdminOrdersPage() {
                   key={order._id}
                   variants={fadeUp}
                   transition={{ duration: 0.4 }}
-                  className="hover:bg-gray-50 transition-colors even:bg-gray-50/50"
+                  className="hover:bg-[var(--bg-sunken)] transition-colors"
                 >
                   {/* Order ID */}
-                  <td className="px-5 py-4 font-mono text-xs text-gray-500">
+                  <td className="px-5 py-4 font-mono text-xs text-[var(--text-muted)]">
                     #{order._id.slice(-8).toUpperCase()}
                   </td>
                   {/* Customer */}
                   <td className="px-5 py-4">
-                    <p className="font-medium text-gray-800 text-sm">
+                    <p className="font-medium text-[var(--text-main)] text-sm">
                       {order.customer?.name || order.guestEmail || 'Guest'}
                     </p>
                     {order.customer?.email && (
-                      <p className="text-xs text-gray-400">{order.customer.email}</p>
+                      <p className="text-xs text-[var(--text-muted)]">{order.customer.email}</p>
                     )}
                   </td>
                   {/* Date */}
-                  <td className="px-5 py-4 text-xs text-gray-500">
+                  <td className="px-5 py-4 text-xs text-[var(--text-muted)]">
                     {new Date(order.createdAt).toLocaleDateString('en-PK', {
                       day: 'numeric', month: 'short', year: 'numeric',
                     })}
                   </td>
                   {/* Items */}
-                  <td className="px-5 py-4 text-gray-600 text-sm">
+                  <td className="px-5 py-4 text-[var(--text-secondary)] text-sm">
                     {order.items.length} item{order.items.length !== 1 ? 's' : ''}
                   </td>
                   {/* Total */}
-                  <td className="px-5 py-4 font-semibold text-gray-800">
+                  <td className="px-5 py-4 font-semibold text-[var(--text-main)] font-tabular">
                     {formatPrice(order.totalAmount)}
                   </td>
                   {/* Status badge */}
                   <td className="px-5 py-4">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize
-                        ${STATUS_COLORS[order.status] || 'bg-gray-100 text-gray-600'}`}
-                    >
-                      {order.status}
-                    </span>
+                    <StatusBadge status={order.status} />
                   </td>
                   {/* Status dropdown */}
                   <td className="px-5 py-4">
-                    <select
+                    <StatusDropdown
                       value={order.status}
-                      onChange={(e) => handleStatus(order._id, e.target.value)}
+                      onChange={(status) => handleStatus(order._id, status)}
                       disabled={updating === order._id}
-                      className="text-xs font-semibold px-2 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-stone-300 disabled:opacity-50 transition-colors"
-                    >
-                      {STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                          {s.charAt(0).toUpperCase() + s.slice(1)}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </td>
                 </motion.tr>
               ))}

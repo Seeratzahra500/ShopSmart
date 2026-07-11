@@ -4,29 +4,31 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
+import Badge from '@/components/ui/Badge';
+import EmptyState from '@/components/ui/EmptyState';
+import { fadeUp, stagger } from '@/lib/motion';
 
-const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
-const staggerContainer = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
+const staggerContainer = stagger(0.08);
 
 function SkeletonCards() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="rounded-2xl border border-gray-100 bg-white shadow-sm p-6 space-y-4">
+        <div key={i} className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)] p-6 space-y-4">
           <div className="flex items-start justify-between">
             <div className="space-y-2">
-              <div className="h-4 w-32 bg-gray-200 rounded" />
-              <div className="h-2 w-20 bg-gray-100 rounded" />
+              <div className="h-4 w-32 skeleton rounded" />
+              <div className="h-2 w-20 skeleton rounded" />
             </div>
-            <div className="h-6 w-16 bg-gray-100 rounded-full" />
+            <div className="h-6 w-16 skeleton rounded-full" />
           </div>
           <div className="space-y-2">
-            <div className="h-3 w-28 bg-gray-100 rounded" />
-            <div className="h-2 w-36 bg-gray-100 rounded" />
+            <div className="h-3 w-28 skeleton rounded" />
+            <div className="h-2 w-36 skeleton rounded" />
           </div>
           <div className="flex gap-2">
-            <div className="h-8 w-24 bg-gray-100 rounded-full" />
-            <div className="h-8 w-24 bg-gray-100 rounded-full" />
+            <div className="h-8 w-24 skeleton rounded-full" />
+            <div className="h-8 w-24 skeleton rounded-full" />
           </div>
         </div>
       ))}
@@ -68,9 +70,9 @@ export default function AdminStoresPage() {
         transition={{ duration: 0.4 }}
         className="flex items-center gap-3"
       >
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Stores</h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--text-main)]">Stores</h1>
         {!loading && (
-          <span className="px-3 py-0.5 rounded-full text-sm font-semibold bg-gray-100 text-gray-600">
+          <span className="px-3 py-0.5 rounded-full text-sm font-semibold bg-[var(--bg-sunken)] text-[var(--text-secondary)] font-tabular">
             {stores.length}
           </span>
         )}
@@ -80,13 +82,10 @@ export default function AdminStoresPage() {
       {loading ? (
         <SkeletonCards />
       ) : stores.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <svg className="w-12 h-12 mx-auto mb-3 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.35 2.7A1 1 0 007 17h11m-5 0a2 2 0 100 4 2 2 0 000-4zm-6 0a2 2 0 100 4 2 2 0 000-4z" />
-          </svg>
-          <p className="text-sm">No stores yet. Sellers will appear here once they register.</p>
-        </div>
+        <EmptyState
+          title="No stores yet"
+          description="Sellers will appear here once they register."
+        />
       ) : (
         <motion.div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
@@ -99,43 +98,40 @@ export default function AdminStoresPage() {
               key={store._id}
               variants={fadeUp}
               transition={{ duration: 0.4 }}
-              whileHover={{ y: -4, boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}
-              className="rounded-2xl border border-gray-100 bg-white shadow-sm p-6 flex flex-col gap-4"
+              whileHover={{ y: -4 }}
+              className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)] hover:shadow-[var(--shadow-lift)] transition-shadow p-6 flex flex-col gap-4"
             >
               {/* Header: name + status */}
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     <div
-                      className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white font-bold text-xs"
+                      className="w-7 h-7 rounded-[var(--radius-sm)] flex items-center justify-center flex-shrink-0 text-white font-bold text-xs"
                       style={{ backgroundColor: store.primaryColor || 'var(--color-brand)' }}
                     >
                       {store.name[0].toUpperCase()}
                     </div>
-                    <p className="font-bold text-lg tracking-tight text-gray-900 truncate">{store.name}</p>
+                    <p className="font-display font-semibold text-lg tracking-tight text-[var(--text-main)] truncate">{store.name}</p>
                   </div>
-                  <p className="font-mono text-xs text-gray-400 pl-9">/{store.slug}</p>
+                  <p className="font-mono text-xs text-[var(--text-muted)] pl-9">/{store.slug}</p>
                 </div>
-                <span
-                  className={`flex-shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
-                    ${store.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-500'}`}
-                >
+                <Badge tone={store.isActive ? 'success' : 'danger'} className="flex-shrink-0">
                   {store.isActive ? 'Active' : 'Inactive'}
-                </span>
+                </Badge>
               </div>
 
               {/* Owner info */}
               <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">Owner</p>
-                <p className="text-sm font-medium text-gray-700">{store.owner?.name || '—'}</p>
+                <p className="eyebrow mb-1">Owner</p>
+                <p className="text-sm font-medium text-[var(--text-main)]">{store.owner?.name || '—'}</p>
                 {store.owner?.email && (
-                  <p className="text-xs text-gray-500">{store.owner.email}</p>
+                  <p className="text-xs text-[var(--text-muted)]">{store.owner.email}</p>
                 )}
               </div>
 
               {/* Tagline if present */}
               {store.tagline && (
-                <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">{store.tagline}</p>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed line-clamp-2">{store.tagline}</p>
               )}
 
               {/* Actions */}
@@ -143,7 +139,7 @@ export default function AdminStoresPage() {
                 <Link
                   href={`/store/${store.slug}`}
                   target="_blank"
-                  className="px-4 py-2 rounded-full text-xs font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 rounded-full text-xs font-semibold border border-[var(--border-strong)] text-[var(--text-main)] hover:bg-[var(--bg-sunken)] transition-colors"
                 >
                   Visit Store
                 </Link>
@@ -153,8 +149,8 @@ export default function AdminStoresPage() {
                   disabled={busy === store._id}
                   className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors disabled:opacity-50
                     ${store.isActive
-                      ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                      : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
+                      ? 'bg-[var(--danger)]/8 text-[var(--danger)] hover:bg-[var(--danger)]/15'
+                      : 'bg-[var(--success)]/8 text-[var(--success)] hover:bg-[var(--success)]/15'}`}
                 >
                   {store.isActive ? 'Deactivate' : 'Activate'}
                 </motion.button>

@@ -4,12 +4,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { formatPrice } from '@/lib/formatPrice';
 import api from '@/lib/api';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Badge from '@/components/ui/Badge';
+import EmptyState from '@/components/ui/EmptyState';
+import { fadeUp, stagger } from '@/lib/motion';
 
 const EMPTY = { title: '', description: '', price: '', stock: '', category: '', images: '' };
 const CATEGORIES = ['Electronics', 'Clothing', 'Food & Beverages', 'Home & Living', 'Beauty', 'Books', 'Sports', 'Toys'];
 
-const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
-const stagger = { show: { transition: { staggerChildren: 0.08 } } };
+const fieldStyle = (hasError) => [
+  'w-full px-3.5 py-2.5 text-sm rounded-[var(--radius-sm)] bg-[var(--bg-card)]',
+  'border transition-colors outline-none',
+  hasError
+    ? 'border-[var(--danger)] focus:ring-2 focus:ring-[var(--danger)]/20'
+    : 'border-[var(--border-strong)] focus:border-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/15',
+].join(' ');
 
 function ProductModal({ product, onClose, onSaved }) {
   const editing = !!product?._id;
@@ -86,17 +96,17 @@ function ProductModal({ product, onClose, onSaved }) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.2 }}
-        className="bg-white rounded-2xl border border-gray-100 shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        className="bg-[var(--bg-card)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-overlay)] w-full max-w-lg max-h-[90vh] overflow-y-auto"
       >
         {/* Modal header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-lg font-bold tracking-tight text-gray-900">
+        <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
+          <h2 className="font-display text-lg font-semibold tracking-tight text-[var(--text-main)]">
             {editing ? 'Edit Product' : 'New Product'}
           </h2>
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full border border-[var(--border-strong)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sunken)] transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -106,68 +116,40 @@ function ProductModal({ product, onClose, onSaved }) {
 
         {/* Modal body */}
         <form onSubmit={handleSubmit} noValidate className="p-6 space-y-4">
-          {[
-            { f: 'title',  label: 'Title',                          type: 'text',   ph: 'Product name' },
-            { f: 'price',  label: 'Price (PKR)',                     type: 'number', ph: '0' },
-            { f: 'stock',  label: 'Stock',                           type: 'number', ph: '0' },
-            { f: 'images', label: 'Image URLs (comma-separated)',    type: 'text',   ph: 'https://…' },
-          ].map(({ f, label, type, ph }) => (
-            <div key={f}>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
-              <input
-                type={type} value={form[f]} onChange={set(f)} placeholder={ph}
-                className={`rounded-xl border w-full px-4 py-3 focus:ring-2 focus:ring-[var(--color-brand)] outline-none text-sm transition-colors ${
-                  errors[f] ? 'border-red-400 focus:ring-red-200' : 'border-gray-200'
-                }`}
-              />
-              {errors[f] && <p className="text-red-500 text-xs mt-1">{errors[f]}</p>}
-            </div>
-          ))}
+          <Input label="Title" type="text" value={form.title} onChange={set('title')} placeholder="Product name" error={errors.title} />
+          <Input label="Price (PKR)" type="number" value={form.price} onChange={set('price')} placeholder="0" error={errors.price} />
+          <Input label="Stock" type="number" value={form.stock} onChange={set('stock')} placeholder="0" error={errors.stock} />
+          <Input label="Image URLs (comma-separated)" type="text" value={form.images} onChange={set('images')} placeholder="https://…" error={errors.images} />
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Category</label>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">Category</label>
             <select
               value={form.category} onChange={set('category')}
-              className={`rounded-xl border w-full px-4 py-3 focus:ring-2 focus:ring-[var(--color-brand)] outline-none text-sm transition-colors ${
-                errors.category ? 'border-red-400 focus:ring-red-200' : 'border-gray-200'
-              }`}
+              className={fieldStyle(!!errors.category)}
             >
               <option value="">Select category</option>
               {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
-            {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
+            {errors.category && <p className="text-xs text-[var(--danger)] mt-1.5">{errors.category}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">Description</label>
             <textarea
               value={form.description} onChange={set('description')} rows={3}
               placeholder="Describe the product…"
-              className={`rounded-xl border w-full px-4 py-3 focus:ring-2 focus:ring-[var(--color-brand)] outline-none text-sm resize-none transition-colors ${
-                errors.description ? 'border-red-400 focus:ring-red-200' : 'border-gray-200'
-              }`}
+              className={[fieldStyle(!!errors.description), 'resize-none'].join(' ')}
             />
-            {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
+            {errors.description && <p className="text-xs text-[var(--danger)] mt-1.5">{errors.description}</p>}
           </div>
 
           <div className="flex gap-3 pt-2">
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.97 }}
-              onClick={onClose}
-              className="flex-1 py-3 text-sm font-semibold text-gray-600 border border-gray-200 rounded-full hover:bg-gray-50 transition-colors"
-            >
+            <Button type="button" variant="secondary" className="flex-1 rounded-full" onClick={onClose}>
               Cancel
-            </motion.button>
-            <motion.button
-              type="submit"
-              whileTap={{ scale: 0.97 }}
-              disabled={saving}
-              className="flex-1 py-3 text-sm font-semibold text-white rounded-full transition-opacity disabled:opacity-60 hover:opacity-90"
-              style={{ backgroundColor: 'var(--color-brand)' }}
-            >
+            </Button>
+            <Button type="submit" variant="primary" className="flex-1 rounded-full" loading={saving}>
               {saving ? 'Saving…' : editing ? 'Save Changes' : 'Create Product'}
-            </motion.button>
+            </Button>
           </div>
         </form>
       </motion.div>
@@ -204,43 +186,37 @@ export default function DashboardProductsPage() {
       className="space-y-6"
       initial="hidden"
       animate="show"
-      variants={stagger}
+      variants={stagger()}
     >
       {/* Top bar */}
       <motion.div
         variants={fadeUp}
-        transition={{ duration: 0.4 }}
         className="flex items-center justify-between flex-wrap gap-3"
       >
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">My Products</h1>
-          <p className="text-sm text-gray-500 mt-0.5 leading-relaxed">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--text-main)]">My Products</h1>
+          <p className="text-sm text-[var(--text-secondary)] mt-0.5 leading-relaxed">
             {products.length} product{products.length !== 1 ? 's' : ''} in your store
           </p>
         </div>
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={() => setModal('new')}
-          className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white rounded-full hover:opacity-90 transition-opacity"
-          style={{ backgroundColor: 'var(--color-brand)' }}
-        >
+        <Button variant="primary" className="rounded-full" onClick={() => setModal('new')}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
           </svg>
           Add Product
-        </motion.button>
+        </Button>
       </motion.div>
 
       {/* Loading skeletons */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="p-5 rounded-2xl border border-gray-100 bg-white space-y-3">
+            <div key={i} className="p-5 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)] space-y-3">
               <div className="flex gap-3 items-start">
-                <div className="w-16 h-16 rounded-xl bg-gray-200 flex-shrink-0" />
+                <div className="skeleton w-16 h-16 rounded-[var(--radius-md)] flex-shrink-0" />
                 <div className="flex-1 space-y-2 pt-1">
-                  <div className="h-4 bg-gray-200 rounded w-3/4" />
-                  <div className="h-3 bg-gray-100 rounded w-1/2" />
+                  <div className="skeleton h-4 rounded w-3/4" />
+                  <div className="skeleton h-3 rounded w-1/2" />
                 </div>
               </div>
             </div>
@@ -250,29 +226,26 @@ export default function DashboardProductsPage() {
         /* Empty state */
         <motion.div
           variants={fadeUp}
-          transition={{ duration: 0.4 }}
-          className="text-center py-24 rounded-2xl border border-dashed border-gray-200 bg-white"
+          className="rounded-[var(--radius-lg)] border border-dashed border-[var(--border-strong)] bg-[var(--bg-card)]"
         >
-          <p className="text-5xl mb-4">📦</p>
-          <p className="text-lg font-semibold text-gray-700">No products yet</p>
-          <p className="text-sm text-gray-400 mt-1 leading-relaxed">Add your first product to start selling.</p>
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setModal('new')}
-            className="mt-5 inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white rounded-full hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: 'var(--color-brand)' }}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-            </svg>
-            Add your first product
-          </motion.button>
+          <EmptyState
+            title="No products yet"
+            description="Add your first product to start selling."
+            action={
+              <Button variant="primary" className="rounded-full" onClick={() => setModal('new')}>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                </svg>
+                Add your first product
+              </Button>
+            }
+          />
         </motion.div>
       ) : (
         /* Product grid */
         <motion.div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-          variants={stagger}
+          variants={stagger()}
           initial="hidden"
           animate="show"
         >
@@ -280,9 +253,8 @@ export default function DashboardProductsPage() {
             <motion.div
               key={p._id}
               variants={fadeUp}
-              transition={{ duration: 0.4 }}
               whileHover={{ y: -2 }}
-              className="p-5 rounded-2xl border border-gray-100 bg-white shadow-sm flex flex-col gap-4"
+              className="p-5 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)] shadow-[var(--shadow-lift)] flex flex-col gap-4"
             >
               {/* Product header: thumbnail + name */}
               <div className="flex items-start gap-3">
@@ -290,62 +262,40 @@ export default function DashboardProductsPage() {
                   <img
                     src={p.images[0]}
                     alt={p.title}
-                    className="w-16 h-16 rounded-xl object-cover flex-shrink-0 border border-gray-100"
+                    className="w-16 h-16 rounded-[var(--radius-md)] object-cover flex-shrink-0 border border-[var(--border)]"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 text-2xl">
-                    🖼️
+                  <div className="w-16 h-16 rounded-[var(--radius-md)] bg-[var(--bg-sunken)] flex items-center justify-center flex-shrink-0 text-[var(--text-muted)] text-xs">
+                    No image
                   </div>
                 )}
                 <div className="min-w-0 flex-1 pt-0.5">
-                  <p className="font-semibold text-gray-800 text-sm leading-snug truncate">{p.title}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{p.category}</p>
+                  <p className="font-semibold text-[var(--text-main)] text-sm leading-snug truncate">{p.title}</p>
+                  <p className="eyebrow text-[10px] mt-0.5">{p.category}</p>
                 </div>
               </div>
 
               {/* Price + stock + status */}
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <span className="font-bold text-gray-900 text-sm">{formatPrice(p.price)}</span>
+                <span className="font-tabular font-bold text-[var(--text-main)] text-sm">{formatPrice(p.price)}</span>
                 <div className="flex items-center gap-2">
-                  {/* Stock badge */}
-                  <span
-                    className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                      p.stock === 0
-                        ? 'bg-red-100 text-red-600'
-                        : p.stock < 10
-                        ? 'bg-amber-100 text-amber-700'
-                        : 'bg-green-100 text-green-700'
-                    }`}
-                  >
+                  <Badge tone={p.stock === 0 ? 'danger' : p.stock < 10 ? 'warning' : 'success'}>
                     {p.stock === 0 ? 'Out of stock' : `${p.stock} in stock`}
-                  </span>
-                  {/* Active badge */}
-                  <span
-                    className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                      p.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
-                    }`}
-                  >
+                  </Badge>
+                  <Badge tone={p.isActive ? 'brand' : 'neutral'}>
                     {p.isActive ? 'Active' : 'Hidden'}
-                  </span>
+                  </Badge>
                 </div>
               </div>
 
               {/* Action buttons */}
-              <div className="flex items-center gap-2 pt-1 border-t border-gray-50">
-                <motion.button
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setModal(p)}
-                  className="flex-1 py-2 text-xs font-semibold rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
-                >
+              <div className="flex items-center gap-2 pt-1 border-t border-[var(--border)]">
+                <Button variant="secondary" size="sm" className="flex-1 rounded-full" onClick={() => setModal(p)}>
                   Edit
-                </motion.button>
-                <motion.button
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => handleDelete(p._id, p.title)}
-                  className="flex-1 py-2 text-xs font-semibold rounded-full border border-red-100 text-red-500 hover:bg-red-50 transition-colors"
-                >
+                </Button>
+                <Button variant="destructive" size="sm" className="flex-1 rounded-full border border-[var(--danger)]/20" onClick={() => handleDelete(p._id, p.title)}>
                   Remove
-                </motion.button>
+                </Button>
               </div>
             </motion.div>
           ))}

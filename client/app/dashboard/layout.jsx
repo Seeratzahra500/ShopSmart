@@ -50,9 +50,9 @@ export default function DashboardLayout({ children }) {
 
   const SidebarContent = ({ onLinkClick }) => (
     <>
-      <div className="p-4 border-b border-gray-100">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Seller Dashboard</p>
-        <p className="text-sm font-medium text-gray-700 mt-0.5 truncate">{user.name}</p>
+      <div className="p-4 border-b border-[var(--border)]">
+        <p className="eyebrow">Seller Dashboard</p>
+        <p className="text-sm font-medium text-[var(--text-main)] mt-0.5 truncate">{user.name}</p>
       </div>
       <nav className="flex-1 p-3 space-y-1">
         {NAV.map(({ href, label, icon, exact }) => {
@@ -62,12 +62,16 @@ export default function DashboardLayout({ children }) {
               key={href}
               href={href}
               onClick={onLinkClick}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-              style={active
-                ? { backgroundColor: 'color-mix(in srgb, var(--color-brand) 10%, white)', color: 'var(--color-brand)' }
-                : { color: '#6b7280' }
-              }
+              className={[
+                'flex items-center gap-3 px-3 py-2 rounded-[var(--radius-md)] text-sm font-medium transition-colors relative',
+                active
+                  ? 'bg-[var(--brand-soft)] text-[var(--brand-ink)]'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-sunken)] hover:text-[var(--text-main)]',
+              ].join(' ')}
             >
+              {active && (
+                <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-full bg-[var(--color-brand)]" />
+              )}
               <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
               </svg>
@@ -76,12 +80,12 @@ export default function DashboardLayout({ children }) {
           );
         })}
       </nav>
-      <div className="p-3 border-t border-gray-100 space-y-1">
+      <div className="p-3 border-t border-[var(--border)] space-y-1">
         <ViewStoreLink onLinkClick={onLinkClick} />
         <Link
           href="/"
           onClick={onLinkClick}
-          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-gray-800 rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-main)] rounded-[var(--radius-md)] hover:bg-[var(--bg-sunken)] transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -93,25 +97,25 @@ export default function DashboardLayout({ children }) {
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-[var(--bg-page)]">
 
       {/* ── Desktop Sidebar (md+) ── */}
-      <aside className="hidden md:flex w-56 bg-white border-r border-gray-100 flex-col fixed top-16 bottom-0 z-40">
+      <aside className="hidden md:flex w-56 bg-[var(--bg-card)] border-r border-[var(--border)] flex-col fixed top-16 bottom-0 z-40">
         <SidebarContent onLinkClick={undefined} />
       </aside>
 
       {/* ── Mobile: top bar with hamburger ── */}
-      <div className="md:hidden fixed top-16 left-0 right-0 z-40 bg-white border-b border-gray-100 h-12 flex items-center px-4 gap-3">
+      <div className="md:hidden fixed top-16 left-0 right-0 z-40 bg-[var(--bg-card)] border-b border-[var(--border)] h-12 flex items-center px-4 gap-3">
         <button
           onClick={() => setDrawerOpen(true)}
           aria-label="Open menu"
-          className="p-2 rounded-lg text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-[var(--radius-md)] text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sunken)] transition-colors"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <p className="text-sm font-semibold text-gray-700 truncate">Seller Dashboard</p>
+        <p className="text-sm font-semibold text-[var(--text-main)] truncate">Seller Dashboard</p>
       </div>
 
       {/* ── Mobile: slide drawer overlay ── */}
@@ -125,16 +129,16 @@ export default function DashboardLayout({ children }) {
 
           {/* Drawer panel */}
           <aside
-            className="relative w-64 bg-white flex flex-col h-full shadow-xl"
+            className="relative w-64 bg-[var(--bg-card)] flex flex-col h-full shadow-[var(--shadow-overlay)]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drawer header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+            <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
               <p className="text-sm font-bold" style={{ color: 'var(--color-brand)' }}>ShopSmart</p>
               <button
                 onClick={() => setDrawerOpen(false)}
                 aria-label="Close menu"
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-[var(--radius-md)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sunken)] transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -171,7 +175,7 @@ function ViewStoreLink({ onLinkClick }) {
       target={slug ? '_blank' : undefined}
       rel="noopener noreferrer"
       onClick={onLinkClick}
-      className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-gray-800 rounded-lg hover:bg-gray-50 transition-colors"
+      className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-main)] rounded-[var(--radius-md)] hover:bg-[var(--bg-sunken)] transition-colors"
     >
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

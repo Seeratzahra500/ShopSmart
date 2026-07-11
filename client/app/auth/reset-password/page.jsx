@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
+import { SPRING } from '@/lib/motion';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 
 const EyeOpen = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -24,6 +27,12 @@ const rules = [
   { test: (p) => /[A-Z]/.test(p), label: 'One uppercase letter' },
   { test: (p) => /[0-9]/.test(p), label: 'One number' },
 ];
+
+const strengthTone = (strength) => {
+  if (strength === 1) return 'var(--danger)';
+  if (strength === 2) return 'var(--warning)';
+  return 'var(--success)';
+};
 
 function ResetPasswordForm() {
   const router       = useRouter();
@@ -79,12 +88,12 @@ function ResetPasswordForm() {
   if (!token) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-16">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-page)] px-4 py-16">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="w-full max-w-md bg-white rounded-2xl border border-gray-100 shadow-sm p-8"
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-md bg-[var(--bg-card)] rounded-[var(--radius-xl)] border border-[var(--border)] shadow-[var(--shadow-lift)] p-8"
       >
         {done ? (
           /* Success state */
@@ -97,11 +106,11 @@ function ResetPasswordForm() {
             <motion.div
               initial={{ scale: 0.4, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 18, delay: 0.1 }}
-              className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto"
+              transition={{ ...SPRING, delay: 0.1 }}
+              className="w-16 h-16 rounded-full bg-[var(--success)]/12 flex items-center justify-center mx-auto"
             >
               <svg
-                className="w-8 h-8 text-green-600"
+                className="w-8 h-8 text-[var(--success)]"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -112,25 +121,22 @@ function ResetPasswordForm() {
             </motion.div>
 
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-gray-900">Password reset!</h1>
-              <p className="text-gray-500 text-sm leading-relaxed mt-2">
+              <h1 className="text-2xl tracking-tight text-[var(--text-main)]">Password reset!</h1>
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed mt-2">
                 Your password has been reset successfully. Redirecting you to sign in…
               </p>
             </div>
 
-            <Link
-              href="/auth/login"
-              className="inline-block bg-[var(--color-brand)] text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition-opacity text-sm"
-            >
+            <Button as={Link} href="/auth/login" className="rounded-full">
               Go to Login
-            </Link>
+            </Button>
           </motion.div>
         ) : (
           <>
             <div className="text-center mb-8">
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+              <div className="w-12 h-12 rounded-full bg-[var(--bg-sunken)] flex items-center justify-center mx-auto mb-4">
                 <svg
-                  className="w-6 h-6 text-gray-500"
+                  className="w-6 h-6 text-[var(--text-muted)]"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -143,8 +149,8 @@ function ResetPasswordForm() {
                   />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-gray-900">Reset your password</h1>
-              <p className="text-gray-500 text-sm leading-relaxed mt-1">
+              <h1 className="text-2xl tracking-tight text-[var(--text-main)]">Reset your password</h1>
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed mt-1">
                 Choose a strong new password for your account.
               </p>
             </div>
@@ -152,24 +158,24 @@ function ResetPasswordForm() {
             <form onSubmit={handleSubmit} noValidate className="space-y-5">
               {/* New Password */}
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
+                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
                   New Password
                 </label>
                 <div className="relative">
-                  <input
+                  <Input
                     type={showPass ? 'text' : 'password'}
                     value={form.password}
                     onChange={set('password')}
                     placeholder="••••••••"
                     autoComplete="new-password"
                     autoFocus
-                    className={`rounded-xl border w-full px-4 py-3 pr-11 focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent outline-none transition text-sm
-                      ${errors.password ? 'border-red-400' : 'border-gray-200'}`}
+                    error={errors.password}
+                    className="[&_input]:pr-11"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPass((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-3 top-2.5 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
                     tabIndex={-1}
                     aria-label={showPass ? 'Hide password' : 'Show password'}
                   >
@@ -185,14 +191,7 @@ function ResetPasswordForm() {
                           key={i}
                           className="h-1 flex-1 rounded-full transition-colors duration-300"
                           style={{
-                            backgroundColor:
-                              i < passStrength
-                                ? passStrength === 1
-                                  ? '#ef4444'
-                                  : passStrength === 2
-                                  ? '#f59e0b'
-                                  : '#22c55e'
-                                : '#e5e7eb',
+                            backgroundColor: i < passStrength ? strengthTone(passStrength) : 'var(--border)',
                           }}
                         />
                       ))}
@@ -202,7 +201,7 @@ function ResetPasswordForm() {
                         <li
                           key={r.label}
                           className={`flex items-center gap-1.5 text-xs ${
-                            r.test(form.password) ? 'text-green-600' : 'text-gray-400'
+                            r.test(form.password) ? 'text-[var(--success)]' : 'text-[var(--text-muted)]'
                           }`}
                         >
                           <span>{r.test(form.password) ? '✓' : '○'}</span>
@@ -212,55 +211,44 @@ function ResetPasswordForm() {
                     </ul>
                   </div>
                 )}
-                {errors.password && (
-                  <p className="text-red-500 text-xs mt-1.5">{errors.password}</p>
-                )}
               </div>
 
               {/* Confirm Password */}
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
+                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <input
+                  <Input
                     type={showConfirm ? 'text' : 'password'}
                     value={form.confirm}
                     onChange={set('confirm')}
                     placeholder="••••••••"
                     autoComplete="new-password"
-                    className={`rounded-xl border w-full px-4 py-3 pr-11 focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent outline-none transition text-sm
-                      ${errors.confirm ? 'border-red-400' : 'border-gray-200'}`}
+                    error={errors.confirm}
+                    className="[&_input]:pr-11"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirm((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-3 top-2.5 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
                     tabIndex={-1}
                     aria-label={showConfirm ? 'Hide password' : 'Show password'}
                   >
                     {showConfirm ? <EyeOff /> : <EyeOpen />}
                   </button>
                 </div>
-                {errors.confirm && (
-                  <p className="text-red-500 text-xs mt-1.5">{errors.confirm}</p>
-                )}
               </div>
 
               {errors.form && (
-                <p className="text-red-500 text-sm text-center bg-red-50 border border-red-200 rounded-xl py-2.5 px-3">
+                <p className="text-sm text-center text-[var(--danger)] bg-[var(--danger)]/8 border border-[var(--danger)]/20 rounded-[var(--radius-md)] py-2.5 px-3">
                   {errors.form}
                 </p>
               )}
 
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                type="submit"
-                disabled={loading}
-                className="w-full bg-[var(--color-brand)] text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 text-sm"
-              >
+              <Button type="submit" loading={loading} className="w-full rounded-full" size="lg">
                 {loading ? 'Resetting…' : 'Reset Password'}
-              </motion.button>
+              </Button>
             </form>
           </>
         )}
@@ -268,7 +256,7 @@ function ResetPasswordForm() {
         <p className="text-center mt-6">
           <Link
             href="/auth/login"
-            className="text-sm text-gray-500 hover:text-gray-800 transition-colors font-medium"
+            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-colors font-medium"
           >
             ← Back to Login
           </Link>

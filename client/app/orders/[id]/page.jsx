@@ -4,26 +4,13 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import PageWrapper from '@/components/PageWrapper';
+import StatusBadge from '@/components/ui/StatusBadge';
 import { useAuth } from '@/context/AuthContext';
 import { formatPrice } from '@/lib/formatPrice';
 import api from '@/lib/api';
+import { fadeUp, stagger } from '@/lib/motion';
 
 const STEPS = ['pending', 'processing', 'shipped', 'delivered'];
-
-const STATUS_COLORS = {
-  pending:    'bg-yellow-100 text-yellow-700',
-  processing: 'bg-stone-100 text-stone-700',
-  shipped:    'bg-[#988686]/20 text-[#5C4E4E]',
-  delivered:  'bg-green-100 text-green-700',
-  cancelled:  'bg-red-100 text-red-600',
-};
-
-const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.1 } },
-};
 
 export default function OrderDetailPage() {
   const { id }   = useParams();
@@ -49,11 +36,11 @@ export default function OrderDetailPage() {
   if (loading) {
     return (
       <PageWrapper>
-        <div className="max-w-3xl mx-auto px-4 py-20 space-y-4 animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-24 mb-6" />
-          <div className="h-32 bg-gray-100 rounded-2xl" />
-          <div className="h-48 bg-gray-100 rounded-2xl" />
-          <div className="h-28 bg-gray-100 rounded-2xl" />
+        <div className="max-w-3xl mx-auto px-4 py-20 space-y-4">
+          <div className="h-4 skeleton rounded w-24 mb-6" />
+          <div className="h-32 skeleton rounded-[var(--radius-lg)]" />
+          <div className="h-48 skeleton rounded-[var(--radius-lg)]" />
+          <div className="h-28 skeleton rounded-[var(--radius-lg)]" />
         </div>
       </PageWrapper>
     );
@@ -66,16 +53,15 @@ export default function OrderDetailPage() {
           initial="hidden"
           animate="show"
           variants={fadeUp}
-          transition={{ duration: 0.4 }}
           className="max-w-xl mx-auto px-4 py-28 text-center"
         >
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 mb-6">
-            <svg className="w-10 h-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[var(--bg-sunken)] mb-6">
+            <svg className="w-10 h-10 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                 d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 mb-3">Order not found</h1>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--text-main)] mb-3">Order not found</h1>
           <Link href="/orders" className="text-sm hover:underline" style={{ color: 'var(--color-brand)' }}>
             ← Back to My Orders
           </Link>
@@ -90,16 +76,16 @@ export default function OrderDetailPage() {
   return (
     <PageWrapper>
       <motion.div
-        variants={container}
+        variants={stagger()}
         initial="hidden"
         animate="show"
         className="max-w-3xl mx-auto px-4 py-20"
       >
         {/* Back button */}
-        <motion.div variants={fadeUp} transition={{ duration: 0.4 }}>
+        <motion.div variants={fadeUp}>
           <Link
             href="/orders"
-            className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-6"
+            className="inline-flex items-center gap-1 text-sm text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-colors mb-6"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -111,16 +97,15 @@ export default function OrderDetailPage() {
         {/* Order header card */}
         <motion.div
           variants={fadeUp}
-          transition={{ duration: 0.4 }}
-          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6"
+          className="bg-[var(--bg-card)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-lift)] p-6 mb-6"
         >
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
-              <p className="font-mono text-xs text-gray-400 mb-1">Order ID</p>
-              <h1 className="text-xl font-bold tracking-tight text-gray-900">
+              <p className="font-tabular text-xs text-[var(--text-muted)] mb-1">Order ID</p>
+              <h1 className="font-display text-xl font-semibold tracking-tight text-[var(--text-main)]">
                 #{order._id.slice(-8).toUpperCase()}
               </h1>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-[var(--text-secondary)] mt-1">
                 Placed on{' '}
                 {new Date(order.createdAt).toLocaleDateString('en-PK', {
                   day: 'numeric',
@@ -129,11 +114,7 @@ export default function OrderDetailPage() {
                 })}
               </p>
             </div>
-            <span
-              className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold capitalize flex-shrink-0 ${STATUS_COLORS[order.status] || 'bg-gray-100 text-gray-600'}`}
-            >
-              {order.status}
-            </span>
+            <StatusBadge status={order.status} />
           </div>
         </motion.div>
 
@@ -141,10 +122,9 @@ export default function OrderDetailPage() {
         {!isCancelled && (
           <motion.div
             variants={fadeUp}
-            transition={{ duration: 0.4 }}
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6"
+            className="bg-[var(--bg-card)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-lift)] p-6 mb-6"
           >
-            <h2 className="text-sm font-semibold text-gray-700 mb-6">Order Progress</h2>
+            <h2 className="text-sm font-semibold text-[var(--text-secondary)] mb-6">Order Progress</h2>
             <div className="flex items-center">
               {STEPS.map((step, i) => {
                 const done    = i <= stepIndex;
@@ -153,12 +133,10 @@ export default function OrderDetailPage() {
                   <div key={step} className="flex items-center flex-1 last:flex-none">
                     <div className="flex flex-col items-center">
                       <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all"
-                        style={
-                          done
-                            ? { backgroundColor: 'var(--color-brand)', color: '#fff' }
-                            : { backgroundColor: '#f3f4f6', color: '#9ca3af' }
-                        }
+                        className={[
+                          'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all',
+                          done ? 'bg-[var(--color-brand)] text-white' : 'bg-[var(--bg-sunken)] text-[var(--text-muted)]',
+                        ].join(' ')}
                       >
                         {done && !current ? (
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -169,7 +147,7 @@ export default function OrderDetailPage() {
                         )}
                       </div>
                       <span
-                        className={`text-xs mt-1.5 capitalize font-medium ${done ? 'text-gray-700' : 'text-gray-400'}`}
+                        className={`text-xs mt-1.5 capitalize font-medium ${done ? 'text-[var(--text-secondary)]' : 'text-[var(--text-muted)]'}`}
                       >
                         {step}
                       </span>
@@ -177,7 +155,7 @@ export default function OrderDetailPage() {
                     {i < STEPS.length - 1 && (
                       <div
                         className="flex-1 h-0.5 mx-2 mb-4 rounded transition-colors"
-                        style={{ backgroundColor: i < stepIndex ? 'var(--color-brand)' : '#e5e7eb' }}
+                        style={{ backgroundColor: i < stepIndex ? 'var(--color-brand)' : 'var(--border)' }}
                       />
                     )}
                   </div>
@@ -190,32 +168,31 @@ export default function OrderDetailPage() {
         {/* Items list */}
         <motion.div
           variants={fadeUp}
-          transition={{ duration: 0.4 }}
-          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6"
+          className="bg-[var(--bg-card)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-lift)] p-6 mb-6"
         >
-          <h2 className="text-sm font-semibold text-gray-700 mb-5">Items Ordered</h2>
-          <div className="divide-y divide-gray-50 space-y-1">
+          <h2 className="text-sm font-semibold text-[var(--text-secondary)] mb-5">Items Ordered</h2>
+          <div className="divide-y divide-[var(--border)] space-y-1">
             {order.items.map((item, i) => (
               <div key={i} className="flex items-center gap-4 py-3">
                 {/* Image placeholder */}
-                <div className="w-16 h-16 rounded-xl bg-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                <div className="w-16 h-16 rounded-[var(--radius-md)] bg-[var(--bg-sunken)] flex-shrink-0 flex items-center justify-center overflow-hidden">
                   {item.image ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                   ) : (
-                    <svg className="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-6 h-6 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                         d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-800 text-sm line-clamp-1">{item.title}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="font-medium text-[var(--text-main)] text-sm line-clamp-1">{item.title}</p>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">
                     Qty: {item.quantity} × {formatPrice(item.price)}
                   </p>
                 </div>
-                <p className="font-semibold text-gray-800 text-sm flex-shrink-0">
+                <p className="font-tabular font-semibold text-[var(--text-main)] text-sm flex-shrink-0">
                   {formatPrice(item.price * item.quantity)}
                 </p>
               </div>
@@ -223,18 +200,18 @@ export default function OrderDetailPage() {
           </div>
 
           {/* Summary within items card */}
-          <div className="border-t border-gray-100 mt-4 pt-4 space-y-2">
-            <div className="flex justify-between text-sm text-gray-600">
+          <div className="border-t border-[var(--border)] mt-4 pt-4 space-y-2">
+            <div className="flex justify-between text-sm text-[var(--text-secondary)]">
               <span>Subtotal</span>
-              <span className="font-medium text-gray-800">{formatPrice(order.totalAmount)}</span>
+              <span className="font-tabular font-medium text-[var(--text-main)]">{formatPrice(order.totalAmount)}</span>
             </div>
-            <div className="flex justify-between text-sm text-gray-600">
+            <div className="flex justify-between text-sm text-[var(--text-secondary)]">
               <span>Shipping</span>
-              <span className="text-green-600 font-medium">Free</span>
+              <span className="text-[var(--success)] font-medium">Free</span>
             </div>
-            <div className="flex justify-between font-bold text-gray-900 text-base pt-2 border-t border-gray-100">
+            <div className="flex justify-between font-semibold text-[var(--text-main)] text-base pt-2 border-t border-[var(--border)]">
               <span>Total</span>
-              <span>{formatPrice(order.totalAmount)}</span>
+              <span className="font-tabular">{formatPrice(order.totalAmount)}</span>
             </div>
           </div>
         </motion.div>
@@ -242,13 +219,12 @@ export default function OrderDetailPage() {
         {/* Shipping address */}
         <motion.div
           variants={fadeUp}
-          transition={{ duration: 0.4 }}
-          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6"
+          className="bg-[var(--bg-card)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-lift)] p-6"
         >
-          <h2 className="text-sm font-semibold text-gray-700 mb-4">Shipping Address</h2>
+          <h2 className="text-sm font-semibold text-[var(--text-secondary)] mb-4">Shipping Address</h2>
           <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-              <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="mt-0.5 flex-shrink-0 w-8 h-8 rounded-full bg-[var(--bg-sunken)] flex items-center justify-center">
+              <svg className="w-4 h-4 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                   d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -256,14 +232,14 @@ export default function OrderDetailPage() {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                 {order.shippingAddress?.street}<br />
                 {order.shippingAddress?.city}, {order.shippingAddress?.zip}<br />
                 {order.shippingAddress?.country}
               </p>
               {order.guestEmail && (
-                <p className="text-sm text-gray-500 mt-2">
-                  Contact: <span className="font-medium text-gray-700">{order.guestEmail}</span>
+                <p className="text-sm text-[var(--text-secondary)] mt-2">
+                  Contact: <span className="font-medium text-[var(--text-main)]">{order.guestEmail}</span>
                 </p>
               )}
             </div>

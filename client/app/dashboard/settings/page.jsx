@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import api from '@/lib/api';
+import Input from '@/components/ui/Input';
+import Button from '@/components/ui/Button';
+import { fadeUp } from '@/lib/motion';
 
 const TABS   = ['Branding', 'Appearance', 'Home Page', 'Store Info'];
 const FONTS  = ['Inter', 'Playfair Display', 'Poppins', 'Lato', 'Merriweather', 'Nunito', 'Raleway', 'Oswald'];
@@ -11,25 +14,35 @@ const THEMES = ['minimal', 'bold', 'elegant', 'playful'];
 const SCHEMES = ['light', 'dark', 'system'];
 const GRIDS  = [2, 3];
 
-const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 const tabFade = { hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: 0.25 } }, exit: { opacity: 0, y: -8, transition: { duration: 0.15 } } };
+
+const fieldStyle = 'w-full px-3.5 py-2.5 text-sm rounded-[var(--radius-sm)] bg-[var(--bg-card)] border border-[var(--border-strong)] transition-colors outline-none focus:border-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/15';
 
 function Field({ label, children, hint }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
+      <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">{label}</label>
       {children}
-      {hint && <p className="text-xs text-gray-400 mt-1 leading-relaxed">{hint}</p>}
+      {hint && <p className="text-xs text-[var(--text-muted)] mt-1.5 leading-relaxed">{hint}</p>}
     </div>
   );
 }
 
-function StyledInput(props) {
+function ColorSwatch({ value, onChange }) {
   return (
-    <input
-      className="rounded-xl border border-gray-200 w-full px-4 py-3 focus:ring-2 focus:ring-[var(--color-brand)] outline-none text-sm transition-colors"
-      {...props}
-    />
+    <div className="flex items-center gap-3 p-3 rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-sunken)]">
+      <div className="relative w-10 h-10 flex-shrink-0 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border)] shadow-[var(--shadow-lift)]">
+        <div className="absolute inset-0" style={{ backgroundColor: value }} />
+        <input
+          type="color"
+          value={value}
+          onChange={onChange}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          aria-label="Pick color"
+        />
+      </div>
+      <span className="font-tabular text-sm text-[var(--text-secondary)] uppercase">{value}</span>
+    </div>
   );
 }
 
@@ -150,44 +163,21 @@ export default function DashboardSettingsPage() {
   const tabPanels = [
     /* ── Branding ────────────────────────────────── */
     <motion.div key="branding" variants={tabFade} initial="hidden" animate="show" exit="exit" className="space-y-5">
-      <Field label="Store Name">
-        <StyledInput value={form.name} onChange={set('name')} placeholder="My Store" />
-      </Field>
-      <Field label="Tagline" hint="Short phrase shown under your store name">
-        <StyledInput value={form.tagline} onChange={set('tagline')} placeholder="Fresh products, fast delivery" />
-      </Field>
-      <Field label="URL Slug" hint={`Your store will be live at: /store/${form.slug || 'your-slug'}`}>
-        <StyledInput value={form.slug} onChange={set('slug')} placeholder="my-store" />
-      </Field>
-      <Field label="Logo URL" hint="Direct link to your logo image">
-        <StyledInput value={form.logoUrl} onChange={set('logoUrl')} placeholder="https://…" />
-      </Field>
+      <Input label="Store Name" value={form.name} onChange={set('name')} placeholder="My Store" />
+      <Input label="Tagline" value={form.tagline} onChange={set('tagline')} placeholder="Fresh products, fast delivery" />
+      <p className="text-xs text-[var(--text-muted)] -mt-4 leading-relaxed">Short phrase shown under your store name</p>
+      <Input label="URL Slug" value={form.slug} onChange={set('slug')} placeholder="my-store" />
+      <p className="text-xs text-[var(--text-muted)] -mt-4 leading-relaxed">{`Your store will be live at: /store/${form.slug || 'your-slug'}`}</p>
+      <Input label="Logo URL" value={form.logoUrl} onChange={set('logoUrl')} placeholder="https://…" />
+      <p className="text-xs text-[var(--text-muted)] -mt-4 leading-relaxed">Direct link to your logo image</p>
 
       {/* Color pickers */}
       <div className="grid grid-cols-2 gap-4">
         <Field label="Brand Color">
-          <div className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-gray-50">
-            <input
-              type="color"
-              value={form.primaryColor}
-              onChange={set('primaryColor')}
-              className="w-9 h-9 rounded-lg border-0 cursor-pointer bg-transparent p-0 flex-shrink-0"
-              style={{ backgroundColor: form.primaryColor }}
-            />
-            <span className="text-sm text-gray-600 font-mono">{form.primaryColor}</span>
-          </div>
+          <ColorSwatch value={form.primaryColor} onChange={set('primaryColor')} />
         </Field>
         <Field label="Accent Color">
-          <div className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-gray-50">
-            <input
-              type="color"
-              value={form.accentColor}
-              onChange={set('accentColor')}
-              className="w-9 h-9 rounded-lg border-0 cursor-pointer bg-transparent p-0 flex-shrink-0"
-              style={{ backgroundColor: form.accentColor }}
-            />
-            <span className="text-sm text-gray-600 font-mono">{form.accentColor}</span>
-          </div>
+          <ColorSwatch value={form.accentColor} onChange={set('accentColor')} />
         </Field>
       </div>
 
@@ -211,7 +201,7 @@ export default function DashboardSettingsPage() {
         <select
           value={form.fontFamily}
           onChange={set('fontFamily')}
-          className="rounded-xl border border-gray-200 w-full px-4 py-3 focus:ring-2 focus:ring-[var(--color-brand)] outline-none text-sm"
+          className={fieldStyle}
         >
           {FONTS.map((f) => <option key={f} value={f} style={{ fontFamily: f }}>{f}</option>)}
         </select>
@@ -225,10 +215,10 @@ export default function DashboardSettingsPage() {
               type="button"
               whileTap={{ scale: 0.97 }}
               onClick={() => setForm((p) => ({ ...p, theme: t }))}
-              className={`py-3 rounded-xl border text-sm font-semibold capitalize transition-all ${
+              className={`py-3 rounded-[var(--radius-md)] border text-sm font-semibold capitalize transition-all ${
                 form.theme === t
                   ? 'text-white border-transparent'
-                  : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                  : 'border-[var(--border-strong)] text-[var(--text-secondary)] hover:bg-[var(--bg-sunken)]'
               }`}
               style={form.theme === t ? { backgroundColor: 'var(--color-brand)' } : {}}
             >
@@ -246,10 +236,10 @@ export default function DashboardSettingsPage() {
               type="button"
               whileTap={{ scale: 0.97 }}
               onClick={() => setForm((p) => ({ ...p, colorScheme: s }))}
-              className={`flex-1 py-3 rounded-xl border text-sm font-semibold capitalize transition-all ${
+              className={`flex-1 py-3 rounded-[var(--radius-md)] border text-sm font-semibold capitalize transition-all ${
                 form.colorScheme === s
                   ? 'text-white border-transparent'
-                  : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                  : 'border-[var(--border-strong)] text-[var(--text-secondary)] hover:bg-[var(--bg-sunken)]'
               }`}
               style={form.colorScheme === s ? { backgroundColor: 'var(--color-brand)' } : {}}
             >
@@ -267,10 +257,10 @@ export default function DashboardSettingsPage() {
               type="button"
               whileTap={{ scale: 0.97 }}
               onClick={() => setForm((p) => ({ ...p, gridColumns: g }))}
-              className={`flex-1 py-3 rounded-xl border text-sm font-semibold transition-all ${
+              className={`flex-1 py-3 rounded-[var(--radius-md)] border text-sm font-semibold transition-all ${
                 form.gridColumns === g
                   ? 'text-white border-transparent'
-                  : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                  : 'border-[var(--border-strong)] text-[var(--text-secondary)] hover:bg-[var(--bg-sunken)]'
               }`}
               style={form.gridColumns === g ? { backgroundColor: 'var(--color-brand)' } : {}}
             >
@@ -283,33 +273,17 @@ export default function DashboardSettingsPage() {
 
     /* ── Home Page ───────────────────────────────── */
     <motion.div key="homepage" variants={tabFade} initial="hidden" animate="show" exit="exit" className="space-y-5">
-      <Field label="Hero Image URL" hint="Full-width banner shown at the top of your store">
-        <StyledInput value={form.heroImage} onChange={set('heroImage')} placeholder="https://…" />
-      </Field>
-      <Field label="Hero Headline">
-        <StyledInput value={form.heroHeadline} onChange={set('heroHeadline')} placeholder="Discover amazing products" />
-      </Field>
-      <Field label="Hero Button Text">
-        <StyledInput value={form.heroCta} onChange={set('heroCta')} placeholder="Shop Now" />
-      </Field>
+      <Input label="Hero Image URL" value={form.heroImage} onChange={set('heroImage')} placeholder="https://…" />
+      <p className="text-xs text-[var(--text-muted)] -mt-4 leading-relaxed">Full-width banner shown at the top of your store</p>
+      <Input label="Hero Headline" value={form.heroHeadline} onChange={set('heroHeadline')} placeholder="Discover amazing products" />
+      <Input label="Hero Button Text" value={form.heroCta} onChange={set('heroCta')} placeholder="Shop Now" />
 
-      <div className="border-t border-gray-100 pt-5">
-        <p className="text-sm font-bold text-gray-800 mb-4 tracking-tight">Announcement Bar</p>
+      <div className="border-t border-[var(--border)] pt-5">
+        <p className="font-display text-sm font-semibold text-[var(--text-main)] mb-4 tracking-tight">Announcement Bar</p>
         <div className="space-y-4">
-          <Field label="Message">
-            <StyledInput value={form.announcementText} onChange={set('announcementText')} placeholder="Free shipping on orders over Rs. 2,000!" />
-          </Field>
+          <Input label="Message" value={form.announcementText} onChange={set('announcementText')} placeholder="Free shipping on orders over Rs. 2,000!" />
           <Field label="Background Color">
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-gray-50">
-              <input
-                type="color"
-                value={form.announcementColor}
-                onChange={set('announcementColor')}
-                className="w-9 h-9 rounded-lg border-0 cursor-pointer bg-transparent p-0 flex-shrink-0"
-                style={{ backgroundColor: form.announcementColor }}
-              />
-              <span className="text-sm text-gray-600 font-mono">{form.announcementColor}</span>
-            </div>
+            <ColorSwatch value={form.announcementColor} onChange={set('announcementColor')} />
           </Field>
           <label className="flex items-center gap-3 cursor-pointer select-none group">
             <div className="relative">
@@ -320,14 +294,14 @@ export default function DashboardSettingsPage() {
                 className="sr-only"
               />
               <div
-                className={`w-10 h-6 rounded-full transition-colors ${form.announcementActive ? '' : 'bg-gray-200'}`}
+                className={`w-10 h-6 rounded-full transition-colors ${form.announcementActive ? '' : 'bg-[var(--bg-sunken)]'}`}
                 style={form.announcementActive ? { backgroundColor: 'var(--color-brand)' } : {}}
               />
               <div
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.announcementActive ? 'translate-x-4' : ''}`}
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-[var(--shadow-lift)] transition-transform ${form.announcementActive ? 'translate-x-4' : ''}`}
               />
             </div>
-            <span className="text-sm text-gray-700 font-medium">Show announcement bar</span>
+            <span className="text-sm text-[var(--text-secondary)] font-medium">Show announcement bar</span>
           </label>
         </div>
       </div>
@@ -336,34 +310,22 @@ export default function DashboardSettingsPage() {
     /* ── Store Info ──────────────────────────────── */
     <motion.div key="storeinfo" variants={tabFade} initial="hidden" animate="show" exit="exit" className="space-y-5">
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Currency">
-          <StyledInput value={form.currency} onChange={set('currency')} placeholder="PKR" />
-        </Field>
-        <Field label="Locale">
-          <StyledInput value={form.locale} onChange={set('locale')} placeholder="en-PK" />
-        </Field>
+        <Input label="Currency" value={form.currency} onChange={set('currency')} placeholder="PKR" />
+        <Input label="Locale" value={form.locale} onChange={set('locale')} placeholder="en-PK" />
       </div>
-      <Field label="Contact Email">
-        <StyledInput type="email" value={form.contactEmail} onChange={set('contactEmail')} placeholder="store@example.com" />
-      </Field>
-      <Field label="Phone Number">
-        <StyledInput value={form.contactPhone} onChange={set('contactPhone')} placeholder="+92 300 1234567" />
-      </Field>
-      <Field label="Address">
-        <StyledInput value={form.contactAddress} onChange={set('contactAddress')} placeholder="Islamabad, Pakistan" />
-      </Field>
+      <Input label="Contact Email" type="email" value={form.contactEmail} onChange={set('contactEmail')} placeholder="store@example.com" />
+      <Input label="Phone Number" value={form.contactPhone} onChange={set('contactPhone')} placeholder="+92 300 1234567" />
+      <Input label="Address" value={form.contactAddress} onChange={set('contactAddress')} placeholder="Islamabad, Pakistan" />
 
-      <div className="border-t border-gray-100 pt-5">
-        <p className="text-sm font-bold text-gray-800 mb-4 tracking-tight">Social Links</p>
+      <div className="border-t border-[var(--border)] pt-5">
+        <p className="font-display text-sm font-semibold text-[var(--text-main)] mb-4 tracking-tight">Social Links</p>
         <div className="space-y-4">
           {[
             ['Instagram', 'contactInstagram', 'https://instagram.com/yourstore'],
             ['Facebook',  'contactFacebook',  'https://facebook.com/yourstore'],
             ['Twitter/X', 'contactTwitter',   'https://twitter.com/yourstore'],
           ].map(([label, key, ph]) => (
-            <Field key={key} label={label}>
-              <StyledInput value={form[key]} onChange={set(key)} placeholder={ph} />
-            </Field>
+            <Input key={key} label={label} value={form[key]} onChange={set(key)} placeholder={ph} />
           ))}
         </div>
       </div>
@@ -378,15 +340,15 @@ export default function DashboardSettingsPage() {
       variants={{ show: { transition: { staggerChildren: 0.08 } } }}
     >
       {/* Page heading */}
-      <motion.div variants={fadeUp} transition={{ duration: 0.4 }}>
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Store Settings</h1>
-        <p className="text-sm text-gray-500 mt-0.5 leading-relaxed">Customize your storefront appearance and information</p>
+      <motion.div variants={fadeUp}>
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--text-main)]">Store Settings</h1>
+        <p className="text-sm text-[var(--text-secondary)] mt-0.5 leading-relaxed">Customize your storefront appearance and information</p>
       </motion.div>
 
       {/* Settings card */}
-      <motion.div variants={fadeUp} transition={{ duration: 0.4 }} className="p-6 rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <motion.div variants={fadeUp} className="p-6 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)]">
         {/* Pill tabs */}
-        <div className="flex gap-2 flex-wrap mb-6 pb-5 border-b border-gray-100">
+        <div className="flex gap-2 flex-wrap mb-6 pb-5 border-b border-[var(--border)]">
           {TABS.map((t, i) => (
             <motion.button
               key={t}
@@ -395,7 +357,7 @@ export default function DashboardSettingsPage() {
               className={`px-4 py-2 rounded-full text-sm font-semibold transition-all border ${
                 tab === i
                   ? 'text-white border-transparent'
-                  : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                  : 'border-[var(--border-strong)] text-[var(--text-secondary)] hover:bg-[var(--bg-sunken)]'
               }`}
               style={tab === i ? { backgroundColor: 'var(--color-brand)' } : {}}
             >
@@ -410,17 +372,11 @@ export default function DashboardSettingsPage() {
         </AnimatePresence>
 
         {/* Save button */}
-        <div className="pt-6 mt-6 border-t border-gray-100 flex items-center justify-between flex-wrap gap-3">
-          <p className="text-xs text-gray-400">Changes apply immediately after saving.</p>
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={save}
-            disabled={saving}
-            className="px-6 py-3 text-sm font-semibold text-white rounded-full disabled:opacity-60 transition-opacity hover:opacity-90"
-            style={{ backgroundColor: 'var(--color-brand)' }}
-          >
+        <div className="pt-6 mt-6 border-t border-[var(--border)] flex items-center justify-between flex-wrap gap-3">
+          <p className="text-xs text-[var(--text-muted)]">Changes apply immediately after saving.</p>
+          <Button variant="primary" className="rounded-full" onClick={save} loading={saving}>
             {saving ? 'Saving…' : 'Save Changes'}
-          </motion.button>
+          </Button>
         </div>
       </motion.div>
     </motion.div>

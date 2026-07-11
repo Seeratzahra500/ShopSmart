@@ -1,18 +1,29 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
+import Badge from '@/components/ui/Badge';
+import EmptyState from '@/components/ui/EmptyState';
+import { fadeUp, stagger } from '@/lib/motion';
 
-const ROLE_COLORS = {
-  admin:     'bg-stone-900 text-white',
-  shopowner: 'bg-stone-200 text-stone-800',
-  customer:  'bg-stone-100 text-stone-600',
+const ROLE_TONE = {
+  admin:     'brand',
+  shopowner: 'neutral',
+  customer:  'neutral',
 };
 
+const ROLE_LABEL = {
+  admin: 'Admin',
+  shopowner: 'Shop Owner',
+  customer: 'Customer',
+};
+
+const ROLES = ['customer', 'shopowner', 'admin'];
+
 const AVATAR_COLORS = [
-  'bg-stone-500', 'bg-green-500', 'bg-teal-500',
-  'bg-orange-500', 'bg-pink-500', 'bg-cyan-600',
+  'var(--color-brand)', '#15803D', '#0E7490',
+  '#B45309', '#BE185D', '#0369A1',
 ];
 
 function avatarColor(name = '') {
@@ -20,25 +31,81 @@ function avatarColor(name = '') {
   return AVATAR_COLORS[code % AVATAR_COLORS.length];
 }
 
-const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
-const staggerContainer = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
+const staggerContainer = stagger(0.08);
 
 function SkeletonRows() {
   return (
-    <div className="divide-y divide-gray-100 animate-pulse">
+    <div className="divide-y divide-[var(--border)] animate-pulse">
       {[1, 2, 3, 4].map((i) => (
         <div key={i} className="flex items-center gap-4 px-5 py-4">
-          <div className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0" />
+          <div className="w-8 h-8 rounded-full skeleton flex-shrink-0" />
           <div className="flex-1 space-y-2">
-            <div className="h-3 w-32 bg-gray-200 rounded" />
-            <div className="h-2 w-40 bg-gray-100 rounded" />
+            <div className="h-3 w-32 skeleton rounded" />
+            <div className="h-2 w-40 skeleton rounded" />
           </div>
-          <div className="h-5 w-16 bg-gray-100 rounded-full" />
-          <div className="h-5 w-14 bg-gray-100 rounded-full" />
-          <div className="h-2 w-20 bg-gray-100 rounded" />
-          <div className="h-6 w-20 bg-gray-100 rounded-full" />
+          <div className="h-5 w-16 skeleton rounded-full" />
+          <div className="h-5 w-14 skeleton rounded-full" />
+          <div className="h-2 w-20 skeleton rounded" />
+          <div className="h-6 w-20 skeleton rounded-full" />
         </div>
       ))}
+    </div>
+  );
+}
+
+function RoleDropdown({ value, onChange, disabled, userName }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [open]);
+
+  return (
+    <div className="relative inline-block" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        disabled={disabled}
+        aria-label={`Change role for ${userName}`}
+        className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-full border border-[var(--border-strong)] bg-[var(--bg-card)] px-3 py-2 text-[var(--text-secondary)] hover:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 disabled:opacity-50 cursor-pointer transition-colors"
+        style={{ minWidth: '7.5rem' }}
+      >
+        {ROLE_LABEL[value] || value}
+        <svg className="w-3 h-3 text-[var(--text-muted)] ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 mt-1 w-36 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg-card)] shadow-[var(--shadow-overlay)] py-1 z-20"
+          >
+            {ROLES.map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => { onChange(r); setOpen(false); }}
+                className={[
+                  'block w-full text-left px-3 py-1.5 text-xs font-medium transition-colors',
+                  r === value
+                    ? 'text-[var(--brand-ink)] bg-[var(--brand-soft)]'
+                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-sunken)] hover:text-[var(--text-main)]',
+                ].join(' ')}
+              >
+                {ROLE_LABEL[r]}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -87,9 +154,9 @@ export default function AdminUsersPage() {
         transition={{ duration: 0.4 }}
         className="flex items-center gap-3"
       >
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Users</h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--text-main)]">Users</h1>
         {!loading && (
-          <span className="px-3 py-0.5 rounded-full text-sm font-semibold bg-gray-100 text-gray-600">
+          <span className="px-3 py-0.5 rounded-full text-sm font-semibold bg-[var(--bg-sunken)] text-[var(--text-secondary)] font-tabular">
             {users.length}
           </span>
         )}
@@ -97,31 +164,25 @@ export default function AdminUsersPage() {
 
       {/* Table */}
       {loading ? (
-        <div className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)] overflow-hidden">
           <SkeletonRows />
         </div>
       ) : users.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <svg className="w-12 h-12 mx-auto mb-3 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-              d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6 5.87a4 4 0 100-8 4 4 0 000 8zm6-10a4 4 0 10-8 0 4 4 0 008 0z" />
-          </svg>
-          <p className="text-sm">No users yet.</p>
-        </div>
+        <EmptyState title="No users yet" />
       ) : (
-        <div className="rounded-2xl overflow-x-auto border border-gray-100 bg-white shadow-sm">
+        <div className="rounded-[var(--radius-lg)] overflow-x-auto border border-[var(--border)] bg-[var(--bg-card)]">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-[var(--bg-sunken)] border-b border-[var(--border)]">
               <tr>
                 {['Name', 'Email', 'Role', 'Status', 'Joined', 'Actions'].map((h) => (
-                  <th key={h} className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-widest text-gray-400">
+                  <th key={h} className="text-left px-5 py-3 eyebrow">
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
             <motion.tbody
-              className="divide-y divide-gray-100"
+              className="divide-y divide-[var(--border)]"
               variants={staggerContainer}
               initial="hidden"
               animate="show"
@@ -131,41 +192,36 @@ export default function AdminUsersPage() {
                   key={user._id}
                   variants={fadeUp}
                   transition={{ duration: 0.4 }}
-                  className="hover:bg-gray-50 transition-colors even:bg-gray-50/50"
+                  className="hover:bg-[var(--bg-sunken)] transition-colors"
                 >
                   {/* Name + initials avatar */}
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${avatarColor(user.name)}`}
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                        style={{ backgroundColor: avatarColor(user.name) }}
                       >
                         {user.name?.[0]?.toUpperCase() || '?'}
                       </div>
-                      <span className="font-medium text-gray-800">{user.name}</span>
+                      <span className="font-medium text-[var(--text-main)]">{user.name}</span>
                     </div>
                   </td>
                   {/* Email */}
-                  <td className="px-5 py-4 text-xs text-gray-500">{user.email}</td>
+                  <td className="px-5 py-4 text-xs text-[var(--text-muted)]">{user.email}</td>
                   {/* Role badge */}
                   <td className="px-5 py-4">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize
-                        ${ROLE_COLORS[user.role] || 'bg-stone-100 text-stone-600'}`}
-                    >
+                    <Badge tone={ROLE_TONE[user.role] || 'neutral'}>
                       {user.role === 'shopowner' ? 'Shop Owner' : user.role}
-                    </span>
+                    </Badge>
                   </td>
                   {/* Status */}
                   <td className="px-5 py-4">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
-                        ${user.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-500'}`}
-                    >
+                    <Badge tone={user.isActive ? 'success' : 'danger'}>
                       {user.isActive ? 'Active' : 'Inactive'}
-                    </span>
+                    </Badge>
                   </td>
                   {/* Joined */}
-                  <td className="px-5 py-4 text-xs text-gray-400">
+                  <td className="px-5 py-4 text-xs text-[var(--text-muted)]">
                     {new Date(user.createdAt).toLocaleDateString('en-PK', {
                       day: 'numeric', month: 'short', year: 'numeric',
                     })}
@@ -181,30 +237,22 @@ export default function AdminUsersPage() {
                           disabled={busy === user._id + 'status' || busy === user._id + 'role'}
                           className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors disabled:opacity-50
                             ${user.isActive
-                              ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                              : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
+                              ? 'bg-[var(--danger)]/8 text-[var(--danger)] hover:bg-[var(--danger)]/15'
+                              : 'bg-[var(--success)]/8 text-[var(--success)] hover:bg-[var(--success)]/15'}`}
                         >
                           {busy === user._id + 'status' ? '…' : (user.isActive ? 'Deactivate' : 'Activate')}
                         </motion.button>
 
                         {/* Role selector */}
-                        <select
+                        <RoleDropdown
                           value={user.role}
+                          userName={user.name}
                           disabled={busy === user._id + 'role' || busy === user._id + 'status'}
-                          onChange={(e) => changeRole(user._id, e.target.value)}
-                          className="text-xs font-semibold rounded-full border border-stone-300 bg-white px-3 py-2
-                            text-stone-700 focus:outline-none focus:ring-2 focus:ring-stone-300 focus:border-stone-400
-                            disabled:opacity-50 cursor-pointer hover:border-stone-400 transition-colors"
-                          style={{ minWidth: '7.5rem' }}
-                          aria-label={`Change role for ${user.name}`}
-                        >
-                          <option value="customer">Customer</option>
-                          <option value="shopowner">Shop Owner</option>
-                          <option value="admin">Admin</option>
-                        </select>
+                          onChange={(role) => changeRole(user._id, role)}
+                        />
                       </div>
                     ) : (
-                      <span className="text-xs text-gray-400 italic">—</span>
+                      <span className="text-xs text-[var(--text-muted)] italic">—</span>
                     )}
                   </td>
                 </motion.tr>

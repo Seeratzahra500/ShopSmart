@@ -4,26 +4,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import PageWrapper from '@/components/PageWrapper';
+import Button from '@/components/ui/Button';
+import EmptyState from '@/components/ui/EmptyState';
+import StatusBadge from '@/components/ui/StatusBadge';
 import { useAuth } from '@/context/AuthContext';
 import { formatPrice } from '@/lib/formatPrice';
 import api from '@/lib/api';
-
-const STATUS_COLORS = {
-  pending:    'bg-yellow-100 text-yellow-700',
-  processing: 'bg-stone-100 text-stone-700',
-  shipped:    'bg-[#988686]/20 text-[#5C4E4E]',
-  delivered:  'bg-green-100 text-green-700',
-  cancelled:  'bg-red-100 text-red-600',
-};
-
-const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
-
-const container = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.08 },
-  },
-};
+import { fadeUp, stagger } from '@/lib/motion';
 
 export default function OrdersPage() {
   const { user, loading: authLoading } = useAuth();
@@ -50,16 +37,16 @@ export default function OrdersPage() {
       <PageWrapper>
         <div className="max-w-3xl mx-auto px-4 py-20 space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="rounded-2xl border border-gray-100 p-5 animate-pulse">
+            <div key={i} className="rounded-[var(--radius-lg)] border border-[var(--border)] p-5 skeleton">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-2 flex-1">
-                  <div className="h-3 bg-gray-200 rounded w-24" />
-                  <div className="h-4 bg-gray-200 rounded w-40" />
-                  <div className="h-3 bg-gray-200 rounded w-32" />
+                  <div className="h-3 bg-[var(--border)] rounded w-24" />
+                  <div className="h-4 bg-[var(--border)] rounded w-40" />
+                  <div className="h-3 bg-[var(--border)] rounded w-32" />
                 </div>
-                <div className="h-6 bg-gray-200 rounded-full w-20" />
+                <div className="h-6 bg-[var(--border)] rounded-full w-20" />
               </div>
-              <div className="h-3 bg-gray-100 rounded w-full mt-3" />
+              <div className="h-3 bg-[var(--border)] rounded w-full mt-3" />
             </div>
           ))}
         </div>
@@ -73,43 +60,27 @@ export default function OrdersPage() {
         initial="hidden"
         animate="show"
         variants={fadeUp}
-        transition={{ duration: 0.4 }}
         className="max-w-3xl mx-auto px-4 py-20"
       >
         {/* Heading */}
         <div className="flex items-center gap-3 mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">My Orders</h1>
+          <h1 className="font-display text-3xl font-semibold tracking-tight text-[var(--text-main)]">My Orders</h1>
           {orders.length > 0 && (
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--bg-sunken)] text-[var(--text-secondary)]">
               {orders.length}
             </span>
           )}
         </div>
 
         {orders.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gray-100 mb-6">
-              <svg className="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold tracking-tight text-gray-900 mb-2">No orders yet</h2>
-            <p className="text-gray-600 leading-relaxed mb-8">
-              You haven&apos;t placed any orders yet. Start shopping to see them here.
-            </p>
-            <motion.div whileTap={{ scale: 0.97 }} className="inline-block">
-              <Link
-                href="/stores"
-                className="inline-block bg-[var(--color-brand)] text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition-opacity"
-              >
-                Start Shopping
-              </Link>
-            </motion.div>
-          </div>
+          <EmptyState
+            title="No orders yet"
+            description="You haven't placed any orders yet. Start shopping to see them here."
+            action={<Button as={Link} href="/stores">Start Shopping</Button>}
+          />
         ) : (
           <motion.div
-            variants={container}
+            variants={stagger()}
             initial="hidden"
             animate="show"
             className="space-y-4"
@@ -119,44 +90,36 @@ export default function OrdersPage() {
                 <motion.div
                   key={order._id}
                   variants={fadeUp}
-                  transition={{ duration: 0.4 }}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-shadow mb-4"
+                  className="bg-[var(--bg-card)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-lift)] hover:shadow-[var(--shadow-overlay)] transition-shadow mb-4"
                 >
                   <div className="p-5">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       {/* Left info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-3 mb-1">
-                          <p className="font-mono text-xs text-gray-400">
+                          <p className="font-tabular text-xs text-[var(--text-muted)]">
                             #{order._id.slice(-8).toUpperCase()}
                           </p>
-                          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize ${STATUS_COLORS[order.status] || 'bg-gray-100 text-gray-600'}`}>
-                            {order.status}
-                          </span>
+                          <StatusBadge status={order.status} />
                         </div>
-                        <p className="font-semibold text-gray-800 text-sm">
+                        <p className="font-medium text-[var(--text-main)] text-sm">
                           {order.items.length} item{order.items.length !== 1 ? 's' : ''}
-                          <span className="text-gray-400 mx-1.5">·</span>
-                          {formatPrice(order.totalAmount)}
+                          <span className="text-[var(--text-muted)] mx-1.5">·</span>
+                          <span className="font-tabular">{formatPrice(order.totalAmount)}</span>
                         </p>
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-xs text-[var(--text-muted)] mt-1">
                           {new Date(order.createdAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </p>
-                        <p className="text-xs text-gray-400 mt-1.5 line-clamp-1">
+                        <p className="text-xs text-[var(--text-muted)] mt-1.5 line-clamp-1">
                           {order.items.map((i) => i.title).join(', ')}
                         </p>
                       </div>
 
                       {/* View details */}
                       <div className="flex-shrink-0">
-                        <motion.div whileTap={{ scale: 0.97 }}>
-                          <Link
-                            href={`/orders/${order._id}`}
-                            className="inline-block border border-gray-200 px-4 py-2 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                          >
-                            View Details
-                          </Link>
-                        </motion.div>
+                        <Button as={Link} href={`/orders/${order._id}`} variant="secondary" size="sm">
+                          View Details
+                        </Button>
                       </div>
                     </div>
                   </div>
