@@ -30,7 +30,7 @@ export default function BannerHero({ store }) {
               <Image src={store.logoUrl} alt={`${store.name} logo`} width={56} height={56} className="object-cover rounded-[var(--radius-sm)] w-full h-full" />
             </motion.div>
           )}
-          <motion.p {...fadeUp(0.05)} className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70 mb-3">
+          <motion.p {...fadeUp(0.05)} className="text-xs font-semibold uppercase tracking-[0.2em] mb-3" style={{ color: 'var(--color-accent)' }}>
             {store.tagline || 'Welcome'}
           </motion.p>
           <motion.h1 {...fadeUp(0.1)} className="font-display text-3xl sm:text-4xl font-semibold text-white mb-6 leading-tight">

@@ -47,19 +47,28 @@ export default function StorefrontPreview({ formState }) {
 
       {/* Mini product grid */}
       <div className="p-5" style={{ backgroundColor: 'var(--bg-page)' }}>
-        <p className="eyebrow text-[9px] mb-3">Catalogue</p>
+        <p className="eyebrow text-[9px] mb-3" style={{ color: 'var(--color-accent)' }}>Catalogue</p>
         <div className="grid grid-cols-2 gap-3">
-          {products.map((p) => (
+          {products.map((p, i) => (
             <div key={p.title}>
               <div
-                className="aspect-[4/5] mb-2"
+                className="relative aspect-[4/5] mb-2"
                 style={{
                   backgroundColor: 'var(--bg-sunken)',
                   borderRadius: 'var(--radius-card)',
                   boxShadow: design.cardStyle === 'framed' || design.cardStyle === 'gallery' ? 'var(--shadow-card)' : undefined,
                   border: design.cardStyle === 'framed' ? 'var(--card-border)' : undefined,
                 }}
-              />
+              >
+                {i === 0 && (
+                  <span
+                    className="absolute top-1.5 left-1.5 text-white text-[8px] font-semibold px-1.5 py-0.5 rounded-[3px]"
+                    style={{ backgroundColor: 'var(--color-accent)' }}
+                  >
+                    New
+                  </span>
+                )}
+              </div>
               <p className="text-xs font-medium leading-snug" style={{ color: 'var(--text-main)' }}>{p.title}</p>
               <p className="font-tabular text-xs font-semibold" style={{ color: 'var(--text-main)' }}>
                 {formState.currency || 'PKR'} {p.price.toLocaleString()}

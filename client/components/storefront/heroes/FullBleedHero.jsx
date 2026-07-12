@@ -32,7 +32,7 @@ export default function FullBleedHero({ store }) {
             <Image src={store.logoUrl} alt={`${store.name} logo`} width={112} height={112} className="object-cover rounded-[var(--radius-lg)]" />
           </div>
         )}
-        <motion.p {...fadeUp(0)} className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60 mb-4">
+        <motion.p {...fadeUp(0)} className="text-xs font-semibold uppercase tracking-[0.2em] mb-4" style={{ color: 'var(--color-accent)' }}>
           {store.tagline || 'Welcome'}
         </motion.p>
 

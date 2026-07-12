@@ -201,6 +201,19 @@ export const themes = {
   },
 };
 
+// Curated brand+accent pairs offered in the settings "Color Palette" picker.
+// 'theme' (empty strings) means "use the selected theme preset's own palette" —
+// buildStoreVars falls back to preset.vars['--color-brand'/'--color-accent'] below.
+export const palettes = [
+  { key: 'theme',      label: 'Theme default', brand: '',        accent: '' },
+  { key: 'terracotta', label: 'Terracotta',     brand: '#C2410C', accent: '#0F766E' },
+  { key: 'forest',     label: 'Forest',         brand: '#166534', accent: '#CA8A04' },
+  { key: 'ocean',      label: 'Ocean',          brand: '#1D4ED8', accent: '#0891B2' },
+  { key: 'berry',      label: 'Berry',          brand: '#9D174D', accent: '#7C3AED' },
+  { key: 'noir',       label: 'Noir',           brand: '#18181B', accent: '#D97706' },
+  { key: 'rose',       label: 'Rosewood',       brand: '#881337', accent: '#B45309' },
+];
+
 const BUTTON_RADIUS = { pill: '9999px', rounded: '10px', sharp: '2px' };
 
 // Fonts already loaded via next/font in app/layout.js — never fetch these from Google.
@@ -258,6 +271,8 @@ export const buildStoreVars = (store) => {
     '--color-accent': accent,
     '--brand-soft': `color-mix(in oklch, ${brand} 8%, ${scheme === 'dark' ? 'black' : 'white'})`,
     '--brand-ink':  `color-mix(in oklch, ${brand} ${scheme === 'dark' ? '70%' : '85%'}, ${scheme === 'dark' ? 'white' : 'black'})`,
+    '--accent-soft': `color-mix(in oklch, ${accent} 12%, ${scheme === 'dark' ? 'black' : 'white'})`,
+    '--accent-ink':  `color-mix(in oklch, ${accent} ${scheme === 'dark' ? '70%' : '85%'}, ${scheme === 'dark' ? 'white' : 'black'})`,
     '--font-display': fontValue,
     '--font-heading': fontValue,
     '--font-body':    vars['--font-body'],

@@ -28,6 +28,8 @@
        not just a flat opacity fade. */
     --brand-soft: color-mix(in oklch, var(--color-brand) 8%, white);
     --brand-ink:  color-mix(in oklch, var(--color-brand) 85%, black);
+    --accent-soft: color-mix(in oklch, var(--color-accent) 12%, white);
+    --accent-ink:  color-mix(in oklch, var(--color-accent) 85%, black);
 
     /* Warm ink-on-paper neutrals (not gray-scale) */
     --bg-page:      #FAF9F7;
@@ -64,6 +66,8 @@
 
     --brand-soft: color-mix(in oklch, var(--color-brand) 16%, black);
     --brand-ink:  color-mix(in oklch, var(--color-brand) 70%, white);
+    --accent-soft: color-mix(in oklch, var(--color-accent) 12%, black);
+    --accent-ink:  color-mix(in oklch, var(--color-accent) 70%, white);
   }
 
   body {
@@ -90,7 +94,7 @@
     font-weight: 600;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--text-muted);
+    color: var(--color-accent);
   }
 
   /* Hero-scale display headline. Sets its own size — don't pair with a

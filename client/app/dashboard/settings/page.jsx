@@ -11,6 +11,7 @@ import { fadeUp } from '@/lib/motion';
 import StorefrontPreview from '@/components/dashboard/StorefrontPreview';
 import { ThemePresetPicker, HeroLayoutPicker, CardStylePicker, SegmentedControl } from '@/components/dashboard/DesignPickers';
 import { validateImageUrl } from '@/lib/validateImage';
+import { themes, palettes } from '@/lib/themes';
 
 const TABS   = ['Branding', 'Design', 'Home Page', 'Store Info'];
 const FONTS  = ['Inter', 'Playfair Display', 'Poppins', 'Lato', 'Merriweather', 'Nunito', 'Raleway', 'Oswald'];
@@ -35,20 +36,53 @@ function Field({ label, children, hint }) {
   );
 }
 
-function ColorSwatch({ value, onChange }) {
+function ColorSwatch({ value, displayValue, onChange }) {
   return (
     <div className="flex items-center gap-3 p-3 rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-sunken)]">
       <div className="relative w-10 h-10 flex-shrink-0 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border)] shadow-[var(--shadow-lift)]">
-        <div className="absolute inset-0" style={{ backgroundColor: value }} />
+        <div className="absolute inset-0" style={{ backgroundColor: displayValue || value }} />
         <input
           type="color"
-          value={value}
+          value={displayValue || value}
           onChange={onChange}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           aria-label="Pick color"
         />
       </div>
-      <span className="font-tabular text-sm text-[var(--text-secondary)] uppercase">{value}</span>
+      <span className="font-tabular text-sm text-[var(--text-secondary)] uppercase">{value || 'Theme default'}</span>
+    </div>
+  );
+}
+
+function PalettePicker({ brand, accent, themeKey, onPick }) {
+  const activeTheme = themes[themeKey] || themes.minimal;
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {palettes.map((p) => {
+        const isThemeDefault = p.key === 'theme';
+        const chipBrand  = isThemeDefault ? activeTheme.swatch.brand  : p.brand;
+        const chipAccent = isThemeDefault ? activeTheme.swatch.accent : p.accent;
+        const active = isThemeDefault
+          ? (!brand && !accent)
+          : (brand === p.brand && accent === p.accent);
+        return (
+          <motion.button
+            key={p.key}
+            type="button"
+            whileTap={{ scale: 0.97 }}
+            onClick={() => onPick(p)}
+            className={`flex flex-col gap-2 p-3 rounded-[var(--radius-md)] border transition-all ${
+              active ? 'border-transparent ring-2 ring-[var(--color-brand)]' : 'border-[var(--border-strong)] hover:bg-[var(--bg-sunken)]'
+            }`}
+          >
+            <div className="flex items-center gap-1.5">
+              <span className="w-5 h-5 rounded-full border border-black/10" style={{ backgroundColor: chipBrand }} />
+              <span className="w-5 h-5 rounded-full border border-black/10" style={{ backgroundColor: chipAccent }} />
+            </div>
+            <span className="text-xs font-medium text-[var(--text-secondary)]">{p.label}</span>
+          </motion.button>
+        );
+      })}
     </div>
   );
 }
@@ -60,7 +94,7 @@ export default function DashboardSettingsPage() {
   const [saving, setSaving]   = useState(false);
   const [form, setForm]       = useState({
     name: '', tagline: '', slug: '', logoUrl: '',
-    primaryColor: '#5C4E4E', accentColor: '#988686',
+    primaryColor: '', accentColor: '',
     fontFamily: 'Inter', theme: 'minimal', colorScheme: 'light', gridColumns: 3,
     heroImage: '', heroHeadline: '', heroCta: '',
     announcementText: '', announcementColor: '#5C4E4E', announcementActive: false,
@@ -79,8 +113,8 @@ export default function DashboardSettingsPage() {
         tagline:            data.tagline          || '',
         slug:               data.slug             || '',
         logoUrl:            data.logoUrl          || '',
-        primaryColor:       data.primaryColor     || '#5C4E4E',
-        accentColor:        data.accentColor      || '#988686',
+        primaryColor:       data.primaryColor     || '',
+        accentColor:        data.accentColor      || '',
         fontFamily:         data.fontFamily       || 'Inter',
         theme:              data.theme            || 'minimal',
         colorScheme:        data.colorScheme      || 'light',
@@ -211,13 +245,30 @@ export default function DashboardSettingsPage() {
         hint="Direct link to your logo image"
       />
 
-      {/* Color pickers */}
+      {/* Color palette */}
+      <Field label="Color Palette" hint="&ldquo;Theme default&rdquo; follows your selected theme preset's own colors — pick a curated pair, or set custom colors below.">
+        <PalettePicker
+          brand={form.primaryColor}
+          accent={form.accentColor}
+          themeKey={form.theme}
+          onPick={(p) => setForm((prev) => ({ ...prev, primaryColor: p.brand, accentColor: p.accent }))}
+        />
+      </Field>
+
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Brand Color">
-          <ColorSwatch value={form.primaryColor} onChange={set('primaryColor')} />
+        <Field label="Custom brand color">
+          <ColorSwatch
+            value={form.primaryColor}
+            displayValue={form.primaryColor || (themes[form.theme] || themes.minimal).swatch.brand}
+            onChange={set('primaryColor')}
+          />
         </Field>
-        <Field label="Accent Color">
-          <ColorSwatch value={form.accentColor} onChange={set('accentColor')} />
+        <Field label="Custom accent color">
+          <ColorSwatch
+            value={form.accentColor}
+            displayValue={form.accentColor || (themes[form.theme] || themes.minimal).swatch.accent}
+            onChange={set('accentColor')}
+          />
         </Field>
       </div>
 

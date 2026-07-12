@@ -81,6 +81,24 @@ function StockBadge({ isOutOfStock, isLowStock, stock }) {
   return null;
 }
 
+// "New" badge — products added in the last 5 days. Accent-colored so the
+// store's accent color gets a real, visible purpose beyond decoration.
+// `now` is captured once via lazy useState init (not read impurely during render).
+function NewBadge({ createdAt, className = 'absolute top-3 right-3' }) {
+  const [now] = useState(() => Date.now());
+  if (!createdAt) return null;
+  const ageDays = (now - new Date(createdAt).getTime()) / 86400000;
+  if (ageDays > 5) return null;
+  return (
+    <span
+      className={`${className} text-white text-[11px] font-semibold px-2.5 py-1 rounded-[var(--radius-sm)]`}
+      style={{ backgroundColor: 'var(--color-accent)' }}
+    >
+      New
+    </span>
+  );
+}
+
 export default function ProductCard({ product, currency = 'PKR', locale = 'ur-PK', slug, cardStyle = 'gallery' }) {
   const { addToCart } = useCart();
   const { user }      = useAuth();
@@ -125,6 +143,7 @@ function GalleryCard({ product, href, price, canShop, isOutOfStock, isLowStock, 
         />
 
         <StockBadge isOutOfStock={isOutOfStock} isLowStock={isLowStock} stock={product.stock} />
+        {!isOutOfStock && !isLowStock && <NewBadge createdAt={product.createdAt} className="absolute bottom-3 left-3" />}
 
         {canShop && (
           <WishlistButton
@@ -178,6 +197,7 @@ function FramedCard({ product, href, price, canShop, isOutOfStock, isLowStock, l
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
           <StockBadge isOutOfStock={isOutOfStock} isLowStock={isLowStock} stock={product.stock} />
+          {!isOutOfStock && !isLowStock && <NewBadge createdAt={product.createdAt} className="absolute bottom-2 left-2" />}
           {canShop && (
             <WishlistButton
               liked={liked}

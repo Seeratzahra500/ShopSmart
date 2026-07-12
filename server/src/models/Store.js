@@ -10,8 +10,8 @@ const storeSchema = new mongoose.Schema({
 
   // Branding
   logoUrl:      { type: String, default: '' },
-  primaryColor: { type: String, default: '#4f46e5' },
-  accentColor:  { type: String, default: '#818cf8' },
+  primaryColor: { type: String, default: '' },
+  accentColor:  { type: String, default: '' },
   fontFamily: {
     type: String,
     enum: ['Inter', 'Playfair Display', 'Poppins', 'Lato', 'Montserrat', 'Merriweather', 'Raleway', 'Space Grotesk', 'Nunito', 'Oswald'],

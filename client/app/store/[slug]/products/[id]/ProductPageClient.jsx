@@ -188,7 +188,10 @@ export default function ProductPageClient() {
           {/* Product details */}
           <motion.div {...fadeUp} className="space-y-5">
             {/* Category badge */}
-            <span className="inline-block bg-[var(--bg-sunken)] text-[var(--text-secondary)] text-xs rounded-full px-3 py-1 font-medium">
+            <span
+              className="inline-block text-xs rounded-full px-3 py-1 font-semibold"
+              style={{ backgroundColor: 'var(--accent-soft)', color: 'var(--accent-ink)' }}
+            >
               {product.category}
             </span>
 

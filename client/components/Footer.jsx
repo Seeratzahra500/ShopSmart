@@ -71,7 +71,7 @@ export default function Footer() {
 
   return (
     <footer className="mt-auto bg-[#161311] text-white relative">
-      <div className="h-px w-full" style={{ backgroundColor: 'var(--color-brand)' }} />
+      <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, var(--color-brand), var(--color-accent))' }} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20">
         <motion.div
           variants={containerVariants}

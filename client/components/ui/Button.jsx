@@ -3,6 +3,8 @@
 const VARIANTS = {
   primary:
     'bg-[var(--color-brand)] text-white hover:bg-[var(--brand-ink)] disabled:hover:bg-[var(--color-brand)]',
+  accent:
+    'bg-[var(--color-accent)] text-white hover:bg-[var(--accent-ink)] disabled:hover:bg-[var(--color-accent)]',
   secondary:
     'border border-[var(--border-strong)] text-[var(--text-main)] bg-transparent hover:bg-[var(--bg-sunken)]',
   ghost:
