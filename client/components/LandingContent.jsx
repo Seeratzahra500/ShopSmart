@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import api from '@/lib/api';
 import Button from '@/components/ui/Button';
@@ -439,7 +440,7 @@ function CollageProductTile({ item, index, static: isStatic, onBroken }) {
       className="relative rounded-[var(--radius-lg)] overflow-hidden bg-[var(--bg-sunken)] shadow-[var(--shadow-lift)]"
       style={{ aspectRatio: '4 / 5', transform: `rotate(${rotate}deg)` }}
     >
-      <img src={item.image} alt={item.title} onError={() => onBroken?.(item.image)} className="absolute inset-0 w-full h-full object-cover" />
+      <Image src={item.image} alt={item.title} fill sizes="(max-width: 1024px) 40vw, 240px" onError={() => onBroken?.(item.image)} className="object-cover" />
       <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2">
         <span className="text-[11px] font-medium text-white bg-black/45 backdrop-blur-sm rounded-full px-2 py-1 truncate max-w-[65%]">
           {item.title}
@@ -529,7 +530,7 @@ function FeaturedStoreCard({ store }) {
       >
         <div className="flex items-center gap-3 mb-5">
           {store.logoUrl ? (
-            <img src={store.logoUrl} alt={store.name} className="w-11 h-11 rounded-full object-cover" />
+            <Image src={store.logoUrl} alt={store.name} width={44} height={44} className="w-11 h-11 rounded-full object-cover" />
           ) : (
             <span
               className="w-11 h-11 rounded-full flex items-center justify-center text-white text-base font-semibold shrink-0"
@@ -580,7 +581,7 @@ function MarketplaceMarquee({ items, loaded, onBroken }) {
           return (
             <Link key={i} href={href} className="shrink-0 w-52">
               <div className="rounded-[var(--radius-lg)] overflow-hidden bg-[var(--bg-sunken)] aspect-[4/5] relative shadow-[var(--shadow-lift)]">
-                <img src={item.image} alt={item.title} onError={() => onBroken?.(item.image)} className="absolute inset-0 w-full h-full object-cover" />
+                <Image src={item.image} alt={item.title} fill sizes="208px" onError={() => onBroken?.(item.image)} className="object-cover" />
               </div>
               <div className="mt-3">
                 <p className="text-sm font-medium text-[var(--text-main)] truncate">{item.title}</p>

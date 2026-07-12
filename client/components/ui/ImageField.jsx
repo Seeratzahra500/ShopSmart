@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
@@ -9,9 +9,14 @@ import { uploadImage } from '@/lib/uploadImage';
 // "couldn't load" warning via onError rather than a broken-image icon.
 function ImagePreview({ url }) {
   const [failed, setFailed] = useState(false);
+  const [prevUrl, setPrevUrl] = useState(url);
   const looksLikeUrl = /^https?:\/\/.+/.test(url?.trim() || '');
 
-  useEffect(() => { setFailed(false); }, [url]);
+  // Reset the "failed" state when the URL changes (adjust state during render).
+  if (prevUrl !== url) {
+    setPrevUrl(url);
+    setFailed(false);
+  }
 
   if (!looksLikeUrl) return null;
 

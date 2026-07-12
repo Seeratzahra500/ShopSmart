@@ -29,9 +29,17 @@ export default function DashboardOrdersPage() {
   const [loading, setLoading]   = useState(true);
   const [updating, setUpdating] = useState(null);
   const [filter, setFilter]     = useState('');
+  const [prevFilter, setPrevFilter] = useState(filter);
+
+  // Show the loading skeleton immediately when the filter changes (adjust
+  // state during render, per React docs) — the mount case is already covered
+  // by the useState(true) initial value above.
+  if (prevFilter !== filter) {
+    setPrevFilter(filter);
+    setLoading(true);
+  }
 
   const load = (status) => {
-    setLoading(true);
     const params = new URLSearchParams({ limit: 50 });
     if (status) params.set('status', status);
     api.get(`/orders/store?${params}`)

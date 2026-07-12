@@ -52,22 +52,29 @@ function StoreContent() {
   const page     = Number(searchParams.get('page') || 1);
   const [searchInput, setSearchInput] = useState(search);
 
-  const fetchProducts = useCallback(async () => {
-    if (!slug) return;
+  // Show the loading skeleton immediately when the query params change
+  // (adjust state during render, per React docs) — the mount case is
+  // already covered by the useState(true) initial value above.
+  const paramsKey = `${slug}|${search}|${category}|${page}`;
+  const [prevParamsKey, setPrevParamsKey] = useState(paramsKey);
+  if (prevParamsKey !== paramsKey) {
+    setPrevParamsKey(paramsKey);
     setLoading(true);
-    try {
-      const params = new URLSearchParams({ page, limit: 12 });
-      if (search)   params.set('search', search);
-      if (category) params.set('category', category);
-      const { data } = await api.get(`/stores/${slug}/products?${params}`);
-      setProducts(data.products);
-      setTotal(data.total);
-      setPages(data.pages);
-    } catch {
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
+  }
+
+  const fetchProducts = useCallback(() => {
+    if (!slug) return;
+    const params = new URLSearchParams({ page, limit: 12 });
+    if (search)   params.set('search', search);
+    if (category) params.set('category', category);
+    api.get(`/stores/${slug}/products?${params}`)
+      .then(({ data }) => {
+        setProducts(data.products);
+        setTotal(data.total);
+        setPages(data.pages);
+      })
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false));
   }, [slug, search, category, page]);
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);

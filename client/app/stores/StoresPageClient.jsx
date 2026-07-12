@@ -190,9 +190,18 @@ export default function StoresPageClient() {
 
   const canBrowse = !user || user.role === 'customer';
 
+  // Show the loading state as soon as a fetch-triggering value changes
+  // (adjust state during render, per React docs) — the mount case is
+  // already covered by the useState(true) initial value above.
+  const fetchKey = `${search}|${authLoading}|${canBrowse}`;
+  const [prevFetchKey, setPrevFetchKey] = useState(fetchKey);
+  if (prevFetchKey !== fetchKey) {
+    setPrevFetchKey(fetchKey);
+    if (!authLoading && canBrowse) setLoading(true);
+  }
+
   useEffect(() => {
     if (authLoading || !canBrowse) return;
-    setLoading(true);
     const params = new URLSearchParams({ limit: 12 });
     if (search) params.set('search', search);
     api.get(`/stores?${params}`)

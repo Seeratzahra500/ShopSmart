@@ -49,9 +49,13 @@ export function AuthProvider({ children }) {
   }, [user, resetInactivityTimer]);
 
   useEffect(() => {
-    // Restore from sessionStorage immediately so protected layouts don't redirect
+    // Restore from sessionStorage immediately so protected layouts don't redirect.
+    // Deliberately reads sessionStorage + sets state inside the effect (not a
+    // useState initializer) to stay hydration-safe — sessionStorage isn't
+    // available during SSR, so reading it during render would mismatch.
     const cached = readCache();
     if (cached) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- see comment above
       setUser(cached);
       setLoading(false);
     }

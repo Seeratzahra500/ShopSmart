@@ -34,6 +34,7 @@ export default function DashboardLayout({ children }) {
   const router   = useRouter();
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [prevPathname, setPrevPathname] = useState(pathname);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'shopowner')) {
@@ -41,14 +42,76 @@ export default function DashboardLayout({ children }) {
     }
   }, [user, loading, router]);
 
-  // Close drawer on route change
-  useEffect(() => {
+  // Close drawer on route change (adjust state during render, per React docs)
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setDrawerOpen(false);
-  }, [pathname]);
+  }
 
   if (loading || !user || user.role !== 'shopowner') return null;
 
-  const SidebarContent = ({ onLinkClick }) => (
+  return (
+    <div className="flex min-h-screen bg-[var(--bg-page)]">
+
+      {/* ── Desktop Sidebar (md+) ── */}
+      <aside className="hidden md:flex w-56 bg-[var(--bg-card)] border-r border-[var(--border)] flex-col fixed top-16 bottom-0 z-40">
+        <SidebarContent pathname={pathname} user={user} onLinkClick={undefined} />
+      </aside>
+
+      {/* ── Mobile: top bar with hamburger ── */}
+      <div className="md:hidden fixed top-16 left-0 right-0 z-40 bg-[var(--bg-card)] border-b border-[var(--border)] h-12 flex items-center px-4 gap-3">
+        <button
+          onClick={() => setDrawerOpen(true)}
+          aria-label="Open menu"
+          className="p-2 rounded-[var(--radius-md)] text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sunken)] transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <p className="text-sm font-semibold text-[var(--text-main)] truncate">Seller Dashboard</p>
+      </div>
+
+      {/* ── Mobile: slide drawer overlay ── */}
+      {drawerOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-50 flex"
+          onClick={() => setDrawerOpen(false)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40" aria-hidden="true" />
+
+          {/* Drawer panel */}
+          <aside
+            className="relative w-64 bg-[var(--bg-card)] flex flex-col h-full shadow-[var(--shadow-overlay)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer header */}
+            <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+              <p className="text-sm font-bold" style={{ color: 'var(--color-brand)' }}>ShopSmart</p>
+              <button
+                onClick={() => setDrawerOpen(false)}
+                aria-label="Close menu"
+                className="p-1.5 rounded-[var(--radius-md)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sunken)] transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <SidebarContent pathname={pathname} user={user} onLinkClick={() => setDrawerOpen(false)} />
+          </aside>
+        </div>
+      )}
+
+      {/* ── Main content ── */}
+      <main className="flex-1 md:ml-56 pt-12 md:pt-0 p-6 md:p-8">{children}</main>
+    </div>
+  );
+}
+
+function SidebarContent({ pathname, user, onLinkClick }) {
+  return (
     <>
       <div className="p-4 border-b border-[var(--border)]">
         <p className="eyebrow">Seller Dashboard</p>
@@ -94,65 +157,6 @@ export default function DashboardLayout({ children }) {
         </Link>
       </div>
     </>
-  );
-
-  return (
-    <div className="flex min-h-screen bg-[var(--bg-page)]">
-
-      {/* ── Desktop Sidebar (md+) ── */}
-      <aside className="hidden md:flex w-56 bg-[var(--bg-card)] border-r border-[var(--border)] flex-col fixed top-16 bottom-0 z-40">
-        <SidebarContent onLinkClick={undefined} />
-      </aside>
-
-      {/* ── Mobile: top bar with hamburger ── */}
-      <div className="md:hidden fixed top-16 left-0 right-0 z-40 bg-[var(--bg-card)] border-b border-[var(--border)] h-12 flex items-center px-4 gap-3">
-        <button
-          onClick={() => setDrawerOpen(true)}
-          aria-label="Open menu"
-          className="p-2 rounded-[var(--radius-md)] text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sunken)] transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-        <p className="text-sm font-semibold text-[var(--text-main)] truncate">Seller Dashboard</p>
-      </div>
-
-      {/* ── Mobile: slide drawer overlay ── */}
-      {drawerOpen && (
-        <div
-          className="md:hidden fixed inset-0 z-50 flex"
-          onClick={() => setDrawerOpen(false)}
-        >
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/40" aria-hidden="true" />
-
-          {/* Drawer panel */}
-          <aside
-            className="relative w-64 bg-[var(--bg-card)] flex flex-col h-full shadow-[var(--shadow-overlay)]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Drawer header */}
-            <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-              <p className="text-sm font-bold" style={{ color: 'var(--color-brand)' }}>ShopSmart</p>
-              <button
-                onClick={() => setDrawerOpen(false)}
-                aria-label="Close menu"
-                className="p-1.5 rounded-[var(--radius-md)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sunken)] transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <SidebarContent onLinkClick={() => setDrawerOpen(false)} />
-          </aside>
-        </div>
-      )}
-
-      {/* ── Main content ── */}
-      <main className="flex-1 md:ml-56 pt-12 md:pt-0 p-6 md:p-8">{children}</main>
-    </div>
   );
 }
 

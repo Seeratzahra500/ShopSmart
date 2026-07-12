@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import api from '@/lib/api';
 import { buildStoreVars, resolveDesign, collectFontFamilies } from '@/lib/themes';
 
@@ -14,14 +14,19 @@ export function StoreProvider({ slug, children }) {
   // it can be precisely undone — theme vars must never leak past this provider.
   const appliedRef = useRef(null);
 
-  const applyVars = (storeData) => {
+  const cleanupVars = useCallback(() => {
+    const applied = appliedRef.current;
+    if (!applied) return;
+    const root = document.documentElement;
+    applied.propKeys.forEach((k) => root.style.removeProperty(k));
+    document.body.style.fontFamily = applied.prevBodyFont || '';
+    if (applied.darkAdded) root.classList.remove('dark');
+    appliedRef.current = null;
+  }, []);
+
+  const applyVars = useCallback((storeData) => {
     const root = document.documentElement;
     const vars = buildStoreVars(storeData);
-
-    const addedDarkClass = storeData.colorScheme === 'dark' ||
-      (storeData.colorScheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) ||
-      // themes.js forces dark on intrinsically-dark presets (bold/midnight)
-      vars['--bg-page'] === '#0A0A0A' || vars['--bg-page'] === '#0F1420';
 
     // Clean up whatever the previous applyVars() call set before applying new vars.
     cleanupVars();
@@ -58,17 +63,7 @@ export function StoreProvider({ slug, children }) {
       prevBodyFont,
       darkAdded,
     };
-  };
-
-  const cleanupVars = () => {
-    const applied = appliedRef.current;
-    if (!applied) return;
-    const root = document.documentElement;
-    applied.propKeys.forEach((k) => root.style.removeProperty(k));
-    document.body.style.fontFamily = applied.prevBodyFont || '';
-    if (applied.darkAdded) root.classList.remove('dark');
-    appliedRef.current = null;
-  };
+  }, [cleanupVars]);
 
   useEffect(() => {
     if (!slug) return;
@@ -79,7 +74,7 @@ export function StoreProvider({ slug, children }) {
 
     // Cleanup on unmount or slug change — theme vars must not leak into the rest of the app.
     return () => cleanupVars();
-  }, [slug]);
+  }, [slug, applyVars, cleanupVars]);
 
   const refreshStore = () => {
     if (!slug) return;

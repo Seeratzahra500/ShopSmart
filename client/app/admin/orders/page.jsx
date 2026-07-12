@@ -76,7 +76,6 @@ export default function AdminOrdersPage() {
   const [activeTab, setActiveTab] = useState(TAB_ALL);
 
   const load = () => {
-    setLoading(true);
     api.get('/admin/orders')
       .then(({ data }) => setOrders(data))
       .catch(() => setOrders([]))

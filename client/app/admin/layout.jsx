@@ -108,6 +108,7 @@ export default function AdminLayout({ children }) {
   const router   = useRouter();
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [prevPathname, setPrevPathname] = useState(pathname);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -115,10 +116,11 @@ export default function AdminLayout({ children }) {
     }
   }, [user, loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Close drawer on route change
-  useEffect(() => {
+  // Close drawer on route change (adjust state during render, per React docs)
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setDrawerOpen(false);
-  }, [pathname]);
+  }
 
   if (loading || !user || user.role !== 'admin') return null;
 

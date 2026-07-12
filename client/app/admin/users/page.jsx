@@ -116,7 +116,6 @@ export default function AdminUsersPage() {
   const [busy, setBusy]       = useState(null);
 
   const load = () => {
-    setLoading(true);
     api.get('/admin/users')
       .then(({ data }) => setUsers(data))
       .catch(() => setUsers([]))

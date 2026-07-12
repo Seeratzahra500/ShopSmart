@@ -42,7 +42,6 @@ export default function AdminStoresPage() {
   const [busy, setBusy]       = useState(null);
 
   const load = () => {
-    setLoading(true);
     api.get('/admin/stores')
       .then(({ data }) => setStores(data))
       .catch(() => setStores([]))

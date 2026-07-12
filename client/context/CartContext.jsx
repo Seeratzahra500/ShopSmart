@@ -13,12 +13,16 @@ export function CartProvider({ children }) {
   const [items, setItems]         = useState([]);
   const [storeSlug, setStoreSlug] = useState(null);
 
-  // Reload from localStorage whenever the logged-in user changes (login / logout / switch account)
+  // Reload from localStorage whenever the logged-in user changes (login / logout / switch account).
+  // Deliberately reads localStorage + sets state inside the effect (not a
+  // useState initializer) to stay hydration-safe — localStorage isn't
+  // available during SSR, so reading it during render would mismatch.
   useEffect(() => {
     try {
       const uid         = user?._id;
       const stored      = localStorage.getItem(cartKey(uid));
       const storedStore = localStorage.getItem(storeKey(uid));
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- see comment above
       setItems(stored ? JSON.parse(stored) : []);
       setStoreSlug(storedStore || null);
     } catch {

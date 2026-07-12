@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { formatPrice } from '@/lib/formatPrice';
@@ -27,7 +28,13 @@ const fieldStyle = (hasError) => [
 // pattern used on the settings page for logo/hero URL previews.
 function ImageThumb({ url }) {
   const [failed, setFailed] = useState(false);
-  useEffect(() => { setFailed(false); }, [url]);
+  const [prevUrl, setPrevUrl] = useState(url);
+
+  // Reset the "failed" state when the URL changes (adjust state during render).
+  if (prevUrl !== url) {
+    setPrevUrl(url);
+    setFailed(false);
+  }
 
   return (
     <div className="w-14 h-14 flex-shrink-0 rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--bg-sunken)] overflow-hidden flex flex-col items-center justify-center relative">
@@ -236,7 +243,6 @@ export default function DashboardProductsPage() {
   const [modal, setModal]       = useState(null);
 
   const load = () => {
-    setLoading(true);
     api.get('/store/products')
       .then(({ data }) => setProducts(data.products))
       .catch(() => setProducts([]))
@@ -250,6 +256,7 @@ export default function DashboardProductsPage() {
     try {
       await api.delete(`/products/${id}`);
       toast.success('Product removed.');
+      setLoading(true);
       load();
     } catch { toast.error('Failed to remove product.'); }
   };
@@ -258,6 +265,7 @@ export default function DashboardProductsPage() {
     try {
       await api.put(`/products/${id}`, { isActive: true });
       toast.success(`"${title}" is visible in your store again.`);
+      setLoading(true);
       load();
     } catch { toast.error('Failed to restore product.'); }
   };
@@ -340,9 +348,11 @@ export default function DashboardProductsPage() {
               {/* Product header: thumbnail + name */}
               <div className="flex items-start gap-3">
                 {p.images?.[0] ? (
-                  <img
+                  <Image
                     src={p.images[0]}
                     alt={p.title}
+                    width={64}
+                    height={64}
                     className="w-16 h-16 rounded-[var(--radius-md)] object-cover flex-shrink-0 border border-[var(--border)]"
                   />
                 ) : (
@@ -395,7 +405,7 @@ export default function DashboardProductsPage() {
           <ProductModal
             product={modal === 'new' ? null : modal}
             onClose={() => setModal(null)}
-            onSaved={() => { setModal(null); load(); }}
+            onSaved={() => { setModal(null); setLoading(true); load(); }}
           />
         )}
       </AnimatePresence>
