@@ -8,32 +8,42 @@ const CartContext = createContext(null);
 const cartKey  = (uid) => `shopsmart_cart_${uid  || 'guest'}`;
 const storeKey = (uid) => `shopsmart_cart_store_${uid || 'guest'}`;
 
+// Settles the guest cart when a session becomes logged-in. House rule:
+// guest items merge into the account's saved cart (quantities add up for
+// the same product), and the guest keys are removed so the next signed-out
+// visitor starts with a clean cart. The cart is single-store, so when the
+// two carts belong to different stores the guest cart wins outright — the
+// same "most recent store wins" rule addToCart applies on a store switch.
+const settleGuestCart = (uid) => {
+  const guestRaw = localStorage.getItem(cartKey());
+  if (guestRaw) {
+    const guestItems = JSON.parse(guestRaw);
+    if (guestItems.length) {
+      const guestStore = localStorage.getItem(storeKey());
+      const userStore  = localStorage.getItem(storeKey(uid));
+      const userRaw    = localStorage.getItem(cartKey(uid));
+      const userItems  = userRaw ? JSON.parse(userRaw) : [];
+      const sameStore  = !userItems.length || !guestStore || !userStore || guestStore === userStore;
+      const merged = sameStore ? [...userItems] : [];
+      for (const g of guestItems) {
+        const existing = merged.find((i) => i._id === g._id);
+        if (existing) existing.quantity += g.quantity;
+        else merged.push(g);
+      }
+      localStorage.setItem(cartKey(uid), JSON.stringify(merged));
+      const slug = guestStore || (sameStore ? userStore : null);
+      if (slug) localStorage.setItem(storeKey(uid), slug);
+      else      localStorage.removeItem(storeKey(uid));
+    }
+  }
+  localStorage.removeItem(cartKey());
+  localStorage.removeItem(storeKey());
+};
+
 export function CartProvider({ children }) {
   const { user }                  = useAuth();
   const [items, setItems]         = useState([]);
   const [storeSlug, setStoreSlug] = useState(null);
-
-  // Settles the guest cart when a session becomes logged-in. House rule:
-  // the account's own saved cart wins — if it has items, the guest cart is
-  // discarded; only when the account cart is empty (which includes every
-  // fresh sign-up) does the guest cart transfer over. Either way the guest
-  // keys are removed so the next signed-out visitor starts with a clean cart.
-  const settleGuestCart = (uid) => {
-    const guestRaw = localStorage.getItem(cartKey());
-    if (guestRaw) {
-      const userRaw   = localStorage.getItem(cartKey(uid));
-      const userItems = userRaw ? JSON.parse(userRaw) : [];
-      const guestItems = JSON.parse(guestRaw);
-      if (!userItems.length && guestItems.length) {
-        localStorage.setItem(cartKey(uid), guestRaw);
-        const guestStore = localStorage.getItem(storeKey());
-        if (guestStore) localStorage.setItem(storeKey(uid), guestStore);
-        else            localStorage.removeItem(storeKey(uid));
-      }
-    }
-    localStorage.removeItem(cartKey());
-    localStorage.removeItem(storeKey());
-  };
 
   // Reload from localStorage whenever the logged-in user changes (login / logout / switch account).
   // Deliberately reads localStorage + sets state inside the effect (not a
