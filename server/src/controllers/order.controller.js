@@ -153,20 +153,21 @@ exports.getStoreOrders = async (req, res) => {
 
 const ORDER_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
-// Rank-based, not a strict adjacency list: any FORWARD move through the
-// fulfillment sequence is legal (a small shop may ship the same day it's
-// packed, with no separate "processing" click) — only backward moves are
-// blocked, since a shipped/delivered order can't be un-shipped. Cancelling
-// stays restricted to the pre-shipment statuses, matching the existing
-// stock-release behavior below.
-const FULFILLMENT_ORDER = ['pending', 'processing', 'shipped', 'delivered'];
-const CANCELLABLE_FROM  = ['pending', 'processing'];
+// pending/processing/shipped are freely correctable in either direction —
+// none of them have released stock, so moving between them (including
+// backward, e.g. undoing an accidental "shipped" click) has no side effect
+// to unwind. 'delivered' and 'cancelled' are one-way terminal walls:
+// cancelled releases reserved stock back to the pool, so nothing may enter
+// or leave those states except the single forward transition into them.
+const PRE_DELIVERY     = ['pending', 'processing', 'shipped'];
+const CANCELLABLE_FROM = ['pending', 'processing'];
 
 function isLegalTransition(from, to) {
   if (from === to) return true;
-  if (to === 'cancelled') return CANCELLABLE_FROM.includes(from);
   if (from === 'cancelled' || from === 'delivered') return false;
-  return FULFILLMENT_ORDER.indexOf(to) > FULFILLMENT_ORDER.indexOf(from);
+  if (to === 'cancelled') return CANCELLABLE_FROM.includes(from);
+  if (to === 'delivered') return PRE_DELIVERY.includes(from);
+  return PRE_DELIVERY.includes(from) && PRE_DELIVERY.includes(to);
 }
 
 exports.updateOrderStatus = async (req, res) => {
