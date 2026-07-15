@@ -25,11 +25,10 @@ const STEPS = ['Cart', 'Details', 'Confirm'];
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { items, storeSlug, cartTotal, clearCart } = useCart();
 
   const [form, setForm]       = useState({ street: '', city: '', country: 'Pakistan', zip: '' });
-  const [guestEmail, setGuest] = useState('');
   const [errors, setErrors]   = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -53,7 +52,6 @@ export default function CheckoutPage() {
     if (form.zip.trim() && !/^[a-zA-Z0-9][a-zA-Z0-9 \-]{1,9}$/.test(form.zip.trim()))
       e.zip = 'Enter a valid ZIP / postal code (e.g. 44000, SW1A 1AA)';
 
-    if (!user && !/\S+@\S+\.\S+/.test(guestEmail)) e.guestEmail = 'Valid email required for guest checkout';
     if (!items.length) e.items = 'Your cart is empty';
     if (!storeSlug) e.items = 'Cart has no store associated. Please add items from a store.';
     return e;
@@ -71,7 +69,6 @@ export default function CheckoutPage() {
         storeSlug,
         items:           items.map((i) => ({ product: i._id, quantity: i.quantity })),
         shippingAddress: form,
-        guestEmail:      user ? undefined : guestEmail,
       };
       const { data } = await api.post('/orders', payload);
       clearCart();
@@ -85,7 +82,38 @@ export default function CheckoutPage() {
     }
   };
 
-  if (user && user.role !== 'customer') {
+  // Checkout requires an account: guests can build a cart, but must sign in
+  // (or register) before placing an order. Wait for the auth restore to finish
+  // so a logged-in reload doesn't flash the sign-in gate.
+  if (authLoading) return <PageWrapper><div className="py-40" /></PageWrapper>;
+
+  if (!user) {
+    return (
+      <PageWrapper>
+        <motion.div
+          initial="hidden"
+          animate="show"
+          variants={fadeUp}
+          className="max-w-xl mx-auto px-4 py-28 text-center"
+        >
+          <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[var(--radius-lg)] p-8 shadow-[var(--shadow-lift)]">
+            <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--text-main)] mb-2">
+              Sign in to checkout
+            </h1>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-6">
+              Your cart is saved. Sign in — or create an account — and your items will come with you.
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <Button as={Link} href="/auth/login?next=/checkout">Sign In</Button>
+              <Button as={Link} variant="secondary" href="/auth/register">Create Account</Button>
+            </div>
+          </div>
+        </motion.div>
+      </PageWrapper>
+    );
+  }
+
+  if (user.role !== 'customer') {
     return (
       <PageWrapper>
         <motion.div
@@ -201,23 +229,6 @@ export default function CheckoutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Shipping form */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Guest email */}
-              {!user && (
-                <div className="bg-[var(--bg-card)] rounded-[var(--radius-lg)] border border-[var(--border)] p-6 shadow-[var(--shadow-lift)]">
-                  <h2 className="font-display font-semibold tracking-tight text-[var(--text-main)] mb-1">Contact</h2>
-                  <p className="text-sm text-[var(--text-secondary)] mb-5">We&apos;ll send your order confirmation here.</p>
-                  <Input
-                    label="Email address"
-                    type="email"
-                    name="guestEmail"
-                    value={guestEmail}
-                    onChange={(e) => { setGuest(e.target.value); if (errors.guestEmail) setErrors((p) => ({ ...p, guestEmail: '' })); }}
-                    placeholder="you@example.com"
-                    error={errors.guestEmail}
-                  />
-                </div>
-              )}
-
               {/* Shipping address */}
               <div className="bg-[var(--bg-card)] rounded-[var(--radius-lg)] border border-[var(--border)] p-6 shadow-[var(--shadow-lift)]">
                 <h2 className="font-display font-semibold tracking-tight text-[var(--text-main)] mb-1">Shipping Information</h2>

@@ -194,8 +194,9 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <Button as={Link} href="/checkout" className="w-full">
-                Proceed to Checkout
+              {/* Guests keep their cart but must sign in before placing an order. */}
+              <Button as={Link} href={user ? '/checkout' : '/auth/login?next=/checkout'} className="w-full">
+                {user ? 'Proceed to Checkout' : 'Sign in to Checkout'}
               </Button>
 
               <Link

@@ -53,7 +53,10 @@ export default function LoginPage() {
       if (user.role === 'shopowner') { window.location.href = '/dashboard'; return; }
 
       const next = new URLSearchParams(window.location.search).get('next');
-      router.push(next && next.startsWith('/') ? next : '/stores');
+      // Same-site paths only: "//evil.com" is protocol-relative (external) and
+      // "/\evil.com" is browser-normalized to it — both are open redirects.
+      const safeNext = next && next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/\\');
+      router.push(safeNext ? next : '/stores');
     } catch (err) {
       const msg = err.response?.data?.message || 'Login failed. Please try again.';
       toast.error(msg);

@@ -1,7 +1,9 @@
 'use client';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useStore } from '@/context/StoreContext';
+import { useAuth } from '@/context/AuthContext';
 
 /* ─── Animation variants ─── */
 const containerVariants = {
@@ -51,20 +53,35 @@ const SocialButton = ({ href, icon: Icon, label }) => (
 
 const hasSocial = (contact) => !!(contact.instagram || contact.facebook || contact.twitter);
 
-const FooterLink = ({ href, children }) => (
-  <li>
-    <Link
-      href={href}
-      className="text-sm text-white/50 hover:text-white transition-colors duration-200"
-    >
-      {children}
-    </Link>
-  </li>
-);
+const FooterLink = ({ href, children }) => {
+  const pathname = usePathname();
+  return (
+    <li>
+      <Link
+        href={href}
+        onClick={(e) => {
+          // Clicking the link for the page you're already on is a router no-op —
+          // force a real reload so the click always does something.
+          if (pathname === href) {
+            e.preventDefault();
+            window.location.reload();
+          }
+        }}
+        className="text-sm text-white/50 hover:text-white transition-colors duration-200"
+      >
+        {children}
+      </Link>
+    </li>
+  );
+};
 
 /* ─── Footer ─── */
 export default function Footer() {
   const { store } = useStore();
+  const { user } = useAuth();
+  // Cart / My Orders are shopping links — admins and shopowners can't shop,
+  // so their footers shouldn't offer them. Guests and customers see both.
+  const canShop = !user || user.role === 'customer';
   const name    = store?.name    || 'ShopSmart';
   const contact = store?.contact || {};
   const tagline = store?.tagline || 'Empowering small businesses with a personalised e-commerce platform.';
@@ -112,8 +129,8 @@ export default function Footer() {
             </h4>
             <ul className="space-y-3">
               <FooterLink href="/stores">Stores</FooterLink>
-              <FooterLink href="/cart">Cart</FooterLink>
-              <FooterLink href="/orders">My Orders</FooterLink>
+              {canShop && <FooterLink href="/cart">Cart</FooterLink>}
+              {canShop && <FooterLink href="/orders">My Orders</FooterLink>}
             </ul>
           </motion.div>
 
