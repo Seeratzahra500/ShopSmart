@@ -19,7 +19,7 @@ export function CartProvider({ children }) {
   // available during SSR, so reading it during render would mismatch.
   useEffect(() => {
     try {
-      const uid         = user?._id;
+      const uid         = user?.id;
       const stored      = localStorage.getItem(cartKey(uid));
       const storedStore = localStorage.getItem(storeKey(uid));
       // eslint-disable-next-line react-hooks/set-state-in-effect -- see comment above
@@ -29,10 +29,10 @@ export function CartProvider({ children }) {
       setItems([]);
       setStoreSlug(null);
     }
-  }, [user?._id]);
+  }, [user?.id]);
 
   const persist = (newItems, slug) => {
-    const uid = user?._id;
+    const uid = user?.id;
     setItems(newItems);
     localStorage.setItem(cartKey(uid), JSON.stringify(newItems));
     if (slug !== undefined) {
@@ -74,7 +74,7 @@ export function CartProvider({ children }) {
   };
 
   const clearCart = () => {
-    const uid = user?._id;
+    const uid = user?.id;
     setItems([]);
     setStoreSlug(null);
     localStorage.removeItem(cartKey(uid));

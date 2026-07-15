@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import PageWrapper from '@/components/PageWrapper';
 import EmptyState from '@/components/ui/EmptyState';
@@ -171,8 +170,7 @@ function StoreCard({ store }) {
 }
 
 export default function StoresPageClient() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
+  const { loading: authLoading } = useAuth();
 
   const [stores, setStores]           = useState([]);
   const [total, setTotal]             = useState(0);
@@ -180,37 +178,27 @@ export default function StoresPageClient() {
   const [search, setSearch]           = useState('');
   const [searchInput, setSearchInput] = useState('');
 
-  useEffect(() => {
-    if (authLoading) return;
-    // Guests and customers may browse the directory; admins/shopowners are
-    // routed to their own dashboards since they don't shop.
-    if (user?.role === 'admin')     { router.replace('/admin/dashboard'); return; }
-    if (user?.role === 'shopowner') { router.replace('/dashboard'); return; }
-  }, [user, authLoading, router]);
-
-  const canBrowse = !user || user.role === 'customer';
-
   // Show the loading state as soon as a fetch-triggering value changes
   // (adjust state during render, per React docs) — the mount case is
   // already covered by the useState(true) initial value above.
-  const fetchKey = `${search}|${authLoading}|${canBrowse}`;
+  const fetchKey = `${search}|${authLoading}`;
   const [prevFetchKey, setPrevFetchKey] = useState(fetchKey);
   if (prevFetchKey !== fetchKey) {
     setPrevFetchKey(fetchKey);
-    if (!authLoading && canBrowse) setLoading(true);
+    if (!authLoading) setLoading(true);
   }
 
   useEffect(() => {
-    if (authLoading || !canBrowse) return;
+    if (authLoading) return;
     const params = new URLSearchParams({ limit: 12 });
     if (search) params.set('search', search);
     api.get(`/stores?${params}`)
       .then(({ data }) => { setStores(data.stores); setTotal(data.total); })
       .catch(() => setStores([]))
       .finally(() => setLoading(false));
-  }, [search, authLoading, canBrowse]);
+  }, [search, authLoading]);
 
-  if (authLoading || !canBrowse) return null;
+  if (authLoading) return null;
 
   const handleSearch = (e) => {
     e.preventDefault();

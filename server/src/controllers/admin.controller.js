@@ -35,12 +35,17 @@ exports.toggleUserStatus = async (req, res) => {
 exports.changeUserRole = async (req, res) => {
   try {
     const { role } = req.body;
-    if (!['customer', 'shopowner', 'admin'].includes(role))
+    // 'admin' is deliberately excluded — this endpoint promotes/demotes
+    // customer <-> shopowner only. Granting admin has to happen outside the
+    // UI (direct DB/ops action), not by any admin clicking a dropdown.
+    if (!['customer', 'shopowner'].includes(role))
       return res.status(400).json({ message: 'Invalid role.' });
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found.' });
     if (user._id.toString() === req.user.id)
       return res.status(400).json({ message: 'Cannot change your own role.' });
+    if (user.role === 'admin')
+      return res.status(400).json({ message: 'Cannot change another admin\'s role from here.' });
     user.role = role;
     await user.save();
     res.json({ message: `Role changed to ${role}.`, role: user.role });

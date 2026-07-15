@@ -152,13 +152,22 @@ exports.getStoreOrders = async (req, res) => {
 };
 
 const ORDER_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
-const LEGAL_TRANSITIONS = {
-  pending:    ['processing', 'cancelled'],
-  processing: ['shipped', 'cancelled'],
-  shipped:    ['delivered'],
-  delivered:  [],
-  cancelled:  [],
-};
+
+// Rank-based, not a strict adjacency list: any FORWARD move through the
+// fulfillment sequence is legal (a small shop may ship the same day it's
+// packed, with no separate "processing" click) — only backward moves are
+// blocked, since a shipped/delivered order can't be un-shipped. Cancelling
+// stays restricted to the pre-shipment statuses, matching the existing
+// stock-release behavior below.
+const FULFILLMENT_ORDER = ['pending', 'processing', 'shipped', 'delivered'];
+const CANCELLABLE_FROM  = ['pending', 'processing'];
+
+function isLegalTransition(from, to) {
+  if (from === to) return true;
+  if (to === 'cancelled') return CANCELLABLE_FROM.includes(from);
+  if (from === 'cancelled' || from === 'delivered') return false;
+  return FULFILLMENT_ORDER.indexOf(to) > FULFILLMENT_ORDER.indexOf(from);
+}
 
 exports.updateOrderStatus = async (req, res) => {
   const { status } = req.body;
@@ -179,11 +188,8 @@ exports.updateOrderStatus = async (req, res) => {
       const order = await Order.findOne(filter).session(session);
       if (!order) throw Object.assign(new Error('Order not found.'), { status: 404 });
 
-      if (status !== order.status) {
-        const allowed = LEGAL_TRANSITIONS[order.status] || [];
-        if (!allowed.includes(status))
-          throw Object.assign(new Error(`Cannot transition order from "${order.status}" to "${status}".`), { status: 400 });
-      }
+      if (status !== order.status && !isLegalTransition(order.status, status))
+        throw Object.assign(new Error(`Cannot transition order from "${order.status}" to "${status}".`), { status: 400 });
 
       // Cancelling releases the reserved stock back to the store.
       if (status === 'cancelled' && order.status !== 'cancelled') {

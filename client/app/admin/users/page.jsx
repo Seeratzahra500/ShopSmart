@@ -19,7 +19,10 @@ const ROLE_LABEL = {
   customer: 'Customer',
 };
 
-const ROLES = ['customer', 'shopowner', 'admin'];
+// Dropdown options only — 'admin' is deliberately excluded so no admin can
+// promote anyone to admin (or another admin's row shows) from this UI; the
+// server enforces the same restriction independently.
+const ROLES = ['customer', 'shopowner'];
 
 const AVATAR_COLORS = [
   'var(--color-brand)', '#15803D', '#0E7490',
